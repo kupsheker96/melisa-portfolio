@@ -17,6 +17,11 @@
 /* ink: nothing is hidden by CSS - the script hides text itself only once it is running, so any viewer that
    doesn't run scripts or animations still sees the full page */
 [data-ink] .ik{display:inline-block}
+
+.atmos-grain{position:fixed;inset:-50%;z-index:900;pointer-events:none;opacity:var(--grain-o,.065);background-size:220px 220px;animation:atmosGrain 1s steps(8) infinite}
+@keyframes atmosGrain{0%{transform:translate(0,0)}12%{transform:translate(-7%,4%)}25%{transform:translate(3%,-9%)}37%{transform:translate(9%,6%)}50%{transform:translate(-4%,-3%)}62%{transform:translate(-9%,9%)}75%{transform:translate(6%,-6%)}87%{transform:translate(-2%,7%)}100%{transform:translate(0,0)}}
+.atmos-field{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;display:block}
+@media (prefers-reduced-motion: reduce){.atmos-grain{animation:none}}
 body{margin:0;background:#121316}
 a{color:#f4f3ef;text-decoration:none}a:hover{color:#7a82ff}
 img{display:block}
@@ -104,8 +109,8 @@ img{display:block}
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4200}}'>
 class Component extends DCLogic {
   state = { narrow: window.innerWidth < 760 };
-  componentDidMount() { this.inkInit(); this.onR = () => { const n = window.innerWidth < 760; if (n !== this.state.narrow) this.setState({ narrow: n }); }; window.addEventListener('resize', this.onR); }
-  componentWillUnmount() { this.inkStop(); window.removeEventListener('resize', this.onR); }
+  componentDidMount() { this.inkInit(); this.atmosInit(); this.onR = () => { const n = window.innerWidth < 760; if (n !== this.state.narrow) this.setState({ narrow: n }); }; window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { this.inkStop(); this.atmosStop(); window.removeEventListener('resize', this.onR); }
   inkInit() {
     const root = document.querySelector('[data-inkroot]');
     if (!root) { if ((this.inkTries = (this.inkTries || 0) + 1) < 60) this.inkT = setTimeout(() => this.inkInit(), 50); return; }
@@ -236,6 +241,107 @@ class Component extends DCLogic {
     (this.inkRafs || []).forEach((g) => { cancelAnimationFrame(g.raf); clearTimeout(g.fin); }); (this.inkTs || []).forEach(clearTimeout); clearTimeout(this.inkT); clearTimeout(this.inkMT);
     if (this.inkIO) this.inkIO.disconnect(); if (this.inkMO) this.inkMO.disconnect();
     if (this.inkEnd) window.removeEventListener('scroll', this.inkEnd);
+  }
+  atmosInit() {
+    if (this.atmosOn) return;
+    const root = document.querySelector('[data-inkroot]');
+    if (!root) { if ((this.atTries = (this.atTries || 0) + 1) < 60) this.atT = setTimeout(() => this.atmosInit(), 50); return; }
+    this.atmosOn = true;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // --- grain: a 220px tile of luminance noise ---
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 220;
+      const g = c.getContext('2d'), im = g.createImageData(220, 220);
+      for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+      g.putImageData(im, 0, 0);
+      const gr = document.createElement('div'); gr.className = 'atmos-grain'; gr.setAttribute('aria-hidden', 'true');
+      gr.style.backgroundImage = 'url(' + c.toDataURL('image/png') + ')';
+      document.body.appendChild(gr); this.atGrain = gr;
+    } catch (e) {}
+    // --- ink field ---
+    const host = document.querySelector('[data-atmos-field]');
+    if (!host) return;
+    const cv = document.createElement('canvas'); cv.className = 'atmos-field'; cv.setAttribute('aria-hidden', 'true');
+    const gl = cv.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
+    if (!gl) return;
+    host.insertBefore(cv, host.firstChild); this.atCv = cv;
+    const VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+    const FS = `precision mediump float;
+uniform vec2 r;uniform float t;uniform vec2 m;uniform float s;uniform float k;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
+void main(){
+ vec2 uv=gl_FragCoord.xy/r.y;
+ vec2 p=uv*1.5+vec2(0.,s*.45);
+ vec2 d=m-uv;float md=exp(-dot(d,d)*7.)*k;
+ vec2 q=vec2(fbm(p+t*.035),fbm(p+vec2(5.2,1.3)-t*.03));
+ vec2 w=vec2(fbm(p+2.*q+vec2(1.7,9.2)+t*.022+d*md*.9),fbm(p+2.*q+vec2(8.3,2.8)-t*.02-d*md*.9));
+ float f=fbm(p+2.5*w);
+ float ink=smoothstep(.42,.98,f);
+ vec3 base=vec3(.071,.075,.086);vec3 smoke=vec3(.15,.155,.18);vec3 acc=vec3(.478,.51,1.);
+ vec3 c=mix(base,smoke,ink);
+ c+=acc*.07*smoothstep(.55,1.,w.y)*ink;
+ c+=acc*.035*md;
+ gl_FragColor=vec4(c,1.);}`;
+    const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; };
+    const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
+    if (!vs || !fs) { cv.remove(); return; }
+    const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) { cv.remove(); return; }
+    gl.useProgram(pr);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const la = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(la); gl.vertexAttribPointer(la, 2, gl.FLOAT, false, 0, 0);
+    const U = { r: gl.getUniformLocation(pr, 'r'), t: gl.getUniformLocation(pr, 't'), m: gl.getUniformLocation(pr, 'm'), s: gl.getUniformLocation(pr, 's'), k: gl.getUniformLocation(pr, 'k') };
+    const tall = window.innerHeight >= 1500;
+    let q = 0.5;   // half resolution: the field is soft by nature
+    const size = () => {
+      cv.width = Math.max(2, Math.round(window.innerWidth * q)); cv.height = Math.max(2, Math.round(window.innerHeight * q));
+      gl.viewport(0, 0, cv.width, cv.height);
+    };
+    size();
+    const M = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, k: 0, tk: 0 };
+    this.atMove = (e) => { M.tx = e.clientX / window.innerHeight; M.ty = (window.innerHeight - e.clientY) / window.innerHeight; M.tk = 1; };
+    this.atLeave = () => { M.tk = 0; };
+    window.addEventListener('pointermove', this.atMove, { passive: true }); document.addEventListener('pointerleave', this.atLeave);
+    this.atResize = () => { size(); if (still) draw(performance.now()); };
+    window.addEventListener('resize', this.atResize);
+    const still = reduce || tall;
+    const t0 = performance.now(); let last = 0;
+    const draw = (now) => {
+      M.x += (M.tx - M.x) * 0.06; M.y += (M.ty - M.y) * 0.06; M.k += (M.tk - M.k) * 0.04;
+      gl.uniform2f(U.r, cv.width, cv.height); gl.uniform1f(U.t, still ? 12 : (now - t0) / 1000);
+      gl.uniform2f(U.m, M.x, M.y); gl.uniform1f(U.k, still ? 0 : M.k);
+      gl.uniform1f(U.s, (window.scrollY || 0) / Math.max(1, window.innerHeight));
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    if (still) { draw(performance.now()); this.atScroll = () => draw(performance.now()); window.addEventListener('scroll', this.atScroll, { passive: true }); return; }
+    // a slow machine must never pay for the background with janky scrolling: watch the frame rate and
+    // step down to a third resolution, then to a still frame if it is still struggling
+    let prev = 0, slow = 0, n = 0, still2 = false;
+    const loop = (now) => {
+      if (still2) return;
+      this.atRaf = requestAnimationFrame(loop);
+      if (prev && !document.hidden) { n++; if (now - prev > 45) slow++; }
+      prev = now;
+      if (n >= 60) {
+        if (slow > 24) {
+          if (q > 0.34) { q = 0.33; size(); }
+          else { still2 = true; this.atScroll = () => draw(performance.now()); window.addEventListener('scroll', this.atScroll, { passive: true }); }
+        }
+        n = 0; slow = 0;
+      }
+      if (document.hidden || now - last < 33) return;   // ~30fps is plenty for drifting smoke
+      last = now; draw(now);
+    };
+    this.atRaf = requestAnimationFrame(loop);
+  }
+  atmosStop() {
+    cancelAnimationFrame(this.atRaf); clearTimeout(this.atT);
+    if (this.atMove) { window.removeEventListener('pointermove', this.atMove); document.removeEventListener('pointerleave', this.atLeave); }
+    if (this.atResize) window.removeEventListener('resize', this.atResize);
+    if (this.atScroll) window.removeEventListener('scroll', this.atScroll);
+    if (this.atGrain) this.atGrain.remove(); if (this.atCv) this.atCv.remove();
   }
   renderVals() { return { narrow: this.state.narrow, wide: !this.state.narrow }; }
 }
