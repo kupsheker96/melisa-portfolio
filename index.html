@@ -71,8 +71,8 @@ html.m [data-r="stag"]:not([data-in]) > *{opacity:0;transform:translateX(-32px)}
 .stmt .sc{transition:opacity .2s linear}
 /* Disciplines: four moments threaded on the vertical rule */
 .dsec{display:flex;flex-direction:column;padding-bottom:clamp(80px,10vw,160px)}
-.dm{--b:1;--r:1;--n:1;position:relative;display:flex;align-items:flex-end;height:min(62vh,600px);padding-bottom:clamp(14px,1.4vw,20px);color:#f4f3ef}
-.dm:first-of-type{height:min(52vh,500px)}
+.dm{--b:1;--r:1;--n:1;position:relative;display:flex;align-items:flex-end;height:min(88vh,860px);padding-bottom:clamp(14px,1.4vw,20px);color:#f4f3ef}
+.dm:first-of-type{height:min(70vh,680px)}
 .dnode{position:absolute;bottom:-4px;width:9px;height:9px;border-radius:50%;background:#121316;border:1px solid #3a3d45;box-sizing:border-box;z-index:1;transition:none}
 .dnode::after{content:"";position:absolute;inset:1px;border-radius:50%;background:#7a82ff;transform:scale(var(--n));transition:none}
 .dbr{position:absolute;right:0;bottom:0;height:1px;background:#f4f3ef;opacity:.55;transform-origin:left;transform:scaleX(var(--b))}
@@ -198,7 +198,7 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
   .fmail a{font-size:8.2vw !important}
   .fch{grid-template-columns:minmax(0,1fr) !important}
   .stmt{font-size:19px !important;line-height:1.35 !important}
-  .dm{height:min(50vh,420px) !important}
+  .dm{height:min(68vh,560px) !important}
   .dm:first-of-type{height:min(40vh,340px) !important}
   .stmt .kw{font-size:1em !important}
   .wlab{margin-left:16% !important;padding-left:14px !important}
@@ -360,7 +360,7 @@ class Component extends DCLogic {
       this.raf = 0;
       const vh = window.innerHeight || 800;
       const w = document.querySelector('.dpwrap'), f = document.querySelector('.foot'), m = document.querySelector('.mainc');
-      if (w) { const r = w.getBoundingClientRect(); const p = cl((vh * 0.55 - r.top) / r.height); root.style.setProperty('--p', p.toFixed(4)); root.style.setProperty('--pi', String(Math.round(p * 100))); }
+      if (w) { const r = w.getBoundingClientRect(); const p = cl((vh * 0.7 - r.top) / r.height); root.style.setProperty('--p', p.toFixed(4)); root.style.setProperty('--pi', String(Math.round(p * 100))); }
       this.scrubStmt(cl);
       this.scrubDisc(vh, cl);
       this.scrubWork(vh, cl);
@@ -797,13 +797,13 @@ class Component extends DCLogic {
     }
   }
   scrubDisc(vh, cl) {
-    // the rule's lit tip sits at 55% of the viewport; when it passes a discipline's node the node fills,
+    // the rule's lit tip sits at 70% of the viewport; when it passes a discipline's node the node fills,
     // a branch runs out along the baseline and the word is uncovered behind the branch's tip
     if (!this.dms) this.dms = Array.from(document.querySelectorAll('.dm'));
     const io = (t) => 1 - Math.pow(1 - t, 3);
     this.dms.forEach((el) => {
       const y = el.getBoundingClientRect().bottom;
-      const t = vh >= 1500 ? 1 : cl((vh * 0.55 - y) / (vh * 0.34));
+      const t = vh >= 1500 ? 1 : cl((vh * 0.7 - y) / (vh * 0.46));
       const n = cl(t / 0.12), b = io(cl((t - 0.06) / 0.5)), r = io(cl((t - 0.16) / 0.62));
       const key = n.toFixed(3) + b.toFixed(3) + r.toFixed(3);
       if (el.__k === key) return; el.__k = key;
