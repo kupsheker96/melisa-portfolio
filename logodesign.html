@@ -17,6 +17,15 @@
 /* ink: nothing is hidden by CSS - the script hides text itself only once it is running, so any viewer that
    doesn't run scripts or animations still sees the full page */
 [data-ink] .ik{display:inline-block}
+
+.atmos-grain{position:fixed;inset:-50%;z-index:900;pointer-events:none;opacity:var(--grain-o,.065);background-size:220px 220px;animation:atmosGrain 1s steps(8) infinite}
+@keyframes atmosGrain{0%{transform:translate(0,0)}12%{transform:translate(-7%,4%)}25%{transform:translate(3%,-9%)}37%{transform:translate(9%,6%)}50%{transform:translate(-4%,-3%)}62%{transform:translate(-9%,9%)}75%{transform:translate(6%,-6%)}87%{transform:translate(-2%,7%)}100%{transform:translate(0,0)}}
+.atmos-grid{position:fixed;inset:0;z-index:899;pointer-events:none;color:rgba(140,142,150,.42)}
+.atmos-grid .ag-l{position:absolute;top:0;bottom:0;width:1px;background:rgba(140,142,150,.16);transform-origin:50% 0;animation:agDraw 1.5s cubic-bezier(.65,0,.2,1) both}
+.atmos-grid .ag-hl{position:absolute;top:0;bottom:0;left:0;width:0;opacity:0;background:linear-gradient(180deg,rgba(140,142,150,0),rgba(140,142,150,.045) 30%,rgba(140,142,150,.045) 70%,rgba(140,142,150,0));transition:left .55s cubic-bezier(.3,.7,.2,1),width .55s cubic-bezier(.3,.7,.2,1),opacity .5s ease}
+.atmos-grid .ag-ch{position:absolute;width:44px;height:44px;line-height:0;transition:transform .2s linear}
+@keyframes agDraw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){.atmos-grain{animation:none}.atmos-grid .ag-l{animation:none}}
 body{margin:0;background:#141518}
 a{color:#7a82ff;text-decoration:none}a:hover{color:#ffffff}
 img{display:block}
@@ -67,8 +76,8 @@ img{display:block}
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":8000}}'>
 class Component extends DCLogic {
   state = { narrow: window.innerWidth < 760 };
-  componentDidMount() { this.inkInit(); this.onR = () => { const n = window.innerWidth < 760; if (n !== this.state.narrow) this.setState({ narrow: n }); }; window.addEventListener('resize', this.onR); }
-  componentWillUnmount() { this.inkStop(); window.removeEventListener('resize', this.onR); }
+  componentDidMount() { this.inkInit(); this.atmosInit(); this.onR = () => { const n = window.innerWidth < 760; if (n !== this.state.narrow) this.setState({ narrow: n }); }; window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { this.inkStop(); this.atmosStop(); window.removeEventListener('resize', this.onR); }
   inkInit() {
     const root = document.querySelector('[data-inkroot]');
     if (!root) { if ((this.inkTries = (this.inkTries || 0) + 1) < 60) this.inkT = setTimeout(() => this.inkInit(), 50); return; }
@@ -199,6 +208,73 @@ class Component extends DCLogic {
     (this.inkRafs || []).forEach((g) => { cancelAnimationFrame(g.raf); clearTimeout(g.fin); }); (this.inkTs || []).forEach(clearTimeout); clearTimeout(this.inkT); clearTimeout(this.inkMT);
     if (this.inkIO) this.inkIO.disconnect(); if (this.inkMO) this.inkMO.disconnect();
     if (this.inkEnd) window.removeEventListener('scroll', this.inkEnd);
+  }
+  atmosInit() {
+    if (this.atmosOn) return;
+    const root = document.querySelector('[data-inkroot]');
+    if (!root) { if ((this.atTries = (this.atTries || 0) + 1) < 60) this.atT = setTimeout(() => this.atmosInit(), 50); return; }
+    this.atmosOn = true;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // --- grain: a 220px tile of luminance noise ---
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 220;
+      const g = c.getContext('2d'), im = g.createImageData(220, 220);
+      for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+      g.putImageData(im, 0, 0);
+      const gr = document.createElement('div'); gr.className = 'atmos-grain'; gr.setAttribute('aria-hidden', 'true');
+      gr.style.backgroundImage = 'url(' + c.toDataURL('image/png') + ')';
+      document.body.appendChild(gr); this.atGrain = gr;
+    } catch (e) {}
+    // --- column grid (after ashaharidas.framer.website): margin frame + a margin column whose edge is the
+    //     site's vertical rule (16% into the content), then equal columns; lines draw in once, the column
+    //     under the cursor warms faintly, and a registration crosshair turns with scroll ---
+    const reduceG = reduce || window.innerHeight >= 1500;
+    const gw = document.createElement('div'); gw.className = 'atmos-grid'; gw.setAttribute('aria-hidden', 'true');
+    const hl = document.createElement('div'); hl.className = 'ag-hl'; gw.appendChild(hl);
+    const ch = document.createElement('div'); ch.className = 'ag-ch';
+    ch.innerHTML = '<svg viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="22" r="10" fill="none" stroke="currentColor" stroke-width="1"/><path d="M0 22H44M22 0V44" stroke="currentColor" stroke-width="1"/></svg>';
+    gw.appendChild(ch);
+    document.body.appendChild(gw); this.atGrid = gw;
+    let xs = [], drawn = false;
+    const layout = () => {
+      const W = window.innerWidth, H = window.innerHeight;
+      const pad = Math.max(16, Math.min(56, W * 0.04));
+      const inner = W - 2 * pad, rule = pad + inner * 0.16;
+      const n = W < 640 ? 2 : W < 1100 ? 4 : 6;
+      xs = [pad, rule];
+      for (let k = 1; k < n; k++) xs.push(rule + (W - pad - rule) * k / n);
+      xs.push(W - pad);
+      gw.querySelectorAll('.ag-l').forEach((e) => e.remove());
+      xs.forEach((x, k) => {
+        const l = document.createElement('i'); l.className = 'ag-l'; l.style.left = Math.round(x) + 'px';
+        if (!drawn && !reduceG) l.style.animationDelay = (0.15 + k * 0.07) + 's'; else l.style.animation = 'none';
+        gw.insertBefore(l, hl);
+      });
+      ch.style.left = Math.round(W - pad - 22) + 'px'; ch.style.top = Math.round(H - Math.max(56, H * 0.08) - 22) + 'px';
+      drawn = true;
+    };
+    layout();
+    this.atResize = () => layout(); window.addEventListener('resize', this.atResize);
+    if (!reduceG && window.matchMedia('(pointer: fine)').matches) {
+      this.atMove = (e) => {
+        let a = -1; for (let k = 0; k < xs.length - 1; k++) if (e.clientX >= xs[k] && e.clientX < xs[k + 1]) a = k;
+        if (a < 0) { hl.style.opacity = '0'; return; }
+        hl.style.left = Math.round(xs[a]) + 'px'; hl.style.width = Math.round(xs[a + 1] - xs[a]) + 'px'; hl.style.opacity = '1';
+      };
+      this.atLeave = () => { hl.style.opacity = '0'; };
+      window.addEventListener('pointermove', this.atMove, { passive: true }); document.addEventListener('pointerleave', this.atLeave);
+    }
+    if (!reduceG) {
+      this.atScroll = () => { ch.style.transform = 'rotate(' + ((window.scrollY || 0) * 0.06).toFixed(1) + 'deg)'; };
+      window.addEventListener('scroll', this.atScroll, { passive: true });
+    }
+  }
+  atmosStop() {
+    cancelAnimationFrame(this.atRaf); clearTimeout(this.atT);
+    if (this.atMove) { window.removeEventListener('pointermove', this.atMove); document.removeEventListener('pointerleave', this.atLeave); }
+    if (this.atResize) window.removeEventListener('resize', this.atResize);
+    if (this.atScroll) window.removeEventListener('scroll', this.atScroll);
+    if (this.atGrain) this.atGrain.remove(); if (this.atGrid) this.atGrid.remove();
   }
   renderVals() {
     const s = this.state;
