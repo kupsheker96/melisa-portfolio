@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About / CV — Melisa Ergani</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;family=JetBrains+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Mondwest';src:url(fonts/ppmondwest-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+
+/* ink: nothing is hidden by CSS - the script hides text itself only once it is running, so any viewer that
+   doesn't run scripts or animations still sees the full page */
+[data-ink] .ik{display:inline-block}
+body{margin:0;background:#121316}
+a{color:#f4f3ef;text-decoration:none}a:hover{color:#7a82ff}
+img{display:block}
+@keyframes rise{from{transform:translateY(105%)}to{transform:translateY(0)}}
+@keyframes fadeup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.rise{display:block;animation:rise 1s cubic-bezier(.2,.8,.2,1) both}
+.fade{animation:fadeup .9s cubic-bezier(.2,.8,.2,1) both}
+.stag > :nth-child(3n+2){margin-top:clamp(40px,7vw,120px)}
+.stag > :nth-child(3n){margin-top:clamp(16px,3vw,48px)}
+.stagr > :nth-child(2){margin-top:clamp(40px,6vw,104px)}
+.bleed{margin-left:calc(-1 * clamp(16px,4vw,56px));margin-right:calc(-1 * clamp(16px,4vw,56px))}
+.bleed .fig > div{padding:clamp(24px,6vw,96px) !important}
+.bleed figcaption{padding:0 clamp(16px,4vw,56px)}
+.pn{transition:color .25s}.pn:hover{color:#7a82ff}
+@media (max-width: 760px){
+  .g12 > *{grid-column:1 / -1 !important}
+  .stag > *, .stagr > *{margin-top:0 !important}
+}
+@media (prefers-reduced-motion: reduce){.rise,.fade{animation:none}}
+</style>
+</helmet>
+<div data-inkroot style="background:#121316;color:#f4f3ef;font-family:'JetBrains Mono',monospace;font-weight:300;font-size:13px;min-height:100vh;overflow-x:clip">
+  <nav aria-label="Main" style="position:sticky;top:0;z-index:5;background:#121316;border-bottom:1px solid #2c2e33">
+    <div style="padding:0 clamp(16px,4vw,56px);height:56px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:clamp(16px,3vw,48px);min-width:0">
+        <a href="index.html" style="color:#f4f3ef;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:22px;line-height:1;letter-spacing:-.02em">ME<span style="color:#7a82ff">.</span></a>
+        <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;line-height:1.35;color:#9a9ea6">About / CV<br>Based in Ankara</span></sc-if>
+      </div>
+      <div class="mainnav" style="display:flex;gap:clamp(10px,2.2vw,28px);font-size:clamp(11px,1.1vw,12px)"><a href="index.html" style="color:#f4f3ef;white-space:nowrap">Home</a><a href="work.html" style="color:#f4f3ef;white-space:nowrap">Work</a><a href="about.html" aria-current="page" style="color:#f4f3ef;white-space:nowrap;text-decoration:underline;text-underline-offset:6px"><sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">About / CV</sc-if><sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">About</sc-if></a><a href="#contact" style="color:#f4f3ef;white-space:nowrap">Contact</a></div>
+    </div>
+  </nav>
+  <header style="padding:clamp(28px,4vw,56px) clamp(16px,4vw,56px) 0">
+    <div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6"><span>[ About me 00 ]</span><span>Çankaya / Ankara</span><span>Portfolio 2026</span></div>
+    <div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:clamp(40px,6vw,96px);align-items:end;margin-top:clamp(96px,16vw,280px)">
+      <h1 style="grid-column:1 / span 8;margin:0;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(76.21px,12.99vw,221.7px);line-height:.94;letter-spacing:-.01em"><span style="display:block;overflow:hidden;padding-bottom:.06em"><span class="rise">About</span></span></h1>
+      <span class="fade" style="grid-column:10 / -1;justify-self:end;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(62px,9.4vw,162px);line-height:.8;animation-delay:.2s">CV</span>
+    </div>
+    <div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:48px;align-items:start;margin-top:clamp(80px,12vw,200px)">
+      <div class="fade" style="grid-column:1 / span 3;display:flex;flex-direction:column;gap:16px;animation-delay:.3s">
+        <img src="img/about-portrait.jpg" alt="Melisa Ergani" style="width:100%;max-width:320px;aspect-ratio:4/5;object-fit:cover;filter:grayscale(1) contrast(1.05)">
+        <img src="img/about-signature.jpg" alt="Signature" style="width:72px;height:72px;object-fit:contain;filter:invert(1);mix-blend-mode:screen">
+      </div>
+      <div style="grid-column:5 / -1;display:flex;flex-direction:column;gap:clamp(40px,5vw,72px);margin-top:clamp(0px,10vw,180px)">
+        <div style="display:flex;flex-direction:column;gap:16px"><span style="font-size:11px;color:#9a9ea6">[ My approach ]</span>
+          <p style="margin:0;font-family:'Archivo',sans-serif;font-weight:300;font-size:clamp(24px,2.5vw,38px);line-height:1.26;letter-spacing:-.01em;text-indent:clamp(48px,8vw,140px);text-wrap:pretty">“As a designer with a background and interest in psychology, I'm passionate about integrating human-centered design principles and psychology to create impactful user experiences and intuitive products.”</p></div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:56ch;align-self:flex-end"><span style="font-size:11px;color:#9a9ea6">[ Background ]</span>
+          <p style="margin:0;font-family:'Archivo',sans-serif;font-size:17px;line-height:1.65;color:#c9ccd1">I studied Industrial Design at TED University, with Psychology as a secondary field. I bring psychology-informed user research into UI/UX and visual design, from interviews and surveys to interfaces, brand identities and printed materials. Most recently I worked as a Visual Designer at ADL Kurumsal Hizmetler (’25 December – ’26 November).</p></div>
+      </div>
+    </div>
+  </header>
+
+  <section aria-label="Experience" style="padding:clamp(120px,16vw,280px) clamp(16px,4vw,56px) 0">
+    <div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);align-items:end">
+      <span style="grid-column:1 / span 3;font-size:11px;color:#7a82ff">[ 08 roles ]</span>
+      <h2 style="grid-column:4 / -1;margin:0;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(48.5px,7.79vw,131.64px);line-height:.94;letter-spacing:-.01em">Experience</h2>
+    </div>
+    <div style="margin-top:clamp(48px,6vw,96px);border-top:1px solid #f4f3ef"><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">01</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Visual Designer</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">ADL Kurumsal Hizmetler</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’25 December - ’26 November</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">Designing digital interfaces and contributing to UX research, alongside branding projects and printed and social media materials.</p><div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px"><span style="font-size:10.5px;color:#7a82ff">Visual Design</span><span style="font-size:10.5px;color:#7a82ff">UI/UX Design</span><span style="font-size:10.5px;color:#7a82ff">User Research</span><span style="font-size:10.5px;color:#7a82ff">UX Research</span><span style="font-size:10.5px;color:#7a82ff">Branding &amp; Visual Identity</span><span style="font-size:10.5px;color:#7a82ff">Digital Design</span><span style="font-size:10.5px;color:#7a82ff">Print Design</span><span style="font-size:10.5px;color:#7a82ff">Social Media Design</span><span style="font-size:10.5px;color:#7a82ff">User-Centered Design</span></div></div></div><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">02</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Art Director</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Jobs Studio</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’25 March - ’25 December</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">Social Media, Packaging Design, Printed Materials.</p></div></div><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">03</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Graphic Designer</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Grafikir</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’24 October - ’25 March</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">Social Media, Packaging Design, Printed Materials.</p></div></div><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">04</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Graphic Designer</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Hub Gym</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’23 October - ’24 June</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">Social Media, Packaging Design, Printed Materials.</p></div></div><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">05</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Graphic Designer</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Brandplan Agency</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’23 June - ’23 September</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">Social Media, Video Editing, Packaging Design, Printed Materials.</p></div></div><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">06</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Freelance Industrial Designer</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Utarit</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’22 December - ’23 March</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">3D modeling, Prototyping, Product Design.</p></div></div><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">07</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Internship</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">UTRLAB</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’21 June - ’21 August</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">User Experience Research</p></div></div><div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:10px;padding:clamp(22px,2.4vw,32px) 0;border-bottom:1px solid #2c2e33;align-items:baseline"><span style="grid-column:1 / span 1;font-size:11px;color:#9a9ea6">08</span><span style="grid-column:2 / span 4;font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(24px,2.4vw,38px);line-height:1;letter-spacing:-.02em">Internship</span><span style="grid-column:6 / span 3;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Tepe Home</span><div style="grid-column:9 / -1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:#9a9ea6">’21 August - ’21 September</span><p style="margin:0;font-family:'Archivo',sans-serif;font-size:15px;line-height:1.55;color:#c9ccd1">Furniture Production Analysis</p></div></div></div>
+  </section>
+
+  <section aria-label="Education and skills" style="padding:clamp(120px,16vw,280px) clamp(16px,4vw,56px) 0">
+    <div class="g12" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:56px;align-items:start">
+      <div style="grid-column:1 / span 4;margin-top:0;display:flex;flex-direction:column;gap:14px;border-top:1px solid #2c2e33;padding-top:16px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:400;letter-spacing:-.02em;font-size:clamp(26px,2.4vw,38px);line-height:1">Education</span><div style="display:flex;justify-content:space-between;gap:12px"><span style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:500">TED University</span><span style="font-size:11px;color:#9a9ea6">’18 - ’22</span></div><span style="font-size:12px;line-height:1.7">Industrial Design — Bachelor’s Degree (English)<br>Psychology — Secondary Field (English)</span><div style="display:flex;justify-content:space-between;gap:12px;border-top:1px solid #2c2e33;padding-top:12px"><span style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:500">Matfen High School</span><span style="font-size:11px;color:#9a9ea6">’18</span></div></div>
+      <div style="grid-column:6 / span 3;margin-top:clamp(0px,7vw,120px);display:flex;flex-direction:column;gap:14px;border-top:1px solid #2c2e33;padding-top:16px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:400;letter-spacing:-.02em;font-size:clamp(26px,2.4vw,38px);line-height:1">Design Skills</span><span style="font-size:12px;line-height:1.95">User Research &amp; Analysis<br>Information Architecture &amp; Wireframing<br>3D Modeling &amp; Rendering<br>Visual Design &amp; Branding<br>Sketching<br>Storyboards</span></div>
+      <div style="grid-column:10 / span 3;margin-top:clamp(0px,3vw,48px);display:flex;flex-direction:column;gap:14px;border-top:1px solid #2c2e33;padding-top:16px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:400;letter-spacing:-.02em;font-size:clamp(26px,2.4vw,38px);line-height:1">Software</span><span style="font-size:12px;line-height:1.95">Rhinoceros<br>Keyshot<br>Illustrator<br>Photoshop<br>Indesign<br>Capcut<br>Figma<br>MS Office</span></div>
+      <div style="grid-column:3 / span 4;margin-top:clamp(0px,4vw,64px);display:flex;flex-direction:column;gap:14px;border-top:1px solid #2c2e33;padding-top:16px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:400;letter-spacing:-.02em;font-size:clamp(26px,2.4vw,38px);line-height:1">Languages</span><span style="font-size:12px;line-height:1.95">Turkish (Native)<br>English (Advanced Fluent)<br>German (Beginner)</span></div>
+      <div style="grid-column:9 / span 3;margin-top:clamp(0px,9vw,160px);display:flex;flex-direction:column;gap:14px;border-top:1px solid #2c2e33;padding-top:16px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:400;letter-spacing:-.02em;font-size:clamp(26px,2.4vw,38px);line-height:1">Location</span><span style="font-size:12px;line-height:1.95">Çankaya / Ankara</span></div>
+    </div>
+    <div style="height:clamp(120px,16vw,280px)"></div>
+  </section>
+  <footer id="contact" aria-label="Contact" style="background:#0b0c0e;color:#f4f3ef;overflow:hidden">
+    <div class="g12" style="padding:clamp(80px,10vw,160px) clamp(16px,4vw,56px) 0;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:clamp(12px,1.6vw,24px);row-gap:32px;align-items:end">
+      <span style="grid-column:1 / span 3;font-size:11px;color:#9a9ea6">[ Contact ]</span>
+      <div style="grid-column:4 / -1;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 32px;font-size:clamp(13px,1.2vw,16px)">
+        <span style="color:#9a9ea6">Cell</span><a href="tel:+905369593036" style="color:#f4f3ef;text-decoration:underline;text-underline-offset:4px">+905369593036</a>
+        <span style="color:#9a9ea6">LinkedIn</span><a href="https://linkedin.com/in/melisa-ergani" target="_blank" rel="noopener noreferrer" style="color:#f4f3ef;text-decoration:underline;text-underline-offset:4px;word-break:break-all">linkedin.com/in/melisa-ergani</a>
+        <span style="color:#9a9ea6">Behance</span><a href="https://www.behance.net/melisaergani" target="_blank" rel="noopener noreferrer" style="color:#f4f3ef;text-decoration:underline;text-underline-offset:4px">behance.net/melisaergani</a>
+        <span style="color:#9a9ea6">Mail</span><a href="mailto:melisaergani@gmail.com" style="color:#f4f3ef;text-decoration:underline;text-underline-offset:4px;word-break:break-all">melisaergani@gmail.com</a>
+      </div>
+    </div>
+    <div style="padding:clamp(56px,7vw,112px) clamp(16px,4vw,56px) 0"><span style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(48px,9vw,150px);line-height:.86;letter-spacing:-.01em;white-space:nowrap">Thank <span style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;letter-spacing:0">you</span></span></div>
+    <div style="margin-top:24px;padding:16px clamp(16px,4vw,56px) 24px;border-top:1px solid #2c2e33;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:#9a9ea6"><span>Melisa Ergani</span><span>Design Portfolio</span><span>//2026</span></div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4200}}'>
+class Component extends DCLogic {
+  state = { narrow: window.innerWidth < 760 };
+  componentDidMount() { this.inkInit(); this.onR = () => { const n = window.innerWidth < 760; if (n !== this.state.narrow) this.setState({ narrow: n }); }; window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { this.inkStop(); window.removeEventListener('resize', this.onR); }
+  inkInit() {
+    const root = document.querySelector('[data-inkroot]');
+    if (!root) { if ((this.inkTries = (this.inkTries || 0) + 1) < 60) this.inkT = setTimeout(() => this.inkInit(), 50); return; }
+    if (this.inkOn) return; this.inkOn = true;
+    const html = document.documentElement;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // reduced motion, or the canvas overview frame (very tall viewport): everything is simply shown, crisp
+    if (reduce || window.innerHeight >= 1500) { html.classList.add('ink-armed', 'ink-off'); document.querySelectorAll('[data-ink]').forEach((el) => el.setAttribute('data-ink-done', '')); return; }
+    const NS = 'http://www.w3.org/2000/svg';
+    let host = document.getElementById('ink-defs');
+    if (!host) { host = document.createElementNS(NS, 'svg'); host.id = 'ink-defs'; host.setAttribute('aria-hidden', 'true'); host.setAttribute('focusable', 'false'); host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none'; document.body.appendChild(host); }
+    // blur/sd/disp are fractions of the font size; K = alpha threshold slope at full ink; win = how long the text stays soft
+    const PRE = {
+      hero:    { dur: 2600, blur: 0.15, sd: 0.030, K: 24, disp: 0.055, freq: 2.4, stg: 0.07, win: 0.40, lend: 0.74, inkEnd: 0.56 },
+      title:   { dur: 1700, blur: 0.11, sd: 0.024, K: 16, disp: 0.035, freq: 3.0, stg: 0.035, win: 0.42, lend: 0.72, inkEnd: 0.52 },
+      display: { dur: 1700, blur: 0.13, sd: 0.028, K: 22, th: 0.3, disp: 0.050, freq: 2.4, win: 0.50, inkEnd: 0.46 },
+      head:    { dur: 1250, blur: 0.12, sd: 0.028, K: 18, th: 0.3, disp: 0.045, freq: 2.8, win: 0.50, inkEnd: 0.44 },
+      text:    { dur: 850,  blur: 0.15, sd: 0.040, K: 10, th: 0.34, disp: 0.060, freq: 3.4, win: 0.50, inkEnd: 0.42 } };
+    const pick = (fs) => (fs >= 72 ? PRE.display : fs >= 26 ? PRE.head : PRE.text);
+    const cl = (v) => Math.max(0, Math.min(1, v));
+    const eo = (t) => 1 - Math.pow(1 - t, 3), eio = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const G = this.inkG = new Map(); this.inkRafs = []; this.inkTs = []; let uid = 0;
+    const start = (g) => {
+      if (g.run) return; g.run = true;
+      const { el, L, P, fs } = g, solo = L[0] === el;
+      const f = document.createElementNS(NS, 'filter'); f.id = 'ink' + (uid++) + '_' + Math.random().toString(36).slice(2, 6);
+      const fa = { x: '-12%', y: '-45%', width: '124%', height: '190%', 'color-interpolation-filters': 'sRGB' };
+      Object.keys(fa).forEach((k) => f.setAttribute(k, fa[k]));
+      f.innerHTML = '<feTurbulence type="fractalNoise" baseFrequency="' + (P.freq / fs).toFixed(5) + '" numOctaves="2" seed="' + (3 + uid * 7) + '" result="n"/>'
+        + '<feDisplacementMap in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G" result="d"/>'
+        + '<feGaussianBlur in="d" stdDeviation="0" result="b"/>'
+        + '<feColorMatrix in="b" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/>';
+      host.appendChild(f);
+      const dm = f.querySelector('feDisplacementMap'), gb = f.querySelector('feGaussianBlur'), cm = f.querySelector('feColorMatrix');
+      const url = 'url(#' + f.id + ')';
+      if (!solo) { el.style.filter = url; L.forEach((s) => { s.style.animation = 'none'; s.style.opacity = '1'; }); }
+      el.style.willChange = 'filter';
+      const n = L.length, stg = n > 1 ? Math.min(P.stg, (P.lend - P.win) / (n - 1)) : 0;
+      const t0 = performance.now(); let last = '';
+      const frame = (now) => {
+        const t = cl((now - t0) / P.dur);
+        L.forEach((s, j) => {
+          const lt = cl((t - j * stg) / P.win), le = eo(lt);
+          const soft = 'opacity(' + cl(lt * 2.2).toFixed(3) + ') blur(' + (P.blur * fs * (1 - le)).toFixed(2) + 'px)';
+          s.style.filter = solo ? soft + ' ' + url : (le >= 1 && lt * 2.2 >= 1 ? '' : soft);
+        });
+        const T = eio(cl((t - P.inkEnd) / (1 - P.inkEnd))), u = 1 - T;
+        const sd = (P.sd * fs * u).toFixed(2), k = (1 + (P.K - 1) * u).toFixed(2), o = (-(P.K * (P.th || 0.5)) * u).toFixed(2), d = (P.disp * fs * Math.pow(u, 1.4)).toFixed(2);
+        const key = sd + k + o + d;
+        if (key !== last) { last = key; gb.setAttribute('stdDeviation', sd); cm.setAttribute('values', '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 ' + k + ' ' + o); dm.setAttribute('scale', d); }
+        if (t < 1) { g.raf = requestAnimationFrame(frame); return; }
+        finish();
+      };
+      const finish = () => {
+        if (g.done) return; g.done = true; cancelAnimationFrame(g.raf); clearTimeout(g.fin);
+        el.style.filter = ''; el.style.willChange = ''; if (!solo) L.forEach((s) => { s.style.filter = ''; s.style.opacity = ''; });
+        el.setAttribute('data-ink-done', ''); f.remove();
+      };
+      // if frames are throttled (background tab, embedded preview) the text still lands crisp on time
+      g.fin = setTimeout(finish, P.dur + 400);
+      g.raf = requestAnimationFrame(frame); this.inkRafs.push(g);
+    };
+    this.inkStart = start;
+    // entries that arrive together ink in reading order with a short stagger
+    const queue = (gs) => {
+      gs.sort((a, b) => (a.el.compareDocumentPosition(b.el) & 2 ? 1 : -1));
+      gs.forEach((g, i) => { const d = (g.delay || 0) * 1000 + Math.min(i * 45, 540); this.inkTs.push(setTimeout(() => start(g), d)); });
+    };
+    const io = this.inkIO = new IntersectionObserver((es) => {
+      const gs = [];
+      es.forEach((en) => { if (!en.isIntersecting) return; io.unobserve(en.target); const g = G.get(en.target); if (g && !g.run && !g.held) gs.push(g); });
+      if (gs.length) queue(gs);
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0 });
+    // only the filter property is ever touched on page elements, so scroll scenes keep full control of opacity/transform
+    const hidden = (g) => { if (g.L[0] === g.el) g.el.style.filter = 'opacity(0)'; else g.L.forEach((s) => { s.style.animation = 'none'; s.style.opacity = '1'; s.style.filter = 'opacity(0)'; }); };
+    const add = (el, L, P, delay) => {
+      if (G.has(el)) return;
+      const fs = parseFloat(getComputedStyle(el).fontSize) || 16;
+      const g = { el, L, P: P || pick(fs), fs, delay: delay || 0, held: !!el.closest('[data-ink-hold]') };
+      G.set(el, g); hidden(g);
+      if (!g.held) io.observe(el);
+    };
+    const MEDIA = 'img,video,canvas,svg,picture,iframe';
+    const scan = (scope) => {
+      // explicit per-letter groups first
+      scope.querySelectorAll('[data-ink]').forEach((el) => {
+        if (G.has(el)) return;
+        const L = Array.from(el.querySelectorAll('.ik'));
+        add(el, L.length ? L : [el], PRE[el.getAttribute('data-ink-p')] || null, parseFloat(el.getAttribute('data-ink-d') || '0'));
+      });
+      // every other element that directly holds text (outermost one wins, so a paragraph inks as one block)
+      const cand = new Set();
+      const w = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+      for (let t = w.nextNode(); t; t = w.nextNode()) { if (t.nodeValue.trim()) { const p = t.parentElement; if (p) cand.add(p); } }
+      scope.querySelectorAll('button').forEach((b) => cand.add(b));
+      cand.forEach((el) => {
+        if (G.has(el) || el.closest('[data-ink-skip],[data-ink],.sr,script,style,svg,#ink-defs')) return;
+        for (let a = el.parentElement; a && a !== root.parentElement; a = a.parentElement) { if (cand.has(a) || G.has(a)) return; }
+        if (el.querySelector(MEDIA)) return;
+        const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        add(el, [el], null, 0);
+      });
+    };
+    scan(root);
+    html.classList.add('ink-armed');
+    // text sitting in the last strip of the page can never pass the bottom margin: ink it once the page bottoms out
+    this.inkEnd = () => {
+      if (window.innerHeight + window.scrollY < document.documentElement.scrollHeight - 4) return;
+      const gs = []; G.forEach((g) => { if (!g.run && !g.held && g.el.getBoundingClientRect().top < window.innerHeight) { io.unobserve(g.el); gs.push(g); } });
+      if (gs.length) queue(gs);
+    };
+    window.addEventListener('scroll', this.inkEnd, { passive: true });
+    // content mounted later (toggles, previews) joins the system
+    this.inkMO = new MutationObserver((ms) => {
+      if (ms.some((m) => m.addedNodes.length)) { clearTimeout(this.inkMT); this.inkMT = setTimeout(() => scan(root), 90); }
+    });
+    this.inkMO.observe(root, { childList: true, subtree: true });
+  }
+  inkRelease(scope) {
+    // a scroll scene says its text is now on stage
+    if (!this.inkG) return;
+    const gs = [];
+    this.inkG.forEach((g, el) => { if (g.held && !g.run && (scope === el || scope.contains(el))) { g.held = false; gs.push(g); } });
+    gs.sort((a, b) => (a.el.compareDocumentPosition(b.el) & 2 ? 1 : -1));
+    gs.forEach((g, i) => this.inkTs.push(setTimeout(() => this.inkStart(g), (g.delay || 0) * 1000 + Math.min(i * 45, 540))));
+  }
+  inkStop() {
+    (this.inkRafs || []).forEach((g) => { cancelAnimationFrame(g.raf); clearTimeout(g.fin); }); (this.inkTs || []).forEach(clearTimeout); clearTimeout(this.inkT); clearTimeout(this.inkMT);
+    if (this.inkIO) this.inkIO.disconnect(); if (this.inkMO) this.inkMO.disconnect();
+    if (this.inkEnd) window.removeEventListener('scroll', this.inkEnd);
+  }
+  renderVals() { return { narrow: this.state.narrow, wide: !this.state.narrow }; }
+}
+</script>
+</body>
+</html>
