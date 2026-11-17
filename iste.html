@@ -100,8 +100,10 @@ class Component extends DCLogic {
     const cl = (v) => Math.max(0, Math.min(1, v));
     const eo = (t) => 1 - Math.pow(1 - t, 3), eio = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
     const G = this.inkG = new Map(); this.inkRafs = []; this.inkTs = []; let uid = 0;
-    const start = (g) => {
-      if (g.run) return; g.run = true;
+    // build(g) gives a text its filter and a pure apply(t) that draws the ink state at progress t (0..1),
+    // so the same look can run on a timer (start) or be driven directly by a scroll scene (inkScrub)
+    const build = (g) => {
+      if (g.apply) return;
       const { el, L, P, fs } = g, solo = L[0] === el;
       const f = document.createElementNS(NS, 'filter'); f.id = 'ink' + (uid++) + '_' + Math.random().toString(36).slice(2, 6);
       const fa = { x: '-12%', y: '-45%', width: '124%', height: '190%', 'color-interpolation-filters': 'sRGB' };
@@ -110,15 +112,14 @@ class Component extends DCLogic {
         + '<feDisplacementMap in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G" result="d"/>'
         + '<feGaussianBlur in="d" stdDeviation="0" result="b"/>'
         + '<feColorMatrix in="b" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/>';
-      host.appendChild(f);
+      host.appendChild(f); g.f = f;
       const dm = f.querySelector('feDisplacementMap'), gb = f.querySelector('feGaussianBlur'), cm = f.querySelector('feColorMatrix');
       const url = 'url(#' + f.id + ')';
-      if (!solo) { el.style.filter = url; L.forEach((s) => { s.style.animation = 'none'; s.style.opacity = '1'; }); }
-      el.style.willChange = 'filter';
       const n = L.length, stg = n > 1 ? Math.min(P.stg, (P.lend - P.win) / (n - 1)) : 0;
-      const t0 = performance.now(); let last = '';
-      const frame = (now) => {
-        const t = cl((now - t0) / P.dur);
+      let last = '';
+      g.apply = (t) => {
+        if (!solo) { el.style.filter = url; L.forEach((s) => { s.style.animation = 'none'; s.style.opacity = '1'; }); }
+        el.style.willChange = 'filter';
         L.forEach((s, j) => {
           const lt = cl((t - j * stg) / P.win), le = eo(lt);
           const soft = 'opacity(' + cl(lt * 2.2).toFixed(3) + ') blur(' + (P.blur * fs * (1 - le)).toFixed(2) + 'px)';
@@ -128,18 +129,31 @@ class Component extends DCLogic {
         const sd = (P.sd * fs * u).toFixed(2), k = (1 + (P.K - 1) * u).toFixed(2), o = (-(P.K * (P.th || 0.5)) * u).toFixed(2), d = (P.disp * fs * Math.pow(u, 1.4)).toFixed(2);
         const key = sd + k + o + d;
         if (key !== last) { last = key; gb.setAttribute('stdDeviation', sd); cm.setAttribute('values', '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 ' + k + ' ' + o); dm.setAttribute('scale', d); }
+      };
+      g.clean = () => {
+        el.style.filter = ''; el.style.willChange = ''; if (!solo) L.forEach((s) => { s.style.filter = ''; s.style.opacity = ''; });
+        el.setAttribute('data-ink-done', '');
+      };
+    };
+    const start = (g) => {
+      if (g.run) return; g.run = true;
+      build(g);
+      const t0 = performance.now();
+      const frame = (now) => {
+        const t = cl((now - t0) / g.P.dur);
+        g.apply(t);
         if (t < 1) { g.raf = requestAnimationFrame(frame); return; }
         finish();
       };
       const finish = () => {
         if (g.done) return; g.done = true; cancelAnimationFrame(g.raf); clearTimeout(g.fin);
-        el.style.filter = ''; el.style.willChange = ''; if (!solo) L.forEach((s) => { s.style.filter = ''; s.style.opacity = ''; });
-        el.setAttribute('data-ink-done', ''); f.remove();
+        g.clean(); g.f.remove();
       };
       // if frames are throttled (background tab, embedded preview) the text still lands crisp on time
-      g.fin = setTimeout(finish, P.dur + 400);
+      g.fin = setTimeout(finish, g.P.dur + 400);
       g.raf = requestAnimationFrame(frame); this.inkRafs.push(g);
     };
+    this.inkBuild = build;
     this.inkStart = start;
     // entries that arrive together ink in reading order with a short stagger
     const queue = (gs) => {
@@ -196,6 +210,16 @@ class Component extends DCLogic {
     });
     this.inkMO.observe(root, { childList: true, subtree: true });
   }
+  inkScrub(scope, t) {
+    // a scroll scene drives its held text directly: the ink state follows the scroll position, both ways,
+    // and the text is plain crisp type whenever the scene is complete
+    if (!this.inkG) return;
+    this.inkG.forEach((g, el) => {
+      if (!g.held || g.run || !(scope === el || scope.contains(el))) return;
+      if (t >= 1) { if (g.apply && !g.crisp) { g.clean(); g.crisp = true; } else if (!g.apply) { el.style.filter = ''; g.crisp = true; } return; }
+      this.inkBuild(g); g.crisp = false; g.apply(Math.max(0, t));
+    });
+  }
   inkRelease(scope) {
     // a scroll scene says its text is now on stage
     if (!this.inkG) return;
@@ -250,7 +274,10 @@ class Component extends DCLogic {
         if (!drawn && !reduceG) l.style.animationDelay = (0.15 + k * 0.07) + 's'; else l.style.animation = 'none';
         gw.insertBefore(l, hl);
       });
-      ch.style.left = Math.round(W - pad - 22) + 'px'; ch.style.top = Math.round(H - Math.max(56, H * 0.08) - 22) + 'px';
+      // the crosshair marks where the right frame line meets the header's bottom rule (clear of the corner name)
+      let ny = 72; const nv = document.querySelector('[data-inkroot] nav');
+      if (nv) { let e = nv; for (let k = 0; k < 4 && e; k++) { if (parseFloat(getComputedStyle(e).borderBottomWidth) > 0) break; e = e.parentElement; } ny = (e || nv).getBoundingClientRect().bottom; }
+      ch.style.left = Math.round(W - pad - 22) + 'px'; ch.style.top = Math.round(ny - 22) + 'px';
       drawn = true;
     };
     layout();
