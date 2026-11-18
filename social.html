@@ -69,6 +69,13 @@ img{display:block}
 .nx:hover .ar{transform:translateX(.18em)}
 .ul{background:linear-gradient(currentColor,currentColor) 0 100%/100% 1px no-repeat;transition:background-size .5s cubic-bezier(.16,1,.3,1)}
 .ul:hover{background-size:0 1px;background-position:100% 100%}
+/* ---------- closing curtain (shares Home's language: the page lifts away, the footer settles into place) ---------- */
+.fstate{transform:translateY(calc((1 - var(--f,1)) * -18%));opacity:calc(.25 + var(--f,1) * .75)}
+.wmc{flex:0 0 auto;width:var(--cw,100%);margin-right:var(--gp,4vw);display:flex;justify-content:space-between}
+.ftkr{animation:ftk 38s linear infinite}
+@keyframes ftk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.foot a:hover{color:#f4f3ef}
+.foot ::selection{background:#121316;color:#7a82ff}
 /* ---------- viewer ---------- */
 .lb{position:fixed;inset:0;z-index:1000;background:rgba(10,11,13,.94);display:grid;grid-template-rows:auto minmax(0,1fr) auto;opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s .35s;color:#f4f3ef;font:300 12px/1.4 'JetBrains Mono',monospace}
 .lb.on{opacity:1;visibility:visible;transition:opacity .35s}
@@ -94,14 +101,20 @@ img{display:block}
   .lb .lbp,.lb .lbn{top:auto;bottom:12px;transform:none}
   .lb .lbc{flex-direction:column;gap:4px}
   .hsub{display:none !important}
+  .wmark{height:auto !important;font-size:31vw !important;line-height:.8 !important}
+  .wmc{flex-direction:column;row-gap:.1em}
+  .wmc > span{display:block;height:.72em;overflow:hidden}
+  .wmc > span:last-child{align-self:flex-end}
 }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+  .fstate,.wmrail{transform:none !important;opacity:1 !important}
   .mot{display:none !important}
 }
 </style>
 </helmet>
 <div data-inkroot style="background:#121316;color:#f4f3ef;font-family:'JetBrains Mono',monospace;font-weight:300;font-size:13px;min-height:100vh;overflow-x:clip">
+  <div class="mainc" style="position:relative;z-index:2;background:#121316">
   <nav aria-label="Main" style="position:sticky;top:0;z-index:5;background:#121316;border-bottom:1px solid #2c2e33">
     <div style="padding:0 clamp(16px,4vw,56px);height:56px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px">
       <div style="display:flex;align-items:center;gap:clamp(14px,2.6vw,40px);min-width:0">
@@ -306,18 +319,24 @@ img{display:block}
     <a class="nx" href="work.html" style="margin-top:clamp(40px,6vw,96px)"><span style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:clamp(64px,12vw,220px);line-height:.82;letter-spacing:-.008em">All</span><span style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(58px,10.6vw,196px);line-height:.82;letter-spacing:0">projects</span><span class="ar" aria-hidden="true" style="font-size:clamp(36px,6vw,110px);line-height:1;color:#7a82ff">→</span></a>
   </section>
   </main>
-  <footer id="contact" aria-label="Contact" style="background:#7a82ff;color:#121316;overflow:hidden;position:relative;z-index:2">
-    <div style="position:relative;padding:20px clamp(16px,4vw,56px) 0">
+  </div>
+  <div id="contact" aria-hidden="true" style="height:0"></div>
+  <footer class="foot" data-ink-hold aria-label="Contact" style="position:sticky;bottom:0;z-index:1;background:#7a82ff;color:#121316;overflow:hidden;display:flex;flex-direction:column;min-height:min(100vh,1080px);box-sizing:border-box">
+    <div class="fstate" style="position:relative;flex:1 1 auto;padding:20px clamp(16px,4vw,56px) 0;display:flex;flex-direction:column">
+      <span aria-hidden="true" style="position:absolute;top:0;bottom:0;left:calc(clamp(16px,4vw,56px) + (100% - 2 * clamp(16px,4vw,56px)) * .16);width:1px;background:rgba(18,19,22,.18)"></span>
       <div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:rgba(18,19,22,.7)"><span>[ Contact ]</span><a href="#top" class="ul" style="color:#121316;padding-bottom:3px">Back to top ↑</a></div>
-      <div class="g12" style="display:grid;grid-template-columns:16% minmax(0,1fr);column-gap:clamp(14px,1.6vw,24px);row-gap:clamp(40px,5vw,88px);margin-top:clamp(72px,9vw,160px);align-items:end">
+      <div class="g12" style="display:grid;grid-template-columns:16% minmax(0,1fr);column-gap:clamp(14px,1.6vw,24px);row-gap:clamp(40px,5vw,88px);margin-top:clamp(64px,8vw,150px);align-items:end">
         <div style="font-size:11px;line-height:1.5;color:rgba(18,19,22,.72);padding-bottom:.9em">Based in Ankara<br>TR</div>
-        <div style="min-width:0"><a href="mailto:melisaergani@gmail.com" class="ul" style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(34px,6vw,112px);line-height:1;color:#121316;padding-bottom:.06em;overflow-wrap:anywhere">melisaergani@gmail.com</a></div>
+        <div style="min-width:0;padding-left:clamp(14px,1.6vw,24px)"><a href="mailto:melisaergani@gmail.com" class="ul" style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(34px,6vw,112px);line-height:1;color:#121316;padding-bottom:.06em;overflow-wrap:anywhere">melisaergani@gmail.com</a></div>
         <span aria-hidden="true"></span>
-        <nav aria-label="Elsewhere" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(14px,1.6vw,24px)"><a href="https://linkedin.com/in/melisa-ergani" target="_blank" rel="noopener noreferrer" style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid rgba(18,19,22,.22);border-bottom:1px solid rgba(18,19,22,.22);color:#121316"><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:clamp(26px,2.6vw,40px);line-height:1;text-transform:uppercase">LinkedIn</span><span style="font-size:11px;color:rgba(18,19,22,.72);word-break:break-all">linkedin.com/in/melisa-ergani</span></span><span aria-hidden="true" style="font-size:18px">↗</span></a><a href="https://www.behance.net/melisaergani" target="_blank" rel="noopener noreferrer" style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid rgba(18,19,22,.22);border-bottom:1px solid rgba(18,19,22,.22);color:#121316"><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:clamp(26px,2.6vw,40px);line-height:1;text-transform:uppercase">Behance</span><span style="font-size:11px;color:rgba(18,19,22,.72);word-break:break-all">behance.net/melisaergani</span></span><span aria-hidden="true" style="font-size:18px">↗</span></a></nav>
+        <nav aria-label="Elsewhere" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(14px,1.6vw,24px);padding-left:clamp(14px,1.6vw,24px)"><a href="https://linkedin.com/in/melisa-ergani" target="_blank" rel="noopener noreferrer" style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid rgba(18,19,22,.22);border-bottom:1px solid rgba(18,19,22,.22);color:#121316"><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:clamp(26px,2.6vw,40px);line-height:1;text-transform:uppercase">LinkedIn</span><span style="font-size:11px;color:rgba(18,19,22,.72);word-break:break-all">linkedin.com/in/melisa-ergani</span></span><span aria-hidden="true" style="font-size:18px">↗</span></a><a href="https://www.behance.net/melisaergani" target="_blank" rel="noopener noreferrer" style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid rgba(18,19,22,.22);border-bottom:1px solid rgba(18,19,22,.22);color:#121316"><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:clamp(26px,2.6vw,40px);line-height:1;text-transform:uppercase">Behance</span><span style="font-size:11px;color:rgba(18,19,22,.72);word-break:break-all">behance.net/melisaergani</span></span><span aria-hidden="true" style="font-size:18px">↗</span></a></nav>
       </div>
-      <div aria-label="Melisa Ergani" role="img" style="margin-top:clamp(48px,6vw,110px);height:11.8vw;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-start;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:16.1vw;line-height:.8;letter-spacing:-.005em;color:#121316;white-space:nowrap"><span aria-hidden="true">MELISA</span><span aria-hidden="true">ERGANI</span></div>
+      <div class="ftk" data-ink-skip aria-hidden="true" style="margin:clamp(40px,5vw,88px) calc(-1 * clamp(16px,4vw,56px)) 0;border-top:1px solid rgba(18,19,22,.22);border-bottom:1px solid rgba(18,19,22,.22);overflow:hidden;font-size:11px;line-height:1;padding:11px 0;white-space:nowrap"><div class="ftkr" style="display:inline-flex"><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#7cc242"></i>Badem Pınarı</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#2389da"></i>Parklio</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#e0521f"></i>Marex</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#1f9e93"></i>Marinbase</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#9b6bff"></i>Poemia</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#e3262f"></i>Evereat</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#ff6a13"></i>HRSync</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#1a4fd6"></i>MIA Technology</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#3fa9c9"></i>Pluscom</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#e8682a"></i>ADL</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#8bbf4a"></i>CES</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#2fbf4a"></i>KitUP</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#d0101b"></i>Mespa</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#7cc242"></i>Badem Pınarı</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#2389da"></i>Parklio</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#e0521f"></i>Marex</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#1f9e93"></i>Marinbase</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#9b6bff"></i>Poemia</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#e3262f"></i>Evereat</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#ff6a13"></i>HRSync</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#1a4fd6"></i>MIA Technology</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#3fa9c9"></i>Pluscom</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#e8682a"></i>ADL</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#8bbf4a"></i>CES</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#2fbf4a"></i>KitUP</span><span style="display:inline-flex;align-items:center;gap:10px;margin-right:clamp(28px,3vw,48px)"><i style="display:inline-block;width:7px;height:7px;background:#d0101b"></i>Mespa</span></div></div>
+      <div class="wmark" data-ink-skip aria-label="Melisa Ergani" role="img" style="margin-top:auto;padding-top:clamp(28px,3vw,60px);box-sizing:content-box;height:11.8vw;overflow:hidden;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:16.1vw;line-height:.8;letter-spacing:-.005em;color:#121316;white-space:nowrap">
+        <div class="wmrail" style="display:flex;will-change:transform"><span class="wmc" aria-hidden="true"><span>MELISA</span><span>ERGANI</span></span><span class="wmc" aria-hidden="true"><span>MELISA</span><span>ERGANI</span></span><span class="wmc" aria-hidden="true"><span>MELISA</span><span>ERGANI</span></span><span class="wmc" aria-hidden="true"><span>MELISA</span><span>ERGANI</span></span></div>
+      </div>
     </div>
-    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px clamp(16px,4vw,56px) 18px;border-top:1px solid rgba(18,19,22,.35);font-size:11px;color:#121316"><span>Melisa Ergani</span><span>Design Portfolio</span><span>//2026</span></div>
+    <div style="position:relative;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px clamp(16px,4vw,56px) 18px;border-top:1px solid rgba(18,19,22,.35);font-size:11px;color:#121316"><span>Melisa Ergani</span><span>Design Portfolio</span><span>//2026</span></div>
   </footer>
 </div>
 </x-dc>
@@ -326,9 +345,9 @@ class Component extends DCLogic {
   state = { narrow: window.innerWidth < 760 };
   componentDidMount() {
     this.onR = () => { const n = window.innerWidth < 760; if (n !== this.state.narrow) this.setState({ narrow: n }); }; window.addEventListener('resize', this.onR);
-    this.inkInit(); this.atmosInit(); this.smInit();
+    this.inkInit(); this.atmosInit(); this.smInit(); this.ftInit();
   }
-  componentWillUnmount() { window.removeEventListener('resize', this.onR); this.inkStop(); this.atmosStop(); this.smStop(); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); this.inkStop(); this.atmosStop(); this.smStop(); this.ftStop(); }
 
   inkInit() {
     const root = document.querySelector('[data-inkroot]');
@@ -717,6 +736,36 @@ class Component extends DCLogic {
       rows.forEach((q) => { if (q.video) this.smVids(q, false); });
       lb.querySelector('.lbx').focus({ preventScroll: true });
     }));
+  }
+  ftInit() {
+    // as the page lifts off the footer: --f runs 0 -> 1, the footer drifts up into place (as on Home) and the
+    // MELISA ERGANI wordmark arrives as one last running row that slows down and locks onto the grid
+    const f = document.querySelector('.foot'), m = document.querySelector('.mainc'), w = document.querySelector('.wmark'), rail = document.querySelector('.wmrail');
+    if (!f || !m || !w || !rail) { if ((this.ftTries = (this.ftTries || 0) + 1) < 60) this.ftT = setTimeout(() => this.ftInit(), 50); return; }
+    const root = document.documentElement, cl = (v) => Math.max(0, Math.min(1, v));
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const size = () => { const cw = w.clientWidth, gp = Math.round(window.innerWidth * 0.06); rail.style.setProperty('--cw', cw + 'px'); rail.style.setProperty('--gp', gp + 'px'); this.ftStep = cw + gp; };
+    size();
+    if (reduce) { root.style.setProperty('--f', '1'); this.inkRelease && this.inkRelease(f); return; }
+    let raf = 0;
+    const upd = () => {
+      raf = 0;
+      const vh = window.innerHeight, mb = m.getBoundingClientRect().bottom;
+      const fv = cl((vh - mb) / Math.min(f.offsetHeight, vh));
+      root.style.setProperty('--f', fv.toFixed(3));
+      if (fv > 0.4 && !this.ftInk) { this.ftInk = 1; this.inkRelease && this.inkRelease(f); }
+      const t = cl((fv - 0.15) / 0.85), e = 1 - Math.pow(1 - t, 3);
+      rail.style.transform = 'translate3d(' + (-(1 - e) * 2.4 * (this.ftStep || 0)).toFixed(1) + 'px,0,0)';
+    };
+    this.ftScroll = () => { if (!raf) raf = requestAnimationFrame(upd); };
+    this.ftResize = () => { size(); this.ftScroll(); };
+    window.addEventListener('scroll', this.ftScroll, { passive: true }); window.addEventListener('resize', this.ftResize);
+    upd();
+  }
+  ftStop() {
+    clearTimeout(this.ftT);
+    if (this.ftScroll) window.removeEventListener('scroll', this.ftScroll);
+    if (this.ftResize) window.removeEventListener('resize', this.ftResize);
   }
   smStop() {
     cancelAnimationFrame(this.smRaf); clearTimeout(this.smT);
