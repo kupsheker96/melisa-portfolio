@@ -109,6 +109,7 @@ img{display:block}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
   .fstate,.wmrail{transform:none !important;opacity:1 !important}
+  .fwrap{height:200vh !important}
   .mot{display:none !important}
 }
 </style>
@@ -320,8 +321,8 @@ img{display:block}
   </section>
   </main>
   </div>
-  <div id="contact" aria-hidden="true" style="height:0"></div>
-  <footer class="foot" data-ink-hold aria-label="Contact" style="position:sticky;bottom:0;z-index:1;background:#7a82ff;color:#121316;overflow:hidden;display:flex;flex-direction:column;min-height:min(100vh,1080px);box-sizing:border-box">
+  <div class="fwrap" style="position:relative;z-index:1;margin-top:-100vh;height:calc(200vh + 90vh)">
+  <footer class="foot" data-ink-hold aria-label="Contact" style="position:sticky;top:0;background:#7a82ff;color:#121316;overflow:hidden;display:flex;flex-direction:column;height:100vh;box-sizing:border-box">
     <div class="fstate" style="position:relative;flex:1 1 auto;padding:20px clamp(16px,4vw,56px) 0;display:flex;flex-direction:column">
       <span aria-hidden="true" style="position:absolute;top:0;bottom:0;left:calc(clamp(16px,4vw,56px) + (100% - 2 * clamp(16px,4vw,56px)) * .16);width:1px;background:rgba(18,19,22,.18)"></span>
       <div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:rgba(18,19,22,.7)"><span>[ Contact ]</span><a href="#top" class="ul" style="color:#121316;padding-bottom:3px">Back to top ↑</a></div>
@@ -338,6 +339,8 @@ img{display:block}
     </div>
     <div style="position:relative;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px clamp(16px,4vw,56px) 18px;border-top:1px solid rgba(18,19,22,.35);font-size:11px;color:#121316"><span>Melisa Ergani</span><span>Design Portfolio</span><span>//2026</span></div>
   </footer>
+  <div id="contact" aria-hidden="true" style="position:absolute;bottom:0;left:0;height:1px;width:1px"></div>
+  </div>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":5200}}'>
@@ -740,7 +743,7 @@ class Component extends DCLogic {
   ftInit() {
     // as the page lifts off the footer: --f runs 0 -> 1, the footer drifts up into place (as on Home) and the
     // MELISA ERGANI wordmark arrives as one last running row that slows down and locks onto the grid
-    const f = document.querySelector('.foot'), m = document.querySelector('.mainc'), w = document.querySelector('.wmark'), rail = document.querySelector('.wmrail');
+    const f = document.querySelector('.foot'), m = document.querySelector('.mainc'); this.ftWrap = document.querySelector('.fwrap'); const w = document.querySelector('.wmark'), rail = document.querySelector('.wmrail');
     if (!f || !m || !w || !rail) { if ((this.ftTries = (this.ftTries || 0) + 1) < 60) this.ftT = setTimeout(() => this.ftInit(), 50); return; }
     const root = document.documentElement, cl = (v) => Math.max(0, Math.min(1, v));
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -750,11 +753,13 @@ class Component extends DCLogic {
     let raf = 0;
     const upd = () => {
       raf = 0;
-      const vh = window.innerHeight, mb = m.getBoundingClientRect().bottom;
-      const fv = cl((vh - mb) / Math.min(f.offsetHeight, vh));
+      // the footer is pinned for a long runway: the first screen of scrolling uncovers it, the rest lets the
+      // wordmark row travel slowly and settle, so the motion is actually seen
+      const vh = window.innerHeight, past = vh - m.getBoundingClientRect().bottom;
+      const fv = cl(past / vh), run = Math.max(1, (this.ftWrap ? this.ftWrap.offsetHeight : 2.9 * vh) - 2 * vh);
       root.style.setProperty('--f', fv.toFixed(3));
       if (fv > 0.4 && !this.ftInk) { this.ftInk = 1; this.inkRelease && this.inkRelease(f); }
-      const t = cl((fv - 0.15) / 0.85), e = 1 - Math.pow(1 - t, 3);
+      const t = cl((past - vh * 0.2) / (vh * 0.8 + run * 0.85)), e = 1 - Math.pow(1 - t, 1.8);
       rail.style.transform = 'translate3d(' + (-(1 - e) * 2.4 * (this.ftStep || 0)).toFixed(1) + 'px,0,0)';
     };
     this.ftScroll = () => { if (!raf) raf = requestAnimationFrame(upd); };
