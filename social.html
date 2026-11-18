@@ -514,6 +514,7 @@ class Component extends DCLogic {
                cards: Array.from(set.children), ctr: document.getElementById(trk.getAttribute('data-ctr')), video: trk.hasAttribute('data-video'), name: trk.getAttribute('data-name') || '', cur: -1 };
     });
     this.smLightbox(rows);
+    document.querySelectorAll('.trk video').forEach((v) => { v.muted = true; v.defaultMuted = true; v.volume = 0; v.setAttribute('muted', ''); });
     if (reduce) { rows.forEach((r) => r.trk.classList.add('still')); return; }
     // ---- seamless loop: clone the set until a row is comfortably wider than the screen ----
     const fill = (r) => {
@@ -525,6 +526,7 @@ class Component extends DCLogic {
         const c = r.set.cloneNode(true); c.classList.add('cl'); c.setAttribute('aria-hidden', 'true'); c.setAttribute('inert', '');
         c.querySelectorAll('button').forEach((b) => b.setAttribute('tabindex', '-1'));
         c.querySelectorAll('img').forEach((im) => im.setAttribute('loading', 'lazy'));
+        c.querySelectorAll('video').forEach((v) => { v.muted = true; v.defaultMuted = true; v.volume = 0; });
         r.rail.appendChild(c);
       }
       if (r.dir > 0 && !r.started) r.x = -r.w * 0.37;   // right-running rows start mid-set so they never open on a gap
@@ -608,7 +610,7 @@ class Component extends DCLogic {
     const W = window.innerWidth;
     r.rail.querySelectorAll('video').forEach((v) => {
       const b = v.getBoundingClientRect(), show = on && r.vis && !this.smOpen && b.right > -40 && b.left < W + 40;
-      if (show) { if (v.preload !== 'auto') v.preload = 'auto'; if (v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } }
+      if (show) { v.muted = true; v.defaultMuted = true; v.volume = 0; if (v.preload !== 'auto') v.preload = 'auto'; if (v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } }
       else if (!v.paused) v.pause();
     });
   }
