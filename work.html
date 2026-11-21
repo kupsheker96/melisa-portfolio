@@ -61,7 +61,7 @@ img{display:block}
 .gx-fr::before,.gx-fr::after{content:'';position:absolute;left:5%;right:5%;bottom:-10px;height:20px;border:1px solid rgba(20,21,24,.16);border-top:0;background:rgba(240,239,235,.5);z-index:-1;opacity:var(--stk,0)}
 .gx-fr::after{left:10%;right:10%;bottom:-20px;opacity:calc(var(--stk,0) * .7)}
 .gx-cards{position:absolute;inset:0;overflow:hidden;background:#1b1c20;isolation:isolate;will-change:clip-path}
-.gx-fr > i{position:absolute;left:calc(var(--ix,32) * 1%);right:calc(var(--ix,32) * 1%);top:50%;height:1px;background:#141518;opacity:var(--ln,1);pointer-events:none}
+.gx-fr > i{position:absolute;left:var(--l0,32%);right:var(--r0,32%);top:var(--oy,50%);height:1px;background:#141518;opacity:var(--ln,1);pointer-events:none}
 .gx-sl{position:absolute;inset:0;overflow:hidden;display:block;transform-origin:50% 0;will-change:transform,opacity}
 .gx-sl .lq,.gx-sl img.full{position:absolute;inset:0;width:100%;height:100%}
 .gx-sl .lq{background-size:cover;background-position:center;filter:blur(18px);transform:scale(1.12)}
@@ -150,8 +150,8 @@ class Component extends DCLogic {
       const n = W < 640 ? 2 : W < 1100 ? 4 : 6, cw = (W - pad - rule) / n;
       let fx, fw, fh, fy;
       if (wide) {                          // a portrait frame on the three middle columns of the grid
-        fw = cw * 3; fh = Math.min(fw * 1.3, H * .84); fx = rule + cw * 2; fy = (H - fh) / 2;
-        Object.assign(L.style, { left: pad + 'px', width: (cw * 2 + rule - pad - 32) + 'px', top: fy + 'px', height: fh + 'px', display: 'flex' });
+        fw = cw * 3; fh = Math.min(fw * 1.3, H * .84); fx = rule + cw; fy = (H - fh) / 2;
+        Object.assign(L.style, { left: pad + 'px', width: (rule + cw - pad - 32) + 'px', top: fy + 'px', height: fh + 'px', display: 'flex' });
         Object.assign(R.style, { left: (fx + fw + 32) + 'px', width: (cw * 2 - 32) + 'px', top: fy + 'px', height: fh + 'px', display: 'flex' });
         Object.assign(bar.style, { left: (fx + fw + 16) + 'px', top: fy + 'px', height: fh + 'px' });
       } else {                             // narrow: the frame takes the content columns, details sit underneath
@@ -163,7 +163,7 @@ class Component extends DCLogic {
       Object.assign(fr.style, { width: fw + 'px', height: fh + 'px', transform: `translate3d(${fx}px,${fy}px,0)` });
       const intro = H * .9, per = H * (wide ? .8 : .7);
       g.style.height = (st.clientHeight + intro + per * (N - 1) + H * .3) + 'px';
-      M = { fx, fy, fw, fh, intro, per, s0: wide ? .56 : .7, y0: wide ? H * .04 : H * .2 };
+      M = { fx, fy, fw, fh, intro, per };
       cur = -1; move();
     };
     const move = () => {
@@ -174,11 +174,14 @@ class Component extends DCLogic {
       intro.style.filter = a > 0.001 ? `blur(${(k * 7).toFixed(2)}px)` : 'none';
       // the frame opens from its centre: a short line widens to the full width, then parts up and down
       const hk = ease(clamp(a / .38, 0, 1)), vk = ease(clamp((a - .12) / .88, 0, 1));
-      const ix = 32 * (1 - hk), iy = 50 * (1 - vk);
-      cards.style.clipPath = vk >= 1 && hk >= 1 ? 'none' : `inset(calc(${iy.toFixed(3)}% - ${(vk < 1 ? 1 : 0)}px) ${ix.toFixed(3)}% round 0px)`;
+      // opening point: the centre of the page (viewport), expressed inside the frame
+      const ox = clamp(window.innerWidth / 2 - M.fx, 0, M.fw), oy = clamp(window.innerHeight / 2 - 56 - M.fy, 1, M.fh - 1);
+      const hw = M.fw * .18, l0 = Math.max(0, ox - hw), r0 = Math.max(0, M.fw - ox - hw);
+      const li_ = l0 * (1 - hk), ri_ = r0 * (1 - hk), ti = (oy - .5) * (1 - vk), bi = (M.fh - oy - .5) * (1 - vk);
+      cards.style.clipPath = vk >= 1 && hk >= 1 ? 'none' : `inset(${ti.toFixed(1)}px ${ri_.toFixed(1)}px ${bi.toFixed(1)}px ${li_.toFixed(1)}px)`;
       inner.forEach((el) => { el.style.scale = (1.18 - .18 * vk).toFixed(4); });
       fr.style.setProperty('--stk', (vk * .9).toFixed(3));
-      fr.style.setProperty('--ln', (1 - vk).toFixed(3)); fr.style.setProperty('--ix', ix.toFixed(3));
+      fr.style.setProperty('--ln', (1 - vk).toFixed(3)); fr.style.setProperty('--l0', li_.toFixed(1) + 'px'); fr.style.setProperty('--r0', ri_.toFixed(1) + 'px'); fr.style.setProperty('--oy', oy.toFixed(1) + 'px');
       // cards: each one holds, then the next rises over it while it sinks back into the stack
       const q = clamp((y - M.intro) / M.per, 0, N - 1), i0 = Math.floor(q), f = q - i0;
       const hold = .26, t = clamp((f - hold) / (1 - 2 * hold), 0, 1), pos = Math.min(N - 1, i0 + ease(t));
