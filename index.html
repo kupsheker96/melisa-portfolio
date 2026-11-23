@@ -302,15 +302,15 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
     </div>
 
   <div style="padding:0 clamp(16px,4vw,56px)">
-    <header id="top" aria-label="Design Portfolio" style="padding-top:clamp(160px,24vw,400px)">
-      <h1 style="margin:0;font-weight:inherit"><span class="sr">Design Portfolio</span>
+    <header id="top" aria-label="Melisa Ergani" style="padding-top:clamp(160px,24vw,400px)">
+      <h1 style="margin:0;font-weight:inherit"><span class="sr">Melisa Ergani</span>
         <span aria-hidden="true" style="position:relative;display:flex;justify-content:space-between;align-items:flex-end;margin-left:16%">
           <span class="fade" style="animation-delay:1.3s;font-size:11px;color:#9a9ea6;padding:0 0 14px clamp(14px,1.6vw,24px);white-space:nowrap">//2026</span>
-          <span style="display:block;overflow:hidden;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:21.15vw;line-height:.86;letter-spacing:-.01em;white-space:nowrap"><span data-ink="load" data-ink-p="hero" data-ink-d=".25" style="display:block"><span style="display:inline-block;white-space:nowrap"><span class="ik">D</span><span class="ik">e</span><span class="ik">s</span><span class="ik">i</span><span class="ik">g</span><span class="ik">n</span></span></span></span>
+          <span style="display:block;overflow:hidden;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:23.58vw;line-height:.86;letter-spacing:-.01em;white-space:nowrap"><span data-ink="load" data-ink-p="hero" data-ink-d=".25" style="display:block"><span style="display:inline-block;white-space:nowrap"><span class="ik">M</span><span class="ik">e</span><span class="ik">l</span><span class="ik">i</span><span class="ik">s</span><span class="ik">a</span></span></span></span>
           <span class="hl" style="position:absolute;left:0;right:0;bottom:0;height:1px;background:#3a3d45"></span>
         </span>
-        <span aria-hidden="true" style="display:block;height:12.4vw;overflow:hidden;margin-left:16%;text-align:right;margin-right:-.6vw">
-          <span data-ink="load" data-ink-p="hero" data-ink-d=".75" style="display:block;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:21.9vw;line-height:.8;letter-spacing:-.01em;white-space:nowrap"><span style="display:inline-block;white-space:nowrap"><span class="ik">P</span><span class="ik">o</span><span class="ik">r</span><span class="ik">t</span><span class="ik">f</span><span class="ik">o</span><span class="ik">l</span><span class="ik">i</span><span class="ik">o</span></span></span>
+        <span aria-hidden="true" style="display:block;height:16.7vw;overflow:hidden;margin-left:16%;text-align:right;margin-right:-.6vw">
+          <span data-ink="load" data-ink-p="hero" data-ink-d=".75" style="display:block;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:29.5vw;line-height:.8;letter-spacing:-.01em;white-space:nowrap"><span style="display:inline-block;white-space:nowrap"><span class="ik">E</span><span class="ik">r</span><span class="ik">g</span><span class="ik">a</span><span class="ik">n</span><span class="ik">i</span></span></span>
         </span>
       </h1>
       <div class="fade" style="animation-delay:1.6s;margin-left:16%;padding:clamp(18px,2vw,28px) 0 0 clamp(14px,1.6vw,24px);display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6">
@@ -530,11 +530,11 @@ class Component extends DCLogic {
     if (!host) { host = document.createElementNS(NS, 'svg'); host.id = 'ink-defs'; host.setAttribute('aria-hidden', 'true'); host.setAttribute('focusable', 'false'); host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none'; document.body.appendChild(host); }
     // blur/sd/disp are fractions of the font size; K = alpha threshold slope at full ink; win = how long the text stays soft
     const PRE = {
-      hero:    { dur: 2600, blur: 0.15, sd: 0.030, K: 24, disp: 0.055, freq: 2.4, stg: 0.07, win: 0.40, lend: 0.74, inkEnd: 0.56 },
-      title:   { dur: 1700, blur: 0.11, sd: 0.024, K: 16, disp: 0.035, freq: 3.0, stg: 0.035, win: 0.42, lend: 0.72, inkEnd: 0.52 },
-      display: { dur: 1700, blur: 0.13, sd: 0.028, K: 22, th: 0.3, disp: 0.050, freq: 2.4, win: 0.50, inkEnd: 0.46 },
-      head:    { dur: 1250, blur: 0.12, sd: 0.028, K: 18, th: 0.3, disp: 0.045, freq: 2.8, win: 0.50, inkEnd: 0.44 },
-      text:    { dur: 850,  blur: 0.15, sd: 0.040, K: 10, th: 0.34, disp: 0.060, freq: 3.4, win: 0.50, inkEnd: 0.42 } };
+      hero:    { dur: 4400, blur: 0.15, sd: 0.030, K: 24, disp: 0.055, freq: 2.4, stg: 0.07, win: 0.40, lend: 0.74, inkEnd: 0.56 },
+      title:   { dur: 3000, blur: 0.11, sd: 0.024, K: 16, disp: 0.035, freq: 3.0, stg: 0.035, win: 0.42, lend: 0.72, inkEnd: 0.52 },
+      display: { dur: 3000, blur: 0.13, sd: 0.028, K: 22, th: 0.3, disp: 0.050, freq: 2.4, win: 0.50, inkEnd: 0.46 },
+      head:    { dur: 2200, blur: 0.12, sd: 0.028, K: 18, th: 0.3, disp: 0.045, freq: 2.8, win: 0.50, inkEnd: 0.44 },
+      text:    { dur: 1500, blur: 0.15, sd: 0.040, K: 10, th: 0.34, disp: 0.060, freq: 3.4, win: 0.50, inkEnd: 0.42 } };
     const pick = (fs) => (fs >= 72 ? PRE.display : fs >= 26 ? PRE.head : PRE.text);
     const cl = (v) => Math.max(0, Math.min(1, v));
     const eo = (t) => 1 - Math.pow(1 - t, 3), eio = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);

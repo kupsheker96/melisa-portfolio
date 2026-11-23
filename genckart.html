@@ -395,11 +395,11 @@ class Component extends DCLogic {
     if (!host) { host = document.createElementNS(NS, 'svg'); host.id = 'ink-defs'; host.setAttribute('aria-hidden', 'true'); host.setAttribute('focusable', 'false'); host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none'; document.body.appendChild(host); }
     // blur/sd/disp are fractions of the font size; K = alpha threshold slope at full ink; win = how long the text stays soft
     const PRE = {
-      hero:    { dur: 2600, blur: 0.15, sd: 0.030, K: 24, disp: 0.055, freq: 2.4, stg: 0.07, win: 0.40, lend: 0.74, inkEnd: 0.56 },
-      title:   { dur: 1700, blur: 0.11, sd: 0.024, K: 16, disp: 0.035, freq: 3.0, stg: 0.035, win: 0.42, lend: 0.72, inkEnd: 0.52 },
-      display: { dur: 1700, blur: 0.13, sd: 0.028, K: 22, th: 0.3, disp: 0.050, freq: 2.4, win: 0.50, inkEnd: 0.46 },
-      head:    { dur: 1250, blur: 0.12, sd: 0.028, K: 18, th: 0.3, disp: 0.045, freq: 2.8, win: 0.50, inkEnd: 0.44 },
-      text:    { dur: 850,  blur: 0.15, sd: 0.040, K: 10, th: 0.34, disp: 0.060, freq: 3.4, win: 0.50, inkEnd: 0.42 } };
+      hero:    { dur: 4400, blur: 0.15, sd: 0.030, K: 24, disp: 0.055, freq: 2.4, stg: 0.07, win: 0.40, lend: 0.74, inkEnd: 0.56 },
+      title:   { dur: 3000, blur: 0.11, sd: 0.024, K: 16, disp: 0.035, freq: 3.0, stg: 0.035, win: 0.42, lend: 0.72, inkEnd: 0.52 },
+      display: { dur: 3000, blur: 0.13, sd: 0.028, K: 22, th: 0.3, disp: 0.050, freq: 2.4, win: 0.50, inkEnd: 0.46 },
+      head:    { dur: 2200, blur: 0.12, sd: 0.028, K: 18, th: 0.3, disp: 0.045, freq: 2.8, win: 0.50, inkEnd: 0.44 },
+      text:    { dur: 1500, blur: 0.15, sd: 0.040, K: 10, th: 0.34, disp: 0.060, freq: 3.4, win: 0.50, inkEnd: 0.42 } };
     const pick = (fs) => (fs >= 72 ? PRE.display : fs >= 26 ? PRE.head : PRE.text);
     const cl = (v) => Math.max(0, Math.min(1, v));
     const eo = (t) => 1 - Math.pow(1 - t, 3), eio = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
