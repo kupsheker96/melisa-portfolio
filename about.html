@@ -54,7 +54,7 @@ img{display:block}
         <a href="index.html" class="logo" style="display:inline-flex;align-items:baseline;line-height:1"><span style="color:#f4f3ef;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:22px;line-height:1;letter-spacing:-.02em">ME</span><span style="color:#f4f3ef;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:22px;line-height:1;letter-spacing:-.02em;color:#7a82ff">.</span></a>
         <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;line-height:1.35;color:#9a9ea6">About / CV<br>Based in Ankara</span></sc-if>
       </div>
-      <div class="mainnav" style="display:flex;gap:clamp(10px,2.2vw,28px);font-size:clamp(11px,1.1vw,12px)"><a href="index.html" style="color:#f4f3ef;white-space:nowrap">Home</a><a href="work.html" style="color:#f4f3ef;white-space:nowrap">Work</a><a href="about.html" aria-current="page" style="color:#f4f3ef;white-space:nowrap;text-decoration:underline;text-underline-offset:6px"><sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">About / CV</sc-if><sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">About</sc-if></a><a href="#contact" style="color:#f4f3ef;white-space:nowrap">Contact</a></div>
+      <div class="mainnav" style="display:flex;gap:clamp(10px,2.2vw,28px);font-size:clamp(11px,1.1vw,12px)"><a href="index.html" style="color:#f4f3ef;white-space:nowrap">Home</a><a href="/#work" style="color:#f4f3ef;white-space:nowrap">Work</a><a href="about.html" aria-current="page" style="color:#f4f3ef;white-space:nowrap;text-decoration:underline;text-underline-offset:6px"><sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">About / CV</sc-if><sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">About</sc-if></a></div>
     </div>
   </nav>
   <header style="padding:clamp(28px,4vw,56px) clamp(16px,4vw,56px) 0">
@@ -128,11 +128,11 @@ class Component extends DCLogic {
     if (!host) { host = document.createElementNS(NS, 'svg'); host.id = 'ink-defs'; host.setAttribute('aria-hidden', 'true'); host.setAttribute('focusable', 'false'); host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none'; document.body.appendChild(host); }
     // blur/sd/disp are fractions of the font size; K = alpha threshold slope at full ink; win = how long the text stays soft
     const PRE = {
-      hero:    { dur: 2600, blur: 0.15, sd: 0.030, K: 24, disp: 0.055, freq: 2.4, stg: 0.07, win: 0.40, lend: 0.74, inkEnd: 0.56 },
-      title:   { dur: 1700, blur: 0.11, sd: 0.024, K: 16, disp: 0.035, freq: 3.0, stg: 0.035, win: 0.42, lend: 0.72, inkEnd: 0.52 },
-      display: { dur: 1700, blur: 0.13, sd: 0.028, K: 22, th: 0.3, disp: 0.050, freq: 2.4, win: 0.50, inkEnd: 0.46 },
-      head:    { dur: 1250, blur: 0.12, sd: 0.028, K: 18, th: 0.3, disp: 0.045, freq: 2.8, win: 0.50, inkEnd: 0.44 },
-      text:    { dur: 850,  blur: 0.15, sd: 0.040, K: 10, th: 0.34, disp: 0.060, freq: 3.4, win: 0.50, inkEnd: 0.42 } };
+      hero:    { dur: 4400, blur: 0.15, sd: 0.030, K: 24, disp: 0.055, freq: 2.4, stg: 0.07, win: 0.40, lend: 0.74, inkEnd: 0.56 },
+      title:   { dur: 3000, blur: 0.11, sd: 0.024, K: 16, disp: 0.035, freq: 3.0, stg: 0.035, win: 0.42, lend: 0.72, inkEnd: 0.52 },
+      display: { dur: 3000, blur: 0.13, sd: 0.028, K: 22, th: 0.3, disp: 0.050, freq: 2.4, win: 0.50, inkEnd: 0.46 },
+      head:    { dur: 2200, blur: 0.12, sd: 0.028, K: 18, th: 0.3, disp: 0.045, freq: 2.8, win: 0.50, inkEnd: 0.44 },
+      text:    { dur: 1500, blur: 0.15, sd: 0.040, K: 10, th: 0.34, disp: 0.060, freq: 3.4, win: 0.50, inkEnd: 0.42 } };
     const pick = (fs) => (fs >= 72 ? PRE.display : fs >= 26 ? PRE.head : PRE.text);
     const cl = (v) => Math.max(0, Math.min(1, v));
     const eo = (t) => 1 - Math.pow(1 - t, 3), eio = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
