@@ -242,7 +242,7 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
   .cc-ls a{padding:8px 0}.cc-ls b{font-size:19px}
   .cc-d{display:none}
 }
-@media (prefers-reduced-motion: reduce){.cc-in{transform:none !important}.cc-dim{opacity:0 !important}.cc-t{transition:none}}
+@media (prefers-reduced-motion: reduce){.cc-tail{height:0 !important}.cc-in{transform:none !important;opacity:1 !important}.cc-dim{opacity:0 !important}.cc-t{transition:none}}
 
 @media (max-width: 760px){
   .aboutg{grid-template-columns:minmax(0,1fr) !important}
@@ -365,7 +365,7 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
     </div>
     <span class="cc-dim" aria-hidden="true"></span>
   </div>
-</article></section>
+</article><div class="cc-tail" aria-hidden="true" style="height:110vh"></div></section>
   <section id="selected" aria-label="Selected works" style="padding:clamp(160px,20vw,340px) 0 clamp(120px,14vw,240px)">
     <div class="gdesk">
       <div class="gwrap">
@@ -478,7 +478,7 @@ class Component extends DCLogic {
       [0, 250, 700, 1400].forEach((d) => setTimeout(go0, d));
     }
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const ins = cards.map((c) => c.querySelector('.cc-in')), dims = cards.map((c) => c.querySelector('.cc-dim'));
+    const ins = cards.map((c) => c.querySelector('.cc-in')), dims = cards.map((c) => c.querySelector('.cc-dim')), tail = document.querySelector('.cc-tail');
     const cl = (v) => Math.min(1, Math.max(0, v));
     const sec = document.querySelector('.cc'), wm = Array.from(document.querySelectorAll('.wm'));
     wm.forEach((el) => { el.style.transition = 'opacity .4s'; });
@@ -486,11 +486,15 @@ class Component extends DCLogic {
       const vh = window.innerHeight, top = 56, span = vh - top;
       const sr = sec.getBoundingClientRect(), over = sr.top < vh * .6 && sr.bottom > vh * .4;   // the corner signature steps aside while a card fills the screen
       wm.forEach((el) => { el.style.opacity = over ? '0' : ''; });
+      const tl = cl((vh - tail.getBoundingClientRect().top) / tail.offsetHeight), gone = cl((tl - .3) / .7), gk = gone * gone * (3 - 2 * gone);
       for (let i = 0; i < cards.length; i++) {
         const nx = cards[i + 1];
-        const p = nx ? cl(1 - (nx.getBoundingClientRect().top - top) / span) : 0;   // how far the next card has covered this one
+        let p, fade = 0;
+        if (nx) p = cl(1 - (nx.getBoundingClientRect().top - top) / span);   // how far the next card has covered this one
+        else { p = gone; fade = p; }   // last card: hold, then sink away
         const k = p * p * (3 - 2 * p);
-        ins[i].style.transform = p > 0 ? `perspective(1600px) translate3d(0,${(-k * 2.5).toFixed(2)}%,0) rotateX(${(k * 9).toFixed(2)}deg) scale(${(1 - k * .1).toFixed(4)})` : '';
+        ins[i].style.transform = p > 0 ? `perspective(1600px) translate3d(0,${(-k * (fade ? 6 : 2.5)).toFixed(2)}%,0) rotateX(${(k * (fade ? 14 : 9)).toFixed(2)}deg) scale(${(1 - k * (fade ? .2 : .1)).toFixed(4)})` : '';
+        ins[i].style.opacity = gk > 0 ? (nx ? '0' : (1 - gk).toFixed(3)) : '';   // cards under the last one step out first, so nothing ghosts through
         dims[i].style.opacity = (k * .55).toFixed(3);
       }
     };
