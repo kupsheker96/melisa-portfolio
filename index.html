@@ -322,7 +322,7 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
         <div class="sts">
           <span data-r="fade" style="position:absolute;left:0;top:0;font-size:11px;color:#9a9ea6">[ About ]</span>
           <svg class="stsvg" aria-hidden="true" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none"><path class="stp" d="" fill="none" stroke="#f4f3ef" stroke-opacity=".5" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"></path><rect class="stn" x="0" y="0" width="0" height="0" fill="#7a82ff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#7a82ff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#7a82ff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#7a82ff"></rect></svg>
-          <p class="stmt"><span class="sc" data-ink-hold>Industrial </span><span class="kw" data-k="0">design</span><span class="sc" data-ink-hold> taught me how things are made, and </span><span class="kw" data-k="1">psychology</span><span class="sc" data-ink-hold> why people use them. I start with </span><span class="kw" data-k="2">research</span><span class="sc" data-ink-hold>, and keep designing until it feels </span><span class="kw" data-k="3">intuitive</span><span class="sc" data-ink-hold>.</span></p>
+          <p class="stmt"><span class="sc" data-ink-hold>Industrial </span><span class="kw" data-ink-skip data-k="0">design</span><span class="sc" data-ink-hold> taught me how things are made, and </span><span class="kw" data-ink-skip data-k="1">psychology</span><span class="sc" data-ink-hold> why people use them. I start with </span><span class="kw" data-ink-skip data-k="2">research</span><span class="sc" data-ink-hold>, and keep designing until it feels </span><span class="kw" data-ink-skip data-k="3">intuitive</span><span class="sc" data-ink-hold>.</span></p>
         </div>
       </div>
       <p data-r="up" style="--d:.15s;margin:calc(clamp(72px,9vw,150px) * -.55) 0 0;max-width:52ch;font-size:12px;line-height:1.7;color:#c9ccd1">I studied Industrial Design at TED University, with Psychology as a secondary field.</p>
@@ -1029,6 +1029,9 @@ class Component extends DCLogic {
       const x = b.x - b.k.fx, y = b.y - b.k.fy + lift;
       b.k.el.style.transform = (b.u < 0.0005 && lift < 0.01) ? 'none' : 'translate(' + f(x) + 'px,' + f(y) + 'px) scale(' + b.sc.toFixed(4) + ')';
       b.k.el.style.opacity = (0.38 + 0.62 * lit).toFixed(3);
+      // the words stay soft while they float and only come into focus as they settle into the sentence
+      const bl = 9 * Math.max(1 - lit, 1 - cl((b.e - 0.45) / 0.55));
+      b.k.el.style.filter = bl > 0.05 ? 'blur(' + bl.toFixed(2) + 'px)' : 'none';
     });
     const o = cl((p - 0.8) / 0.16).toFixed(3);
     this.scs.forEach((el) => { el.style.opacity = o; });
