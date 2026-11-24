@@ -716,8 +716,21 @@
       if (tw + gap + aw > room) { fs *= room / (tw + gap + aw); font(fs); tw = oc.measureText(sp.w).width; aw = ar ? fs * 0.62 : 0; gap = ar ? fs * 0.25 : 0; }
       var cap = fs * 0.72, base = (H0 + cap) / 2;
       oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
-      var parts = sp.w.split(' ');
-      if (o.split && !ar && parts.length === 2) {   // like the footer's name: first word on the left edge, second on the right
+      var parts = (sp.w || '').split(' ');
+      if (sp.lines) {   // a sentence on several lines, starting a gutter after the margin line, last line carrying the arrow
+        var x0 = W0 * (sp.x0 || 0) + (sp.x0 ? Math.max(14, Math.min(24, W.innerWidth * 0.016)) : 0), nl = sp.lines.length;
+        fs = H0 / (nl * 0.72 * 1.22); font(fs);
+        var aw2 = ar ? fs * 0.5 : 0, longest = Math.max.apply(null, sp.lines.map(function (l) { return oc.measureText(l).width; }));
+        if (longest + aw2 * 1.4 > W0 - x0) { fs *= (W0 - x0) / (longest + aw2 * 1.4); font(fs); }
+        cap = fs * 0.72; var lh = cap * 1.22, top = (H0 - (nl * lh - (lh - cap))) / 2;
+        sp.lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
+        if (ar) {
+          var lw2 = fs * 0.09, axx = x0 + oc.measureText(sp.lines[nl - 1]).width + fs * 0.25, ayy = top + (nl - 1) * lh, aw3 = cap * 0.62;
+          oc.strokeStyle = '#fff'; oc.lineWidth = lw2; oc.lineCap = 'square'; oc.beginPath();
+          oc.moveTo(axx + aw3 / 2, ayy + lw2); oc.lineTo(axx + aw3 / 2, ayy + cap - lw2); oc.moveTo(axx + lw2, ayy + cap * 0.58); oc.lineTo(axx + aw3 / 2, ayy + cap - lw2); oc.lineTo(axx + aw3 - lw2, ayy + cap * 0.58); oc.stroke();
+          ar = '';
+        }
+      } else if (o.split && !ar && parts.length === 2) {   // like the footer's name: first word on the left edge, second on the right
         var w1 = oc.measureText(parts[0]).width, w2 = oc.measureText(parts[1]).width;
         if (w1 + w2 > W0 * 0.97) { fs *= W0 * 0.97 / (w1 + w2); font(fs); cap = fs * 0.72; base = (H0 + cap) / 2; w1 = oc.measureText(parts[0]).width; w2 = oc.measureText(parts[1]).width; }
         oc.fillText(parts[0], 0, base); oc.fillText(parts[1], W0 - w2, base);
@@ -782,13 +795,28 @@
     };
     try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
     var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); kick(); }, 150); });
+    return { setIdle: function (sp) { idle = sp; if (!active) shape(idle); }, busy: function () { return !!active; } };
   }
 
   function words() {
     var sec = D.querySelector('.pf');
+    // cards that have faded out (the last one sinks away over the index) stop catching the pointer
+    var ccs = Array.prototype.map.call(D.querySelectorAll('.cc-card'), function (c) { return [c, c.querySelector('.cc-in')]; });
+    if (ccs.length) { var pe = function () { ccs.forEach(function (x) { var o = x[1] ? parseFloat(x[1].style.opacity || '1') : 1; x[0].style.pointerEvents = o < 0.15 ? 'none' : ''; }); }; var mo = new MutationObserver(pe); ccs.forEach(function (x) { if (x[1]) mo.observe(x[1], { attributes: true, attributeFilter: ['style'] }); }); pe(); }
     if (sec) {
       var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
-      pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
+      var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
+      // the first time the band opens, the pixels say what the index is; then they fall back into the grid
+      var said = false, narrow = W.innerWidth < 760;
+      var line = narrow ? { lines: ['WHAT I\u2019VE BEEN', 'DOING SINCE', '2021'], arrow: 'down', x0: 0, c: FG } : { lines: ['WHAT I\u2019VE BEEN DOING', 'SINCE 2021'], arrow: 'down', x0: 0.16, c: FG };
+      if (api) new IntersectionObserver(function (es, ob) {
+        if (said || !es[0].isIntersecting) return; said = true; ob.disconnect();
+        api.setIdle(line);
+        var t0 = now(), gone = false;
+        var back = function () { if (gone) return; gone = true; api.setIdle(null); bd.removeEventListener('pointermove', moved); };
+        var moved = function () { if (now() - t0 > 2600) back(); };   // once it has been read, a move through the band clears it
+        bd.addEventListener('pointermove', moved, { passive: true }); setTimeout(back, 6500);
+      }, { threshold: 0.6 }).observe(bd);
       // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
       if (LIVE && !RM) {
         var zl = '';

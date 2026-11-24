@@ -139,10 +139,13 @@ html.dot-on [data-inkroot] .vmark{opacity:0}
 .pf{position:relative;z-index:1;margin-top:-48vh;padding:clamp(24px,3vw,48px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
 @media (prefers-reduced-motion: reduce){.pf{margin-top:0}}
 /* the last card leaves sooner, so the index follows straight after Branding */
-.cc-tail{height:55vh !important}
+.cc-tail{height:55vh !important;pointer-events:none}
+/* the index slides up under the last card: let the pointer through the empty part of the cards section */
+.cc{pointer-events:none}.cc .cc-card{pointer-events:auto}
 .pf-band{transform-origin:50% 50%;will-change:transform,opacity}
 .pf-hd{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6;padding-bottom:16px}
-.pf-band{position:relative;height:clamp(150px,17vw,300px);touch-action:pan-y}
+.pf-band{position:relative;height:clamp(220px,27vw,500px);touch-action:pan-y}
+@media (max-width:759px){.pf-band{height:clamp(160px,42vw,240px)}}
 .pf-band canvas,.pf-cv{position:absolute;left:0;top:0;display:block}
 /* footer: the name is drawn in pixels; the letters stay for size and for readers without the canvas */
 footer .wmark.pf-on{position:relative}
