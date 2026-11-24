@@ -13,22 +13,31 @@ html.intro [data-inkroot] *,html.intro .atmos-grid *{animation-play-state:paused
 .me-wl{position:absolute;left:0;top:50%;transform:translateY(-50%);font-family:'MeMondwest','Mondwest',serif;font-weight:400;font-size:clamp(40px,7vw,120px);line-height:.9;color:var(--fg);white-space:nowrap;transition:opacity .18s linear}
 .me-wk{position:absolute;bottom:clamp(14px,1.6vw,24px);font:300 11px/1.4 'JetBrains Mono',ui-monospace,monospace;color:var(--fg);opacity:.62;transition:opacity .18s linear}
 
-/* ---------- intro: grid draws, four square pixels mark the categories, they close into "ME.", the grid lifts ---------- */
-.mi{position:fixed;inset:0;z-index:2147483002;color:#f4f3ef;font:300 11px/1.45 'JetBrains Mono',ui-monospace,monospace;pointer-events:none}
-.mi-c{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:flex-end;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:clamp(84px,13vw,210px);line-height:.8;letter-spacing:-.02em;transition:opacity .35s ease,filter .45s ease}
-.mi-me{display:inline-block;max-width:0;overflow:hidden;opacity:0;filter:blur(16px);white-space:nowrap;transition:max-width .6s cubic-bezier(.7,0,.2,1),opacity .5s ease .15s,filter .7s ease .1s}
-.mi.fold .mi-me{max-width:2em;opacity:1;filter:none}
-.mi-ds{display:flex;align-items:flex-end;gap:.09em;padding-bottom:.005em}
-.mi-d{display:block;width:.19em;height:.19em;background:var(--c);opacity:0;transform:scale(.4);transition:opacity .18s steps(2,end),transform .32s steps(3,end),width .55s cubic-bezier(.7,0,.2,1),margin .55s cubic-bezier(.7,0,.2,1),background .4s ease}
-.mi-d.in{opacity:1;transform:none}
-.mi.fold .mi-d:first-child{background:#7a82ff;margin-left:.02em}
-.mi.fold .mi-d:not(:first-child){width:0;margin-left:-.09em;opacity:0}
-.mi.out .mi-c,.mi.out .mi-bl,.mi.out .mi-n,.mi.out .mi-tl{opacity:0;filter:blur(14px)}
-.mi-tl{position:absolute;top:clamp(16px,2vw,28px);color:#9a9ea6;transition:opacity .3s ease}
+/* ---------- intro: on the grid. Column lines draw, a horizontal line runs as the page loads, pixels are stamped on the
+   column lines, slide into the square of ME., the letters ink in; then the visitor enters with or without sound ---------- */
+.mi{position:fixed;inset:0;z-index:2147483002;color:#f4f3ef;font:300 11px/1.45 'JetBrains Mono',ui-monospace,monospace;pointer-events:none;overflow:hidden}
+.mi-svg{position:absolute;width:0;height:0}
+.mi-grain{position:absolute;inset:-50%;opacity:.085;background-size:128px 128px;mix-blend-mode:screen;animation:miGrain .9s steps(6) infinite;pointer-events:none}
+@keyframes miGrain{0%{transform:translate(0,0)}17%{transform:translate(-6%,4%)}33%{transform:translate(4%,-7%)}50%{transform:translate(7%,5%)}67%{transform:translate(-3%,-4%)}83%{transform:translate(-7%,7%)}100%{transform:translate(0,0)}}
+.mi-h{position:absolute;height:1px;background:rgba(244,243,239,.34);transform-origin:0 0;transform:scaleX(0)}
+.mi-d{position:absolute;display:block;background:var(--c);opacity:0;filter:url(#mi-rough) blur(6px);transition:opacity .12s steps(2,end),filter .4s ease,background .5s ease}
+.mi-d.in{opacity:1;filter:url(#mi-rough)}
+.mi.fold i.mi-d:first-of-type{background:#7a82ff}
+.mi.fold i.mi-d:not(:first-of-type){opacity:0;transition:opacity .25s ease .1s}
+.mi-me{position:absolute;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;line-height:1;letter-spacing:-.02em;white-space:nowrap;opacity:0;transition:opacity .25s ease}
+.mi.me-in .mi-me{opacity:1}
+.mi-tl,.mi-tr{position:absolute;top:clamp(16px,2vw,28px);color:#9a9ea6;transition:opacity .3s ease,filter .4s ease}
 .mi-bl{position:absolute;bottom:clamp(14px,2vw,28px);transition:opacity .3s ease,filter .4s ease}
 .mi-bl span{color:#9a9ea6}
 .mi-n{position:absolute;bottom:clamp(6px,1.4vw,20px);font-family:'MeMondwest','Mondwest',serif;font-size:clamp(56px,8vw,128px);line-height:.8;font-variant-numeric:tabular-nums;transition:opacity .3s ease,filter .4s ease}
-@media (max-width:759px){.mi-bl span{display:none}.mi-n{font-size:clamp(44px,14vw,64px)}}
+.mi-ch{position:absolute;display:flex;gap:28px;opacity:0;transform:translateY(6px);filter:blur(6px);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.7,.2,1),filter .45s ease}
+.mi.ask .mi-ch{opacity:1;transform:none;filter:none}
+.mi-b{font:inherit;font-size:12px;color:#9a9ea6;background:none;border:0;border-bottom:1px solid #2c2e33;padding:0 0 6px;cursor:pointer;transition:color .2s,border-color .2s}
+.mi-b:hover,.mi-b:focus-visible{color:#f4f3ef;border-color:#f4f3ef;outline:none}
+.mi-on{color:#f4f3ef}
+.mi.out .mi-ch,.mi.out .mi-bl,.mi.out .mi-n,.mi.out .mi-tl,.mi.out .mi-tr,.mi.out .mi-h,.mi.out .mi-d,.mi.out .mi-grain{opacity:0;filter:blur(10px);transition:opacity .35s ease,filter .4s ease}
+.mi.out .mi-me{opacity:0;transition:opacity .45s ease .1s}
+@media (max-width:759px){.mi-bl span{display:none}.mi-n{font-size:clamp(44px,14vw,64px)}.mi-ch{flex-direction:column;gap:14px}}
 
 /* ---------- music shell: the page in a frame, so the sound carries on ---------- */
 #me-frame{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:950;background:#121316}
@@ -49,8 +58,9 @@ html.me-shell body > *:not(#me-frame):not(.me-mu):not(.me-wipe):not(script){disp
 /* ---------- Home hero: Ankara time ---------- */
 .me-clock{font-variant-numeric:tabular-nums}
 
-/* ---------- the top bar scrolls away with the page (no fixed bar over the work) ---------- */
-nav[aria-label="Main"]{position:relative !important}
+/* ---------- the top bar slides away while you scroll down (and over the work cards), and comes back when you scroll up ---------- */
+nav[aria-label="Main"]{position:sticky !important;top:0;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+html.nav-hide nav[aria-label="Main"]{transform:translateY(-101%)}
 .cc-card{top:0 !important;height:100vh !important}
 #work{scroll-margin-top:0 !important}
 
@@ -83,31 +93,21 @@ html.hl-on .hw.lit{opacity:1}
 .me-evp img{display:block;width:100%;height:auto;max-height:240px;object-fit:contain;background:#fff}
 .me-evp span{display:block;font:400 10.5px/1.4 'JetBrains Mono',monospace;color:#121316;padding-top:6px}
 
-/* ---------- on repeat while designing: bottom-right, folds away while it keeps playing ---------- */
+/* ---------- on repeat while designing: a button at the bottom-right; the player itself is out of sight ---------- */
 .me-mu{position:fixed;right:clamp(12px,2vw,28px);bottom:clamp(12px,2vw,28px);z-index:960;font:300 11px/1.35 'JetBrains Mono',ui-monospace,monospace;color:#f4f3ef}
-.me-mu button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-.me-mu button:focus-visible,.me-mu a:focus-visible{outline:2px solid #7a82ff;outline-offset:3px}
-.me-mu .me-mb{display:flex;align-items:center;gap:10px;padding:8px 12px;text-align:left;background:rgba(18,19,22,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid #2c2e33;transition:border-color .2s}
+.me-mv{position:fixed;left:-10000px;top:0;width:256px;height:200px;opacity:0;pointer-events:none}
+.me-mv iframe{display:block;width:256px;height:200px;border:0}
+.me-mu .me-mb{display:flex;align-items:center;gap:10px;padding:8px 12px;text-align:left;font:inherit;color:inherit;background:rgba(18,19,22,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid #2c2e33;cursor:pointer;transition:border-color .2s}
 .me-mu .me-mb:hover{border-color:#9a9ea6}
-.me-mb .me-lbl{display:flex;flex-direction:column;white-space:nowrap}
-.me-mb .me-lbl small{font-size:10px;color:#9a9ea6}
+.me-mu .me-mb:focus-visible{outline:2px solid #7a82ff;outline-offset:3px}
+.me-lbl{display:flex;flex-direction:column;white-space:nowrap}
+.me-lbl small{font-size:10px;color:#9a9ea6}
 .me-wv{display:flex;align-items:flex-end;gap:2px;height:13px;width:17px;flex:0 0 auto}
 .me-wv i{display:block;width:1px;height:30%;background:currentColor;transform-origin:50% 100%}
 .me-mu.play .me-wv i{animation:meWv 1.1s ease-in-out infinite}
 .me-wv i:nth-child(2){animation-delay:-.35s !important;height:60%}.me-wv i:nth-child(3){animation-delay:-.7s !important;height:45%}.me-wv i:nth-child(4){animation-delay:-.2s !important;height:80%}.me-wv i:nth-child(5){animation-delay:-.55s !important;height:35%}
 @keyframes meWv{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
-.me-mc{position:absolute;right:0;bottom:calc(100% + 8px);width:256px;background:#121316;border:1px solid #2c2e33;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .25s ease,transform .3s cubic-bezier(.2,.7,.2,1)}
-.me-mu:not(.open) .me-mc{clip-path:inset(0 0 0 100%)}
-.me-mu.open .me-mc{opacity:1;pointer-events:auto;transform:none;clip-path:none}
-.me-mv{width:256px;height:200px;background:#000}
-.me-mv iframe{display:block;width:256px;height:200px;border:0}
-.me-mi{padding:10px 12px;display:flex;flex-direction:column;gap:2px}
-.me-mi b{font-weight:400;color:#f4f3ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.me-mi small{color:#9a9ea6;font-size:10px}
-.me-mk{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #2c2e33;padding:9px 12px}
-.me-mk button{color:#9a9ea6}.me-mk button:hover{color:#f4f3ef}
-.me-mk a{color:#9a9ea6;font-size:10px}.me-mk a:hover{color:#f4f3ef}
-@media (max-width:759px){.me-mb .me-lbl small{display:none}.me-mb .me-t1{font-size:10px}}
+@media (max-width:759px){.me-lbl small{max-width:52vw;overflow:hidden;text-overflow:ellipsis}}
 
 /* ---------- playground: Mawu's sensory balls (on the Mawu page; colours follow the page) ---------- */
 .pg{position:relative;padding:clamp(100px,12vw,200px) clamp(16px,4vw,56px) clamp(80px,10vw,160px);color:inherit}

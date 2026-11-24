@@ -110,41 +110,91 @@
     rendered(function () { fontsReady(function () { setTimeout(function () { lift(el); }, 60); }, 700); });
   });
 
-  /* ---------- intro (every time Home is opened). Built from the site's own parts: the grid draws itself, four square
-     pixels mark the four categories as the page loads, they close into the square of "ME.", the logo inks in and
-     the grid columns lift onto the page, the same way every page change opens. ---------- */
+  /* ---------- intro (every time Home is opened). Everything sits on the page grid: the column lines draw down, a
+     horizontal line runs across as the page loads, and a square pixel is stamped on each column line it passes, in
+     the four category colours. At 100 the pixels slide along the line into the square of "ME.", the letters ink in,
+     and the visitor chooses to enter with or without sound. Then the logo inks away and the columns lift. ---------- */
   if (doIntro) onBody(function () {
-    var g = strips(), CS = ['#5d66ff', '#d9f24a', '#f4f3ef', '#ff4fb0'];
+    var g = strips(), vw = g.vw, vh = W.innerHeight, CS = ['#5d66ff', '#d9f24a', '#f4f3ef', '#ff4fb0'];
+    var gut = Math.round(Math.max(14, Math.min(24, vw * 0.016))), n = g.xs.length - 2, cw = n > 1 ? g.xs[2] - g.xs[1] : vw * 0.2;
+    var yL = Math.round(vh * 0.56);
+    // pixel columns: the last four column lines on wide screens, half columns on phones
+    var X = n >= 6 ? [g.xs[3], g.xs[4], g.xs[5], g.xs[6]] : n >= 4 ? [g.xs[1], g.xs[2], g.xs[3], g.xs[4]] : [g.xs[1], (g.xs[1] + g.xs[2]) / 2, g.xs[2], (g.xs[2] + vw - g.pad) / 2];
+    // logo size: "ME." spans two columns from the margin line
+    var mc = D.createElement('canvas').getContext('2d'); mc.font = '800 100px Archivo, sans-serif'; try { mc.fontStretch = 'condensed'; } catch (e) { }
+    var m100 = mc.measureText('ME'), wme = m100.width / 100;
+    var fs = Math.round(Math.min((2 * cw - gut) / (wme + 0.25), vh * 0.3, (vw - g.rule - gut - g.pad) / (wme + 0.25)));
+    var P = Math.round(fs * 0.2), lx = Math.round(g.rule + gut);
     var sw = wipe(BG, FG, '', '', 'block');
     var lns = sw.querySelectorAll('.me-ln');
-    for (var i = 0; i < lns.length; i++) { lns[i].style.transform = 'scaleY(0)'; anim(lns[i], [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 1100, delay: 120 + i * 60, easing: 'cubic-bezier(.65,0,.2,1)', fill: 'forwards' }); }
+    for (var i = 0; i < lns.length; i++) { lns[i].style.transform = 'scaleY(0)'; anim(lns[i], [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 1000, delay: 80 + i * 60, easing: 'cubic-bezier(.65,0,.2,1)', fill: 'forwards' }); }
     var el = D.createElement('div'); el.className = 'mi'; el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = '<div class="mi-c"><span class="mi-me">ME</span><span class="mi-ds">' + CS.map(function (c, i) { return '<i class="mi-d" style="--c:' + c + '"></i>'; }).join('') + '</span></div>'
-      + '<span class="mi-tl" style="left:' + g.pad + 'px">[ Portfolio //2026 ]</span>'
-      + '<span class="mi-bl" style="left:' + g.pad + 'px">Melisa Ergani<br><span>UI/UX &amp; Visual Designer, Ankara</span></span>'
-      + '<span class="mi-n" style="right:' + g.pad + 'px">000</span>';
+    var px = X.map(function (x, k) { return '<i class="mi-d" style="--c:' + CS[k] + ';left:' + Math.round(x - P / 2) + 'px;top:' + (yL - P) + 'px;width:' + P + 'px;height:' + P + 'px"></i>'; }).join('');
+    el.innerHTML = '<svg class="mi-svg" width="0" height="0" aria-hidden="true"><filter id="mi-ink" x="-20%" y="-60%" width="140%" height="220%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="0" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation="0"/></filter>'
+      + '<filter id="mi-rough" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="2" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="1.6" xChannelSelector="R" yChannelSelector="G"/></filter></svg>'
+      + '<span class="mi-grain"></span>'
+      + '<span class="mi-h" style="left:' + g.pad + 'px;right:' + g.pad + 'px;top:' + yL + 'px"></span>'
+      + px
+      + '<span class="mi-me" style="left:' + lx + 'px;font-size:' + fs + 'px">ME</span>'
+      + '<span class="mi-tl" style="left:' + g.pad + 'px">[ Portfolio //2026 ]</span><span class="mi-tr" style="right:' + g.pad + 'px">Ankara</span>'
+      + '<span class="mi-bl" style="left:' + g.pad + 'px">Melisa Ergani<br><span>UI/UX &amp; Visual Designer</span></span>'
+      + '<span class="mi-n" style="right:' + g.pad + 'px">000</span>'
+      + '<div class="mi-ch" style="top:' + (yL + 22) + 'px;left:' + lx + 'px"><button type="button" class="mi-b mi-on">Enter with sound <span aria-hidden="true">↗</span></button><button type="button" class="mi-b mi-off">Enter in silence</button></div>';
     D.body.appendChild(el);
-    var ds = el.querySelectorAll('.mi-d'), n = el.querySelector('.mi-n'), t0 = now(), ready = false, lit = 0;
+    // grain: a small noise tile, stepped like the site's own
+    try {
+      var nc = D.createElement('canvas'); nc.width = nc.height = 128; var nx = nc.getContext('2d'), id = nx.createImageData(128, 128);
+      for (var q = 0; q < id.data.length; q += 4) { var v = Math.random() * 255 | 0; id.data[q] = id.data[q + 1] = id.data[q + 2] = v; id.data[q + 3] = 255; }
+      nx.putImageData(id, 0, 0); el.querySelector('.mi-grain').style.backgroundImage = 'url(' + nc.toDataURL() + ')';
+    } catch (e) { }
+    // "ME" sits on the line: baseline = the horizontal rule
+    var me = el.querySelector('.mi-me');
+    var fa = m100.fontBoundingBoxAscent ? m100.fontBoundingBoxAscent / 100 * fs : fs * 0.9, fd = m100.fontBoundingBoxDescent ? m100.fontBoundingBoxDescent / 100 * fs : fs * 0.22;
+    me.style.top = Math.round(yL - ((fs - (fa + fd)) / 2 + fa)) + 'px';
+    var dotX = function () { return lx + me.getBoundingClientRect().width + Math.round(fs * 0.03); };
+    var ds = el.querySelectorAll('.mi-d'), hl = el.querySelector('.mi-h'), nEl = el.querySelector('.mi-n'), t0 = now(), ready = false, lit = 0;
     rendered(function () { fontsReady(function () { ready = true; }, 2500); });
-    var MIN = 1900, MAX = 6000;
+    // the ink: displacement + blur run down to crisp (in) or up from crisp (out)
+    var fd2 = el.querySelector('#mi-ink feDisplacementMap'), fb = el.querySelector('#mi-ink feGaussianBlur');
+    var ink = function (from, to, ms, done) {
+      var s0 = now();
+      (function f() { var t = cl((now() - s0) / ms), e = from + (to - from) * (1 - Math.pow(1 - t, 3)); fd2.setAttribute('scale', (e * fs * 0.35).toFixed(2)); fb.setAttribute('stdDeviation', (e * fs * 0.05).toFixed(2)); if (t < 1) requestAnimationFrame(f); else if (done) done(); })();
+    };
+    var MIN = 1900, MAX = 6000, chosen = false;
+    var leave = function (sound) {
+      if (chosen) return; chosen = true;
+      if (sound) { W.__meWantSound = true; if (W.__meMusicStart) W.__meMusicStart(); }
+      else if (W.__meMusicQuiet) W.__meMusicQuiet(); else W.__meWantQuiet = true;
+      el.classList.add('out'); me.style.filter = 'url(#mi-ink)'; ink(0, 1, 520);
+      H.classList.remove('intro');
+      var ws = waiters; waiters = []; doIntro = false; ws.forEach(function (f) { f(); });
+      setTimeout(function () { sw.classList.remove('block'); lift(sw); }, 260);
+      setTimeout(function () { el.remove(); }, 900);
+    };
+    el.querySelector('.mi-on').addEventListener('click', function () { leave(true); });
+    el.querySelector('.mi-off').addEventListener('click', function () { leave(false); });
     var finish = function () {
-      n.textContent = '100';
-      el.classList.add('fold');                       // pixels close into the square of ME., the letters ink in
-      setTimeout(function () {
-        el.classList.add('out');                      // the logo blurs away, the grid lifts onto the page
-        H.classList.remove('intro');
-        var ws = waiters; waiters = []; doIntro = false; ws.forEach(function (f) { f(); });
-        sw.classList.remove('block');
-        lift(sw);
-        setTimeout(function () { el.remove(); }, 500);
-      }, 1000);
+      nEl.textContent = '100';
+      // the pixels slide along the line into the square of ME.; the letters ink in
+      var dx = dotX();
+      ds.forEach(function (d, k) {
+        var x0 = parseFloat(d.style.left);
+        anim(d, [{ transform: 'translateX(0)' }, { transform: 'translateX(' + (dx - x0) + 'px)' }], { duration: 640, delay: k * 50, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' });
+      });
+      setTimeout(function () { el.classList.add('fold'); }, 420);
+      me.style.filter = 'url(#mi-ink)'; ink(1, 0, 900, function () { me.style.filter = ''; });
+      el.classList.add('me-in');
+      setTimeout(function () { el.classList.add('ask'); el.style.pointerEvents = 'auto'; try { el.querySelector('.mi-on').focus({ preventScroll: true }); } catch (e) { } }, 900);
+      setTimeout(function () { leave(false); }, 9000);   // nobody chose: enter quietly (music still starts on the first click)
     };
     (function tick() {
       var t = now() - t0, p = Math.min(ready ? 1 : 0.94, t / MIN);
-      n.textContent = ('00' + Math.round(p * 100)).slice(-3);
-      // one pixel per quarter of the load, each in its category colour
-      while (lit < ds.length && p >= (lit + 1) / (ds.length + 0.6)) ds[lit++].classList.add('in');
-      if ((ready && t >= MIN) || t >= MAX) { while (lit < ds.length) ds[lit++].classList.add('in'); return setTimeout(finish, 260); }
+      nEl.textContent = ('00' + Math.round(p * 100)).slice(-3);
+      hl.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+      // a pixel is stamped when the line reaches its column
+      var xr = g.pad + p * (vw - 2 * g.pad);
+      while (lit < ds.length && xr >= X[lit]) ds[lit++].classList.add('in');
+      if ((ready && t >= MIN) || t >= MAX) { while (lit < ds.length) ds[lit++].classList.add('in'); hl.style.transform = 'scaleX(1)'; return setTimeout(finish, 240); }
       requestAnimationFrame(tick);
     })();
   });
@@ -257,8 +307,8 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief();
-    if (!EMB && !SHELLED) W.__introWait(music);
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar();
+    if (!EMB && !SHELLED) music();
   }
 
   /* Ankara time in the hero line */
@@ -414,28 +464,27 @@
     }, { passive: true });
   }
 
-  /* On repeat while designing. Plays when the site opens; where the browser blocks sound until the visitor
-     interacts, it starts on their first click / tap / key. Pausing it is remembered. */
+  /* On repeat while designing. Starts with the site: on Home the intro asks "with sound"; elsewhere (and when the browser
+     holds sound back) it starts on the visitor's first click / tap / key. The button plays and pauses; pausing is
+     remembered. The YouTube player itself stays out of sight. */
   function music() {
     var VID = 'uhiwpPRxVMw', START = 76, VOL = 70;
     var saved = null; try { saved = JSON.parse(st('sessionStorage', 'me-mu') || 'null'); } catch (e) { }
     var off = st('localStorage', 'me-mu-off') === '1';
     var title = st('localStorage', 'me-mu-title') || '';
     var wrap = D.createElement('div'); wrap.className = 'me-mu';
-    wrap.innerHTML = '<div class="me-mc" role="region" aria-label="Music player"><div class="me-mv"><div id="me-yt"></div></div>'
-      + '<div class="me-mi"><small>On repeat while designing</small><b class="me-tt"></b><small>Nils Frahm</small></div>'
-      + '<div class="me-mk"><button type="button" class="me-pp">Pause</button><button type="button" class="me-mute" aria-pressed="false">Mute</button><a href="https://www.youtube.com/watch?v=' + VID + '" target="_blank" rel="noopener">YouTube ↗</a><button type="button" class="me-x" aria-label="Close player">Close ×</button></div></div>'
-      + '<button type="button" class="me-mb" aria-expanded="false" aria-label="Music: On repeat while designing, Nils Frahm"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2">Nils Frahm</small></span></button>';
+    wrap.innerHTML = '<div class="me-mv" aria-hidden="true"><div id="me-yt"></div></div>'
+      + '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2">Nils Frahm</small></span></button>';
     D.body.appendChild(wrap);
-    var btn = wrap.querySelector('.me-mb'), t1 = wrap.querySelector('.me-t1'), t2 = wrap.querySelector('.me-t2'), tt = wrap.querySelector('.me-tt'), mu = wrap.querySelector('.me-mute'), pp = wrap.querySelector('.me-pp');
-    var P = null, ready = false, state = off ? 'off' : 'wait', open = false, fade = null, apiP = null, fadeMs = saved && saved.t ? 1500 : 5000, armed = false;
+    var btn = wrap.querySelector('.me-mb'), t2 = wrap.querySelector('.me-t2');
+    var P = null, ready = false, state = off ? 'pause' : 'wait', fade = null, apiP = null, fadeMs = saved && saved.t ? 1500 : 5000, armed = false;
+    var clean = function (t) { return (t || '').replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, ' ').replace(/^\s*Nils Frahm\s*[-–—:]\s*/i, '').trim(); };
     var label = function () {
-      tt.textContent = title || 'Nils Frahm';
-      t1.textContent = state === 'play' && title ? title : 'On repeat while designing';
-      t2.textContent = state === 'play' ? 'Nils Frahm' : state === 'wait' ? 'Nils Frahm — plays on your first click' : 'Nils Frahm — paused';
-      pp.textContent = state === 'play' ? 'Pause' : 'Play';
-      wrap.classList.toggle('play', state === 'play'); wrap.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      var song = clean(title);
+      t2.textContent = 'Nils Frahm' + (song ? ' — ' + song : '') + (state === 'play' ? '' : state === 'wait' ? ' · plays on your first click' : ' · paused');
+      wrap.classList.toggle('play', state === 'play');
+      btn.setAttribute('aria-pressed', state === 'play' ? 'true' : 'false');
+      btn.setAttribute('aria-label', (state === 'play' ? 'Pause' : 'Play') + ' music: On repeat while designing, Nils Frahm' + (song ? ', ' + song : ''));
     };
     var api = function () {
       if (apiP) return apiP;
@@ -456,12 +505,11 @@
       }, 50);
     };
     var go = function () { if (!P || !ready) return; try { P.setVolume(0); P.playVideo(); } catch (e) { } };
-    // sound needs a user gesture in most browsers: the first click / tap / key anywhere starts it
     var arm = function () {
       if (armed) return; armed = true;
       var g = function (e) {
         if (state !== 'wait') return disarm();
-        if (e.target && e.target.closest && e.target.closest('.me-mu')) return;   // the player's own buttons handle themselves
+        if (e.target && e.target.closest && e.target.closest('.me-mu, .mi')) return;   // those buttons decide for themselves
         go(); disarm();
       };
       var disarm = function () { ['pointerdown', 'keydown', 'touchend'].forEach(function (ev) { D.removeEventListener(ev, g, true); }); armed = false; };
@@ -477,34 +525,24 @@
             onReady: function (e) {
               ready = true;
               var d = e.target.getVideoData && e.target.getVideoData(); if (d && d.title) { title = d.title; st('localStorage', 'me-mu-title', title); }
-              if (state === 'wait' || state === 'play') { go(); arm(); }
+              if (state === 'wait' && !(doIntro && !W.__meWantSound)) go();
               label();
             },
             onStateChange: function (e) {
               if (e.data === 1) { if (state !== 'play') { state = 'play'; st('localStorage', 'me-mu-off', null); label(); ramp(VOL, fadeMs); fadeMs = 1500; } }
               else if (e.data === 0) { try { P.seekTo(START, true); P.playVideo(); } catch (er) { } }
             },
-            onError: function () { t2.textContent = 'Can’t play here — open on YouTube'; }
+            onError: function () { t2.textContent = 'Nils Frahm · can’t play here'; }
           }
         });
       });
     };
     var pause = function () { state = 'pause'; st('localStorage', 'me-mu-off', '1'); st('sessionStorage', 'me-mu', null); label(); ramp(0, 500, function () { try { P.pauseVideo(); } catch (e) { } }); };
-    var resume = function () { state = 'wait'; st('localStorage', 'me-mu-off', null); fadeMs = 1500; label(); if (P && ready) go(); else create(); };
-    btn.addEventListener('click', function () {
-      if (state === 'off') { state = 'wait'; fadeMs = 5000; st('localStorage', 'me-mu-off', null); label(); if (P && ready) go(); else create(); }
-      else if (state === 'wait' && P && ready) go();
-      open = !open; label();
-    });
-    pp.addEventListener('click', function () { if (state === 'play') pause(); else resume(); });
-    wrap.querySelector('.me-x').addEventListener('click', function () { open = false; label(); btn.focus(); });
-    D.addEventListener('keydown', function (e) { if (e.key === 'Escape' && open) { open = false; label(); } });
-    D.addEventListener('pointerdown', function (e) { if (open && !wrap.contains(e.target)) { open = false; label(); } }, true);
-    mu.addEventListener('click', function () {
-      if (!P) return; var m = P.isMuted && P.isMuted();
-      try { m ? P.unMute() : P.mute(); } catch (e) { }
-      mu.textContent = m ? 'Mute' : 'Unmute'; mu.setAttribute('aria-pressed', m ? 'false' : 'true');
-    });
+    var play = function () { state = 'wait'; st('localStorage', 'me-mu-off', null); label(); if (P && ready) go(); else create(); };
+    btn.addEventListener('click', function () { if (state === 'play') pause(); else play(); });
+    // the intro's two doors
+    W.__meMusicStart = function () { fadeMs = 5000; play(); };
+    W.__meMusicQuiet = function () { if (state === 'wait') { arm(); } };
     W.__meSaveMusic = function () {
       if (state !== 'play' || !P || !P.getCurrentTime) return;
       try { st('sessionStorage', 'me-mu', JSON.stringify({ t: P.getCurrentTime() })); } catch (e) { }
@@ -512,7 +550,8 @@
     W.addEventListener('pagehide', W.__meSaveMusic);
     W.__meMusicPlaying = function () { return state === 'play'; };
     label();
-    if (state !== 'off') { create(); arm(); }
+    if (W.__meWantSound) play();
+    else if (state !== 'pause') { create(); if (!doIntro) arm(); }
   }
 
   /* Playground: Mawu's six sensory balls, each with its own temperament */
@@ -767,5 +806,18 @@
       items.forEach(function (it, i) { it[1].classList.toggle('on', i === cur); });
     };
     W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', place); place();
+  }
+
+  /* the top bar steps out of the way while reading down and over the work cards, and returns on any scroll up */
+  function topbar() {
+    var nav = D.querySelector('nav[aria-label="Main"]'); if (!nav) return;
+    var cards = D.getElementById('work'), last = W.scrollY, hid = false;
+    var set = function (h) { if (h !== hid) { hid = h; H.classList.toggle('nav-hide', h); } };
+    W.addEventListener('scroll', function () {
+      var y = W.scrollY, dy = y - last, vh = W.innerHeight; last = y;
+      if (y < nav.offsetHeight + 8) return set(false);
+      if (cards) { var r = cards.getBoundingClientRect(); if (r.top <= 1 && r.bottom > vh * 0.5) return set(true); }
+      if (dy > 3) set(true); else if (dy < -3) set(false);
+    }, { passive: true });
   }
 })();
