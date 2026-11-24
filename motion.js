@@ -806,17 +806,6 @@
     if (sec) {
       var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
       var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
-      // the first time the band opens, the pixels say what the index is; then they fall back into the grid
-      var said = false, narrow = W.innerWidth < 760;
-      var line = narrow ? { lines: ['WHAT I\u2019VE BEEN', 'DOING SINCE', '2021'], arrow: 'down', x0: 0, c: FG } : { lines: ['WHAT I\u2019VE BEEN DOING', 'SINCE 2021'], arrow: 'down', x0: 0.16, c: FG };
-      if (api) new IntersectionObserver(function (es, ob) {
-        if (said || !es[0].isIntersecting) return; said = true; ob.disconnect();
-        api.setIdle(line);
-        var t0 = now(), gone = false;
-        var back = function () { if (gone) return; gone = true; api.setIdle(null); bd.removeEventListener('pointermove', moved); };
-        var moved = function () { if (now() - t0 > 2600) back(); };   // once it has been read, a move through the band clears it
-        bd.addEventListener('pointermove', moved, { passive: true }); setTimeout(back, 6500);
-      }, { threshold: 0.6 }).observe(bd);
       // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
       if (LIVE && !RM) {
         var zl = '';
