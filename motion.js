@@ -219,6 +219,7 @@
       IN.phase = 'leave'; IN.t0 = now();
       el.classList.add('out');
       ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.removeEventListener(ev, scrollIn, { passive: false }); });
+      H.classList.add('me-lock'); setTimeout(function () { H.classList.remove('me-lock'); }, 1950);
       setTimeout(function () { H.classList.remove('intro2'); var ws = waiters; waiters = []; doIntro = false; ws.forEach(function (f) { f(); }); }, 650);
       setTimeout(function () { el.remove(); }, 1200);
     };
@@ -1075,38 +1076,63 @@
       if (vis && !D.hidden && !still && (on > 0.001 || moved > 0.002 || KR.length || (W.__meMusicPlaying && W.__meMusicPlaying()))) raf = requestAnimationFrame(frame);
       else if (!still) setTimeout(kick, 400);   // asleep: look again for the music now and then
     };
-    // the intro: the big name builds up out of the lines with the loading, glimmering through the site's colours; leaving,
-    // it sinks back into the lines while the landing's name surfaces and everything settles into the lavender
-    var PAL = [[150, 152, 158], [184, 185, 189], [214, 214, 216], [196, 197, 201], [252, 252, 250]];   // (Nov 24) greyish whites, a flare of near-white
+    // intro text in greyish white; leaving, every pixel of it travels (in whole pixels, so it stays on the line grid)
+    // to a pixel of the landing's name, and turns lavender as it lands: one text melting into the other
+    var MV = null;
+    var morph = function () {
+      var src = [], dst = [], k;
+      for (k = 0; k < gc * ngr; k++) { if (I[k] > 0.3 && (DPm[k] || (PCm && PCm[k]))) src.push(k); if (NM[k]) dst.push(k); }
+      if (!src.length || !dst.length) return [];
+      var key = function (k) { return (k % gc) * 4096 + Math.floor(k / gc); };
+      src.sort(function (a, b) { return key(a) - key(b); }); dst.sort(function (a, b) { return key(a) - key(b); });
+      var M = Math.max(src.length, dst.length), out = [];
+      for (var m = 0; m < M; m++) {
+        var a = src[Math.floor(m * src.length / M)], b = dst[Math.floor(m * dst.length / M)];
+        out.push({ ax: a % gc, ay: Math.floor(a / gc), bx: b % gc, by: Math.floor(b / gc), d: hash(m, 5) * 0.3 + 0.1 * (b % gc) / gc, v: I[a] });
+      }
+      return out;
+    };
     var introFrame = function (t) {
-      var tr = (t - tr0) / 1000, p = IN.p || 0, tl = IN.phase === 'leave' ? cl((t - IN.t0) / 1600) : 0;
-      if (tl >= 1) { IN.phase = 'done'; W.__meIntro = null; IN = null; raf = requestAnimationFrame(frame); return; }
+      var tr = (t - tr0) / 1000, p = IN.p || 0, leaving = IN.phase === 'leave', tl = leaving ? cl((t - IN.t0) / 1900) : 0;
+      if (tl >= 1) {
+        for (var k0 = 0; k0 < I.length; k0++) I[k0] = (Math.floor(k0 / gc) < ngr && NM[k0]) ? 1 : 0;   // hand over without a seam
+        IN.phase = 'done'; W.__meIntro = null; IN = null; MV = null; raf = requestAnimationFrame(frame); return;
+      }
       x.fillStyle = '#030304'; x.fillRect(0, 0, W0, H0);
       for (var c = 0; c < cols; c++) {
         var pul = 0.5 + 0.5 * Math.sin(tr * ph[c * 3 + 1] + ph[c * 3]);
-        var lc = tl > 0.3 ? COL : '200,201,205', la = (0.22 + 0.2 * pul) * (tl > 0.3 ? 1 : 0.8);   // grey while loading, lavender as the landing takes over
-        x.fillStyle = 'rgba(' + lc + ',' + la.toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1, H0);
+        x.fillStyle = 'rgba(' + COL + ',' + (0.22 + 0.2 * pul).toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1, H0);
       }
-      var settle = sm(cl((tl - 0.35) / 0.6)), fr = Math.floor(tr * 9), pn = Math.floor(p * 100);
-      if (pn !== pcN) { pcN = pn; PCm = cells(ngr, function () { font(pcF); oc.fillText(pn + '%', pcX, pcB); }); }   // the number, redrawn as it counts
-      for (var gy = 0; gy < Math.min(gr, ngr); gy++) for (var gx = 0; gx < gc; gx++) {
-        var k = gy * gc + gx, od = ORD[k], mD = DPm[k] && od < p * 1.4 + 0.15, mP = PCm && PCm[k], mN = NM[gy * gc + gx], tgt = 0, big = 0;
-        if (mD || mP) { big = 1 - sm(cl((tl * 1.5 - od * 0.5) / 0.5)); }
-        var sml = mN ? sm(cl((tl * 1.5 - (1 - od) * 0.5 - 0.2) / 0.5)) : 0;
-        var gl = 0.5 + 0.5 * Math.sin(gx * 0.21 - tr * 2.2 + Math.sin(gy * 0.17 + tr * 0.8) * 1.8);
-        tgt = Math.max(big * (0.45 + 0.55 * gl), sml);
-        var dI = (tgt - I[k]) * (tgt > I[k] ? 0.4 : (IN.phase === 'leave' ? 0.2 : 0.5)); I[k] += dI;   // old digits clear quickly
-        var v = I[k]; if (v < 0.04) continue;
-        // glimmer: a band of colour travels through the name; single pixels flare cream
-        var ci0 = Math.floor((((gx * 0.045 - gy * 0.03 + tr * 0.32 + hash(gx, gy) * 0.35) % 1) + 1) % 1 * 4), flare = hash(gx * 3 + fr, gy * 7 - fr) > 0.985;
-        var cc = flare ? PAL[4] : PAL[ci0], mix = Math.max(settle, sml > big ? 1 : 0);
-        var r = Math.round(cc[0] + (122 - cc[0]) * mix), g2 = Math.round(cc[1] + (130 - cc[1]) * mix), b = Math.round(cc[2] + (255 - cc[2]) * mix);
-        x.fillStyle = 'rgb(' + r + ',' + g2 + ',' + b + ')';
+      var fr = Math.floor(tr * 9), pn = Math.floor(p * 100);
+      var lines = function (gx, gy, v, r, g, b, tt) {   // one pixel: K lines of their own widths
+        x.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
         for (var j = 0; j < K; j++) {
-          var ci = gx * K + j; if (ci >= cols) break;
-          var hv = hash(ci, gy), n = 0.6 + 0.25 * Math.sin(tr * (1.6 + hv * 2.4) + hv * 9) + 0.15 * Math.sin(tr * 4.1 + ph[ci * 3]);
+          var ci = gx * K + j; if (ci < 0 || ci >= cols) continue;
+          var hv = hash(ci, gy), n = 0.62 + 0.24 * Math.sin(tt * (1.6 + hv * 2.4) + hv * 9) + 0.14 * Math.sin(tt * 4.1 + ph[ci * 3]);
           var e = v * n, wd = 1.2 + e * (P * 0.8 - 1.2); if (e < 0.08) continue;
           x.globalAlpha = Math.min(1, 0.45 + e * 1.1); x.fillRect(colX[ci] - wd / 2, gy * G, wd, G + 0.5);
+        }
+      };
+      if (!leaving) {
+        if (pn !== pcN) { pcN = pn; PCm = cells(ngr, function () { font(pcF); oc.fillText(pn + '%', pcX, pcB); }); }   // the number, redrawn as it counts
+        for (var gy = 0; gy < Math.min(gr, ngr); gy++) for (var gx = 0; gx < gc; gx++) {
+          var k = gy * gc + gx, od = ORD[k], on1 = (DPm[k] && od < p * 1.4 + 0.15) || (PCm && PCm[k]);
+          var tgt = on1 ? 1 : 0, dI = (tgt - I[k]) * (tgt > I[k] ? 0.4 : 0.5); I[k] += dI;
+          var v = I[k]; if (v < 0.04) continue;
+          // glimmer in greys: a slow band of light crosses the letters, single pixels flare white
+          var gl = 0.5 + 0.5 * Math.sin(gx * 0.16 - gy * 0.11 - tr * 2.4), flare = hash(gx * 3 + fr, gy * 7 - fr) > 0.986;
+          var lum = flare ? 255 : Math.round(150 + 94 * gl * gl);
+          lines(gx, gy, v * (0.62 + 0.38 * gl), lum, lum, Math.max(0, lum - 4), tr);
+        }
+      } else {
+        if (!MV) MV = morph();
+        var lv = [122, 130, 255];
+        for (var m = 0; m < MV.length; m++) {
+          var q = MV[m], u = cl((tl * 1.25 - q.d) / 0.85), e2 = u * u * (3 - 2 * u);
+          var px = Math.round(q.ax + (q.bx - q.ax) * e2), py = Math.round(q.ay + (q.by - q.ay) * e2 - Math.sin(Math.PI * e2) * 2);   // a slight lift on the way
+          var lum2 = 225 - 20 * Math.sin(Math.PI * e2), ck = sm(cl((u - 0.35) / 0.55));
+          var r = Math.round(lum2 + (lv[0] - lum2) * ck), g2 = Math.round(lum2 + (lv[1] - lum2) * ck), b2 = Math.round(lum2 - 4 + (lv[2] - lum2 + 4) * ck);
+          lines(px, py, (q.v + (1 - q.v) * e2) * (0.75 + 0.25 * e2), r, g2, b2, tr);
         }
       }
       x.globalAlpha = 1;
