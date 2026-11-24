@@ -303,11 +303,11 @@ class Component extends DCLogic {
     const layout = () => {
       const W = window.innerWidth, H = window.innerHeight;
       const pad = Math.max(16, Math.min(56, W * 0.04));
-      const inner = W - 2 * pad, rule = pad + inner * 0.16;
+      const CW = document.documentElement.clientWidth || W; const inner = CW - 2 * pad, rule = pad + inner * 0.16;
       const n = W < 640 ? 2 : W < 1100 ? 4 : 6;
       xs = [pad, rule];
-      for (let k = 1; k < n; k++) xs.push(rule + (W - pad - rule) * k / n);
-      xs.push(W - pad);
+      for (let k = 1; k < n; k++) xs.push(rule + (CW - pad - rule) * k / n);
+      xs.push(CW - pad);
       gw.querySelectorAll('.ag-l').forEach((e) => e.remove());
       xs.forEach((x, k) => {
         const l = document.createElement('i'); l.className = 'ag-l'; l.style.left = Math.round(x) + 'px';
@@ -317,7 +317,7 @@ class Component extends DCLogic {
       // the crosshair marks where the right frame line meets the header's bottom rule (clear of the corner name)
       let ny = 72; const nv = document.querySelector('[data-inkroot] nav');
       if (nv) { let e = nv; for (let k = 0; k < 4 && e; k++) { if (parseFloat(getComputedStyle(e).borderBottomWidth) > 0) break; e = e.parentElement; } ny = (e || nv).getBoundingClientRect().bottom; }
-      ch.style.left = Math.round(W - pad - 22) + 'px'; ch.style.top = Math.round(ny - 22) + 'px';
+      ch.style.left = Math.round(CW - pad - 22) + 'px'; ch.style.top = Math.round(ny - 22) + 'px';
       drawn = true;
     };
     layout();

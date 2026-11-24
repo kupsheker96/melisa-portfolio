@@ -41,8 +41,9 @@
 
   /* ---------- grid strips: the margin column + the 6 / 4 / 2 content columns ---------- */
   function strips() {
-    var vw = H.clientWidth || W.innerWidth, pad = Math.max(16, Math.min(56, vw * 0.04)), inner = vw - 2 * pad;
-    var rule = pad + inner * 0.16, n = vw >= 1100 ? 6 : vw >= 640 ? 4 : 2, cw = inner * 0.84 / n, xs = [0, rule];
+    // the same grid the page draws: padding from the viewport width (CSS vw), columns from the visible width
+    var iw = W.innerWidth, vw = H.clientWidth || iw, pad = Math.max(16, Math.min(56, iw * 0.04)), inner = vw - 2 * pad;
+    var rule = pad + inner * 0.16, n = iw >= 1100 ? 6 : iw >= 640 ? 4 : 2, cw = inner * 0.84 / n, xs = [0, rule];
     for (var i = 1; i < n; i++) xs.push(rule + i * cw);
     xs.push(vw);
     return { xs: xs, pad: pad, rule: rule, vw: vw };
@@ -307,7 +308,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot();
     if (!EMB && !SHELLED) music();
   }
 
@@ -344,16 +345,20 @@
     if (PAGE !== 'home' || RM || !LIVE) return;
     var top = D.getElementById('top'); if (!top) return;
     var groups = top.querySelectorAll('[data-ink="load"]'); if (groups.length < 2) return;
-    var A = groups[0].querySelectorAll('.ik'), B = groups[1].querySelectorAll('.ik'), last = -1;
+    // each word leaves only once it has been read: it starts when its own line reaches the top fifth of the screen,
+    // and its letters rise out behind the line one after another
+    var words = [groups[0], groups[1]].map(function (g) { return { g: g, L: g.querySelectorAll('.ik'), box: g.parentNode }; }), last = '';
     var run = function () {
-      var p = cl(W.scrollY / (W.innerHeight * 0.95)); if (Math.abs(p - last) < 0.001) return; last = p;
-      var f = function (L, dir) {
-        for (var i = 0; i < L.length; i++) {
-          var j = dir < 0 ? i : L.length - 1 - i, t = cl(p * 1.7 - j * 0.09), e = t * t * (3 - 2 * t);
-          L[i].style.transform = e ? 'translateY(' + (dir * e * 104).toFixed(2) + '%)' : '';
+      var vh = W.innerHeight, key = '';
+      words.forEach(function (w) {
+        var top = w.box.getBoundingClientRect().top, p = cl((vh * 0.2 - top) / (vh * 0.55));
+        key += p.toFixed(3);
+        for (var i = 0; i < w.L.length; i++) {
+          var t = cl(p * 1.4 - i * 0.06), e = t * t * (3 - 2 * t);
+          w.L[i].style.transform = e ? 'translateY(' + (-e * 104).toFixed(2) + '%)' : '';
         }
-      };
-      f(A, -1); f(B, 1);
+      });
+      last = key;
     };
     W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
   }
@@ -810,7 +815,23 @@
 
   /* the top bar steps out of the way while reading down and over the work cards, and returns on any scroll up */
   function topbar() {
-    var nav = D.querySelector('nav[aria-label="Main"]'); if (!nav) return;
+    var nav = Array.prototype.filter.call(D.querySelectorAll('nav[aria-label="Main"]'), function (x) { return !x.closest('x-dc'); })[0]; if (!nav) return;
+    // everything in the bar starts a gutter after a grid line: the page label after the margin line, the links on the last columns
+    var row = nav.firstElementChild, left = row && row.children[0], links = nav.querySelector('.mainnav');
+    var lab = left && left.children[1], btn = left && left.querySelector('button');
+    var align = function () {
+      var g = strips(), gut = Math.round(Math.max(14, Math.min(24, W.innerWidth * 0.016))), n = g.xs.length - 2, as = links ? links.querySelectorAll('a') : [];
+      var put = function (el, x) { if (!el) return; el.style.position = 'absolute'; el.style.left = Math.round(x) + 'px'; el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; el.style.margin = '0'; };
+      var clear = function (el) { if (el) { el.style.position = el.style.left = el.style.top = el.style.transform = el.style.margin = ''; } };
+      if (n < 4) { [lab, btn].concat(Array.prototype.slice.call(as)).forEach(clear); if (lab) lab.style.maxWidth = lab.style.whiteSpace = lab.style.overflow = ''; return; }
+      put(lab, g.xs[1] + gut);
+      if (lab) { lab.style.whiteSpace = 'nowrap'; lab.style.overflow = 'hidden'; lab.style.textOverflow = 'ellipsis'; lab.style.maxWidth = (btn && n < 6 ? g.xs[2] - g.xs[1] - 2 * gut : (n >= 6 ? g.xs[3] : g.xs[3]) - g.xs[1] - 2 * gut) + 'px'; }
+      if (btn) put(btn, (n >= 6 ? g.xs[3] : g.xs[2]) + gut);
+      // six columns: one link per column on the last three; four columns: the last two columns, halved
+      var X = n >= 6 ? [g.xs[4], g.xs[5], g.xs[6]] : [g.xs[3], (g.xs[3] + g.xs[4]) / 2, g.xs[4]];
+      Array.prototype.forEach.call(as, function (a, i) { if (X[i] != null) put(a, X[i] + gut); });
+    };
+    align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
     var cards = D.getElementById('work'), last = W.scrollY, hid = false;
     var set = function (h) { if (h !== hid) { hid = h; H.classList.toggle('nav-hide', h); } };
     W.addEventListener('scroll', function () {
@@ -819,5 +840,27 @@
       if (cards) { var r = cards.getBoundingClientRect(); if (r.top <= 1 && r.bottom > vh * 0.5) return set(true); }
       if (dy > 3) set(true); else if (dy < -3) set(false);
     }, { passive: true });
+  }
+
+  /* Home: the dot on the vertical rule grows as you scroll and becomes the UI/UX blue, opening onto the first card */
+  function railDot() {
+    var mk = D.querySelector('[data-inkroot] .vmark'), cards = D.getElementById('work'); if (!mk || !cards || !LIVE || RM) return;
+    var o = D.createElement('div'); o.className = 'me-dot'; o.setAttribute('aria-hidden', 'true'); D.body.appendChild(o);
+    H.classList.add('dot-on');
+    var A = [122, 130, 255], B = [43, 53, 255], last = '';
+    var run = function () {
+      var r = mk.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, vh = W.innerHeight, vw = W.innerWidth;
+      var ct = cards.getBoundingClientRect().top, q = cl(1 - ct / vh), e = q * q * (3 - 2 * q);
+      var far = Math.hypot(Math.max(cx, vw - cx), Math.max(cy, vh - cy)) + 4;
+      var R = 3.5 + (far - 3.5) * Math.pow(e, 1.6);
+      var hide = ct <= 0.5 || r.bottom < -40 || r.top > vh + 40;
+      var c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * e); });
+      var key = [Math.round(cx), Math.round(cy), R.toFixed(1), c.join(), hide].join('|'); if (key === last) return; last = key;
+      o.style.visibility = hide ? 'hidden' : 'visible';
+      o.style.background = 'rgb(' + c.join(',') + ')';
+      o.style.clipPath = 'circle(' + R.toFixed(1) + 'px at ' + cx.toFixed(1) + 'px ' + cy.toFixed(1) + 'px)';
+    };
+    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
+    var t0 = now(); (function warm() { run(); if (now() - t0 < 3000) requestAnimationFrame(warm); })();
   }
 })();

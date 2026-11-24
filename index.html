@@ -370,11 +370,11 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
   </div>
 </article><div class="cc-tail" aria-hidden="true" style="height:110vh"></div></section>
   <section id="index" class="pf" aria-label="Index" data-ink-skip>
-    <div class="pf-hd"><span>[ Index ]</span><span aria-hidden="true">Point at a word</span></div>
+    <div class="pf-hd"><span>[ Index ]</span></div>
     <div class="pf-band"><canvas aria-hidden="true"></canvas></div>
     <div class="pf-ls">
-      <div class="pf-col"><h3>Work</h3><ul><li><a class="pf-i" href="#c-uiux" data-w="UI/UX" data-c="#5d66ff" style="--c:#5d66ff"><i aria-hidden="true"></i><span><span class="k">01</span>&nbsp;&nbsp;UI/UX</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="#c-product" data-w="PRODUCT" data-c="#d9f24a" style="--c:#d9f24a"><i aria-hidden="true"></i><span><span class="k">02</span>&nbsp;&nbsp;Product</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="social.html" data-w="SOCIAL MEDIA" data-c="#f4f3ef" style="--c:#f4f3ef"><i aria-hidden="true"></i><span><span class="k">03</span>&nbsp;&nbsp;Social Media</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="#c-branding" data-w="BRANDING" data-c="#ff4fb0" style="--c:#ff4fb0"><i aria-hidden="true"></i><span><span class="k">04</span>&nbsp;&nbsp;Branding</span><span aria-hidden="true">↗</span></a></li></ul></div>
-      <div class="pf-col"><h3>How I work</h3><ul><li><button type="button" class="pf-i" data-w="RESEARCH"><i aria-hidden="true"></i><span>Research</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="PSYCHOLOGY"><i aria-hidden="true"></i><span>Psychology</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="INTERVIEWS"><i aria-hidden="true"></i><span>Interviews</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="PROTOTYPING"><i aria-hidden="true"></i><span>Prototyping</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="SKETCHING"><i aria-hidden="true"></i><span>Sketching</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="3D MODELING"><i aria-hidden="true"></i><span>3D modeling</span><span aria-hidden="true">+</span></button></li></ul></div>
+      <div class="pf-col pf-w"><h3>[ Work ]</h3><ul><li><a class="pf-i" href="#c-uiux" data-w="UI/UX" data-c="#5d66ff" style="--c:#5d66ff"><i aria-hidden="true"></i><span><span class="k">01</span>&nbsp;&nbsp;UI/UX</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="#c-product" data-w="PRODUCT" data-c="#d9f24a" style="--c:#d9f24a"><i aria-hidden="true"></i><span><span class="k">02</span>&nbsp;&nbsp;Product</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="social.html" data-w="SOCIAL MEDIA" data-c="#f4f3ef" style="--c:#f4f3ef"><i aria-hidden="true"></i><span><span class="k">03</span>&nbsp;&nbsp;Social Media</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="#c-branding" data-w="BRANDING" data-c="#ff4fb0" style="--c:#ff4fb0"><i aria-hidden="true"></i><span><span class="k">04</span>&nbsp;&nbsp;Branding</span><span aria-hidden="true">↗</span></a></li></ul></div>
+      <div class="pf-col pf-h"><h3>[ How I work ]</h3><ul><li><button type="button" class="pf-i" data-w="RESEARCH"><i aria-hidden="true"></i><span>Research</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="PSYCHOLOGY"><i aria-hidden="true"></i><span>Psychology</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="INTERVIEWS"><i aria-hidden="true"></i><span>Interviews</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="PROTOTYPING"><i aria-hidden="true"></i><span>Prototyping</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="SKETCHING"><i aria-hidden="true"></i><span>Sketching</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="3D MODELING"><i aria-hidden="true"></i><span>3D modeling</span><span aria-hidden="true">+</span></button></li></ul></div>
     </div>
   </section>
   <div aria-hidden="true" style="height:clamp(120px,14vw,240px)"></div>
@@ -688,11 +688,11 @@ class Component extends DCLogic {
     const layout = () => {
       const W = window.innerWidth, H = window.innerHeight;
       const pad = Math.max(16, Math.min(56, W * 0.04));
-      const inner = W - 2 * pad, rule = pad + inner * 0.16;
+      const CW = document.documentElement.clientWidth || W; const inner = CW - 2 * pad, rule = pad + inner * 0.16;
       const n = W < 640 ? 2 : W < 1100 ? 4 : 6;
       xs = [pad, rule];
-      for (let k = 1; k < n; k++) xs.push(rule + (W - pad - rule) * k / n);
-      xs.push(W - pad);
+      for (let k = 1; k < n; k++) xs.push(rule + (CW - pad - rule) * k / n);
+      xs.push(CW - pad);
       gw.querySelectorAll('.ag-l').forEach((e) => e.remove());
       xs.forEach((x, k) => {
         const l = document.createElement('i'); l.className = 'ag-l'; l.style.left = Math.round(x) + 'px';
@@ -702,7 +702,7 @@ class Component extends DCLogic {
       // the crosshair marks where the right frame line meets the header's bottom rule (clear of the corner name)
       let ny = 72; const nv = document.querySelector('[data-inkroot] nav');
       if (nv) { let e = nv; for (let k = 0; k < 4 && e; k++) { if (parseFloat(getComputedStyle(e).borderBottomWidth) > 0) break; e = e.parentElement; } ny = (e || nv).getBoundingClientRect().bottom; }
-      ch.style.left = Math.round(W - pad - 22) + 'px'; ch.style.top = Math.round(ny - 22) + 'px';
+      ch.style.left = Math.round(CW - pad - 22) + 'px'; ch.style.top = Math.round(ny - 22) + 'px';
       drawn = true;
     };
     layout();
