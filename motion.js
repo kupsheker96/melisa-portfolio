@@ -957,37 +957,38 @@
      surfacing and fading: on its own at an easy pace, with the music on every bass hit. The cursor is a magnet: the
      pixels near it light up and are pushed out a step. (?hero=dots shows the dot version.) */
   function lineHero(hb, x0, pr) {
-    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'pf-cv'; hb.appendChild(cv);
+    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'pf-cv'; hb.appendChild(cv); hb.classList.add('me-lines');
     var x = cv.getContext('2d'); if (!x) return;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
-    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, K = 4, G = 0, cols = 0, colX = [], gc = 0, gr = 0, M = null, I = null, split = 0, gx0 = 0;
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, K = 4, G = 0, GH = 0, RED = '255,24,72', ph = null, cols = 0, colX = [], gc = 0, gr = 0, M = null, I = null, split = 0, gx0 = 0;
     var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, t0 = now(), lastStep = 0, avg = 0, prevB = 0, sh = [0, 0], LIT = 0;
     var build = function () {
       W0 = hb.offsetWidth; H0 = hb.offsetHeight; if (!W0 || !H0) return;
       cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
       var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4, small = W.innerWidth < 640;
-      K = small ? 3 : 4;
-      P = cw / Math.max(K * 2, Math.round(cw / (small ? 5 : 6.5) / K) * K);   // a whole number of pixels, and of lines, per grid column
+      K = 2;
+      P = cw / Math.max(K * 3, Math.round(cw / (small ? 7 : 10) / K) * K);   // a whole number of pixels, and of lines, per grid column
       G = P * K;
       var start = g.rule % G; gx0 = start;
       colX = []; for (var cx = start + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); cols = colX.length;
-      gc = Math.ceil(cols / K); gr = Math.ceil(H0 / G);
+      GH = G; gc = Math.ceil(cols / K); gr = Math.ceil(H0 / GH);
       // the name, drawn once and read back as coarse pixels
       off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
       var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
       var lines = ['MELISA', 'ERGANI'], lhk = 1.2, room = W0 - x0 - pr, fs = H0 / (2 * 0.72 * lhk); font(fs);
       var longest = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; }));
       if (longest > room) { fs *= room / longest; font(fs); }
-      var cap = fs * 0.72, lh = cap * lhk, top = H0 - (2 * lh - (lh - cap)) - G;
+      var cap = fs * 0.72, lh = cap * lhk, top = H0 - (2 * lh - (lh - cap)) - G * 2;
+      ph = new Float32Array(cols * 3); for (var pi = 0; pi < cols; pi++) { ph[pi * 3] = hash(pi, 1) * 6.283; ph[pi * 3 + 1] = 0.6 + hash(pi, 2) * 1.8; ph[pi * 3 + 2] = hash(pi, 3); }
       oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
       lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
-      split = Math.round((top + cap + lh * 0.5 - cap * 0.5 + (lh - cap) / 2) / G);
+      split = Math.round((top + cap + (lh - cap) / 2) / GH);
       var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width;
       M = new Uint8Array(gc * gr); I = new Float32Array(gc * gr);
       for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
-        var px0 = start - G + gx * G, py0 = gy * G, hit = 0, n = 0;
+        var px0 = start - G + gx * G, py0 = gy * GH, hit = 0, n = 0;
         for (var sy = 0.2; sy < 1; sy += 0.2) for (var sx = 0.2; sx < 1; sx += 0.2) {
-          var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * G); n++;
+          var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * GH); n++;
           if (px >= 0 && px < ow && py < off.height && d[(py * ow + px) * 4 + 3] > 120) hit++;
         }
         M[gy * gc + gx] = hit / n > 0.4 ? 1 : 0;
@@ -1010,30 +1011,40 @@
       x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W0, H0);
       // the fixed lines; with the song each line thickens with its part of the spectrum (bass left, treble right)
       var spec = L.spec, hz = L.hz || 43;
-      x.fillStyle = 'rgba(244,243,239,.2)';
+      var LS = W.__meLS || (W.__meLS = new Float32Array(4096));
       for (var c = 0; c < cols; c++) {
-        var lw = 1;
-        if (spec && on > 0.01) { var fq = 40 * Math.pow(300, c / cols), lv = spec[Math.min(spec.length - 1, Math.round(fq / hz))] / 255; lw += on * lv * lv * (P * 0.35); }
-        x.fillRect(colX[c] - lw / 2, 0, lw, H0);
+        // every line has its own slow pulse; with the song it also carries its own slice of the spectrum
+        var lv = 0;
+        if (spec && on > 0.01) { var fq = 40 * Math.pow(300, (c % 97) / 97), bi = Math.min(spec.length - 1, Math.round(fq / hz)); lv = spec[bi] / 255; lv *= lv; }
+        LS[c] = lv;
+        var pul = 0.5 + 0.5 * Math.sin(tt * ph[c * 3 + 1] + ph[c * 3]), a0 = 0.26 + 0.2 * pul + on * lv * 0.4;
+        x.fillStyle = 'rgba(' + RED + ',' + a0.toFixed(3) + ')';
+        x.fillRect(colX[c] - 0.5, 0, 1 + on * lv * 1.2, H0);
       }
       // the name: shifted pixels, lit by a slow moving field (and by the cursor)
       var R = Math.max(110, Math.min(200, W0 * 0.12)), mgx = (mx - gx0 + G) / G, mgy = my / G, Rg = R / G;
+      var mgy2 = my / GH, RgY = R / GH;
       for (var gy = 0; gy < gr; gy++) {
         var s0 = sh[gy < split ? 0 : 1];
         for (var gx = 0; gx < gc; gx++) {
           var sx = gx - s0, sy = gy, push = 0;
-          var ddx = gx + 0.5 - mgx, ddy = gy + 0.5 - mgy, dd = Math.sqrt(ddx * ddx + ddy * ddy);
-          if (dd < Rg) { push = 1 - dd / Rg; var st2 = Math.round(push * 2.2); sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2); }
+          var ddx = (gx + 0.5 - mgx) / Rg, ddy = (gy + 0.5 - mgy2) / RgY, dd = Math.sqrt(ddx * ddx + ddy * ddy);
+          if (dd < 1) { push = 1 - dd; var st2 = push * 2.4; sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2 * 1.6); }
           var m = (sx >= 0 && sx < gc && sy >= 0 && sy < gr) ? M[sy * gc + sx] : 0;
-          var field = 0.5 + 0.5 * Math.sin(gx * 0.23 - tt * (0.9 + on * 1.6) + Math.sin(gy * 0.31 + tt * 0.5) * 1.6);
-          var tgt = m ? Math.min(1, (0.28 + 0.72 * field) * (1 + LIT * on * 0.6) + push * 0.8) : 0;
-          var k = gy * gc + gx; I[k] += (tgt - I[k]) * (tgt > I[k] ? 0.32 : 0.14);   // light comes fast, goes slowly: the ghosting
+          var field = 0.5 + 0.5 * Math.sin(gx * 0.23 - tt * (0.9 + on * 1.6) + Math.sin(gy * 0.19 + tt * 0.5) * 1.6);
+          var tgt = m ? Math.min(1, (0.5 + 0.5 * field) * (1 + LIT * on * 0.6) + push * 0.8) : 0;
+          var k = gy * gc + gx; I[k] += (tgt - I[k]) * (tgt > I[k] ? 0.32 : 0.2);   // light comes fast, goes slowly: the ghosting
           var v = I[k]; if (v < 0.04) continue;
-          x.fillStyle = 'rgba(244,243,239,' + Math.min(1, 0.35 + v * 0.75).toFixed(3) + ')';
+          // each line in the pixel has its own width, flickering on its own clock: thick ones burn brighter
           for (var j = 0; j < K; j++) {
             var ci = gx * K + j; if (ci >= cols) break;
-            var w = 1 + v * (P * 0.9 - 1) * (0.82 + 0.18 * hash(ci, gy));
-            x.fillRect(colX[ci] - w / 2, gy * G, w, G + 0.5);
+            var p0 = ph[ci * 3], p1 = ph[ci * 3 + 1], hv = hash(ci, gy);
+            var n = 0.55 + 0.25 * Math.sin(tt * (1.3 + p1 * 1.7) + p0 + gy * 0.9) + 0.2 * Math.sin(tt * (3.1 + hv * 4) + hv * 9);
+            if (on > 0.01) n = n * (1 - on * 0.45) + on * 0.45 * Math.min(1, LS[ci] * 1.6 + 0.2);
+            var e = v * Math.max(0.3, n), w = 1.2 + e * (P * 0.8 - 1.2);
+            if (e < 0.08) continue;
+            x.fillStyle = 'rgba(' + RED + ',' + Math.min(1, 0.5 + e * 1.1).toFixed(3) + ')';
+            x.fillRect(colX[ci] - w / 2, gy * GH, w, GH + 0.5);
           }
         }
       }

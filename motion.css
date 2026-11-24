@@ -269,3 +269,7 @@ html.mhs-on .ab-ax .q{position:absolute;top:-5px;left:0;width:9px;height:9px;bac
 [data-inkroot] .stmt .kw{background:linear-gradient(#7a82ff,#7a82ff) 0 100%/0% 2px no-repeat;transition:background-size .45s cubic-bezier(.2,.7,.2,1)}
 [data-inkroot] .stmt .kw.me-on{background-size:100% 2px}
 @media (max-width:639px){.me-kc span{display:none}.me-kc{font-size:8.5px}.me-kc b{letter-spacing:0;overflow-wrap:anywhere}}
+/* landing, line version: a black screen under the page grid (Nov 24) */
+.me-pfb.me-lines{background:#030304}
+.me-pfb.me-lines canvas{filter:drop-shadow(0 0 2px rgba(255,24,72,.75)) drop-shadow(0 0 9px rgba(255,24,72,.32))}
+@media (max-width:759px){.me-pfb.me-lines canvas{filter:drop-shadow(0 0 4px rgba(255,24,72,.5))}}
