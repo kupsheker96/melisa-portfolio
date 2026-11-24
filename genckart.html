@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PTT GençKart — Melisa Ergani</title>
+<script>window.__mePage='case'</script>
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -444,7 +447,7 @@ class Component extends DCLogic {
       build(g);
       const t0 = performance.now();
       const frame = (now) => {
-        const t = cl((now - t0) / g.P.dur);
+        const t = cl((now - t0) / (g.P.dur * (window.__inkK || 1)));
         g.apply(t);
         if (t < 1) { g.raf = requestAnimationFrame(frame); return; }
         finish();
@@ -454,7 +457,7 @@ class Component extends DCLogic {
         g.clean(); g.f.remove();
       };
       // if frames are throttled (background tab, embedded preview) the text still lands crisp on time
-      g.fin = setTimeout(finish, g.P.dur + 400);
+      g.fin = setTimeout(finish, g.P.dur * (window.__inkK || 1) + 400);
       g.raf = requestAnimationFrame(frame); this.inkRafs.push(g);
     };
     this.inkBuild = build;
@@ -462,7 +465,7 @@ class Component extends DCLogic {
     // entries that arrive together ink in reading order with a short stagger
     const queue = (gs) => {
       gs.sort((a, b) => (a.el.compareDocumentPosition(b.el) & 2 ? 1 : -1));
-      gs.forEach((g, i) => { const d = (g.delay || 0) * 1000 + Math.min(i * 45, 540); this.inkTs.push(setTimeout(() => start(g), d)); });
+      gs.forEach((g, i) => { const d = ((g.delay || 0) * 1000 + Math.min(i * 45, 540)) * (window.__inkK || 1); const go = () => this.inkTs.push(setTimeout(() => start(g), d)); window.__introWait ? window.__introWait(go) : go(); });
     };
     const io = this.inkIO = new IntersectionObserver((es) => {
       const gs = [];
@@ -530,7 +533,7 @@ class Component extends DCLogic {
     const gs = [];
     this.inkG.forEach((g, el) => { if (g.held && !g.run && (scope === el || scope.contains(el))) { g.held = false; gs.push(g); } });
     gs.sort((a, b) => (a.el.compareDocumentPosition(b.el) & 2 ? 1 : -1));
-    gs.forEach((g, i) => this.inkTs.push(setTimeout(() => this.inkStart(g), (g.delay || 0) * 1000 + Math.min(i * 45, 540))));
+    gs.forEach((g, i) => { const go = () => this.inkTs.push(setTimeout(() => this.inkStart(g), ((g.delay || 0) * 1000 + Math.min(i * 45, 540)) * (window.__inkK || 1))); window.__introWait ? window.__introWait(go) : go(); });
   }
   inkStop() {
     (this.inkRafs || []).forEach((g) => { cancelAnimationFrame(g.raf); clearTimeout(g.fin); }); (this.inkTs || []).forEach(clearTimeout); clearTimeout(this.inkT); clearTimeout(this.inkMT);
