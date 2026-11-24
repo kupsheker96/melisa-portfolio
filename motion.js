@@ -1031,83 +1031,150 @@
   /* ---------- category cards (Nov 24). The images develop through the site's square dots as each card arrives
      (scroll-tied, staggered tile by tile, so it runs backwards too); the last card, Social Media, breaks up into the same
      dots over the index. Each card answers the cursor in its own way; the headings widen where the cursor is. ---------- */
-  var CLIPN = 0;
-  function cellClip(el) {
-    var NS = 'http://www.w3.org/2000/svg', id = 'me-cc' + (CLIPN++);
-    var svg = D.createElementNS(NS, 'svg'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
-    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
-    var cp = D.createElementNS(NS, 'clipPath'); cp.id = id; cp.setAttribute('clipPathUnits', 'objectBoundingBox');
-    var pa = D.createElementNS(NS, 'path'); pa.setAttribute('d', 'M0 0z'); cp.appendChild(pa); svg.appendChild(cp); D.body.appendChild(svg);
-    var o = { on: false, cells: null };
-    o.measure = function (S) {
-      var w = el.offsetWidth, h = el.offsetHeight; if (!w || !h) { o.cells = null; o.clip(false); return; }
-      var nx = Math.max(1, Math.round(w / S)), ny = Math.max(1, Math.round(h / S)), c = [];
-      for (var y = 0; y < ny; y++) for (var x = 0; x < nx; x++) c.push((x + 0.5) / nx, (y + 0.5) / ny, hash(x + CLIPN * 7, y));
-      o.nx = nx; o.ny = ny; o.cells = c;
-    };
-    o.clip = function (on) { if (on === o.on) return; o.on = on; var v = on ? 'url(#' + id + ')' : ''; el.style.clipPath = v; el.style.webkitClipPath = v; };
-    o.draw = function (size) {
-      var c = o.cells; if (!c) return; var hw = 0.5 / o.nx, hh = 0.5 / o.ny, d = '';
-      for (var i = 0; i < c.length; i += 3) {
-        var s = size(c[i], c[i + 1], c[i + 2]); if (s <= 0.004) continue;
-        var a = hw * s, b = hh * s;
-        d += 'M' + (c[i] - a).toFixed(4) + ' ' + (c[i + 1] - b).toFixed(4) + 'h' + (2 * a).toFixed(4) + 'v' + (2 * b).toFixed(4) + 'h' + (-2 * a).toFixed(4) + 'z';
-      }
-      pa.setAttribute('d', d || 'M0 0z');
-    };
-    return o;
-  }
   function cards() {
     var cs = [].slice.call(D.querySelectorAll('.cc-card')), sec = D.querySelector('.cc');
     if (!cs.length || !sec || !LIVE || RM) return;
-    var last = cs[cs.length - 1], lin = last.querySelector('.cc-in'), tail = D.querySelector('.cc-tail');
-    var T = [], L = lin ? cellClip(lin) : null, geo = {};
-    cs.forEach(function (card, i) {
-      var ts = card.querySelectorAll('.cc-vis .cc-t');
-      for (var j = 0; j < ts.length; j++) T.push({ el: ts[j], i: i, j: j, n: ts.length, k: cellClip(ts[j]), r: -1 });
+    pixReveal();
+    melt(cs[cs.length - 1]);
+    cardLife(cs);
+  }
+
+  /* card images resolve from pixels (Nov 24, time-based): a tiny inline preview is shown in big blocks straight away;
+     once the real image has loaded and its tile is on screen, the blocks halve and halve again until the picture is
+     sharp. Same duration and easing on every card; each image does it once. */
+  function fitRect(nw, nh, w, h, fit, pos) {
+    var pp = (pos || '50% 50%').split(' '), px = parseFloat(pp[0]) / 100, py = parseFloat(pp[1] || pp[0]) / 100;
+    if (isNaN(px)) px = 0.5; if (isNaN(py)) py = 0.5;
+    if (fit === 'fill' || !nw || !nh) return [0, 0, w, h];
+    var k = fit === 'contain' ? Math.min(w / nw, h / nh) : Math.max(w / nw, h / nh), dw = nw * k, dh = nh * k;
+    return [(w - dw) * px, (h - dh) * py, dw, dh];
+  }
+  function pixReveal() {
+    var ims = [].slice.call(D.querySelectorAll('.cc-vis .cc-t img')); if (!ims.length) return;
+    var DUR = 1150, dpr = Math.min(2, W.devicePixelRatio || 1), sc = D.createElement('canvas'), sx = sc.getContext('2d');
+    var io = 'IntersectionObserver' in W ? new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting && e.target._px) { e.target._px.seen(); io.unobserve(e.target); } });
+    }, { threshold: 0.3 }) : null;
+    ims.forEach(function (im) {
+      var t = im.closest('.cc-t'), sib = [].slice.call(t.parentNode.querySelectorAll('.cc-t')), j = sib.indexOf(t);
+      if (!t.offsetWidth) return;   // tiles hidden at this width keep the plain image
+      var cv = D.createElement('canvas'), x = cv.getContext('2d'); cv.className = 'me-px'; cv.setAttribute('aria-hidden', 'true');
+      t.appendChild(cv); t.classList.add('me-pxw');
+      var o = { b: 0, src: null, done: false, seen: null }, bw = 0, bh = 0, B0 = 16;
+      var size = function () {
+        bw = im.offsetWidth; bh = im.offsetHeight; if (!bw || !bh) return false;
+        cv.style.left = im.offsetLeft + 'px'; cv.style.top = im.offsetTop + 'px'; cv.style.width = bw + 'px'; cv.style.height = bh + 'px';
+        cv.width = Math.round(bw * dpr); cv.height = Math.round(bh * dpr);
+        B0 = Math.max(8, Math.round(t.offsetWidth / 9));   // about nine blocks across the tile to start
+        return true;
+      };
+      var cs0 = getComputedStyle(im), fit = cs0.objectFit, pos = cs0.objectPosition;
+      // draw `src` into the image box at block size b (css px): sample small, then scale up without smoothing
+      var draw = function (src, b) {
+        if (!src || !bw) return;
+        var nw = src.naturalWidth || src.width, nh = src.naturalHeight || src.height;
+        x.clearRect(0, 0, cv.width, cv.height);
+        if (b <= 1) { var r = fitRect(nw, nh, cv.width, cv.height, fit, pos); x.imageSmoothingEnabled = true; x.drawImage(src, r[0], r[1], r[2], r[3]); return; }
+        var w = Math.max(1, Math.round(bw / b)), h = Math.max(1, Math.round(bh / b)), r2 = fitRect(nw, nh, w, h, fit, pos);
+        sc.width = w; sc.height = h; sx.imageSmoothingEnabled = true; sx.clearRect(0, 0, w, h); sx.drawImage(src, r2[0], r2[1], r2[2], r2[3]);
+        x.imageSmoothingEnabled = false; x.drawImage(sc, 0, 0, w, h, 0, 0, cv.width, cv.height);
+      };
+      size();
+      var lq = im.getAttribute('data-lq');
+      if (lq) { var li = new Image(); li.onload = function () { if (!o.src) { o.lq = li; draw(li, B0); } }; li.src = lq; }
+      var finish = function () {
+        o.done = true; t.classList.add('me-pxd');
+        setTimeout(function () { cv.remove(); t.classList.remove('me-pxw', 'me-pxd'); }, 260);
+      };
+      var run = function () {
+        if (o.src || o.done) return; o.src = im; if (!size()) return finish();
+        var s0 = now() + j * 130, last = -1;   // tiles of one card follow each other
+        (function f() {
+          var tt = cl((now() - s0) / DUR), e = tt < 0.5 ? 4 * tt * tt * tt : 1 - Math.pow(-2 * tt + 2, 3) / 2;
+          var b = Math.max(1, Math.round(Math.pow(B0, 1 - e)));   // B0 -> 1, halving in even steps
+          if (b !== last) { last = b; draw(im, b); }
+          if (tt < 1) requestAnimationFrame(f); else finish();
+        })();
+      };
+      var loaded = function (cb) {
+        if (im.complete && im.naturalWidth) return cb();
+        im.addEventListener('load', function () { cb(); }, { once: true });
+        im.addEventListener('error', function () { finish(); }, { once: true });
+        if (im.loading === 'lazy') im.loading = 'eager';
+      };
+      o.seen = function () { loaded(function () { (im.decode ? im.decode().catch(function () { }) : Promise.resolve()).then(run); }); };
+      t._px = o;
+      W.addEventListener('resize', function () { if (!o.done && size()) draw(o.src || o.lq, o.src ? 1 : B0); });
+      if (io) io.observe(t); else o.seen();
+      // start fetching early so the reveal never waits on the network
+      if (im.loading === 'lazy') setTimeout(function () { im.loading = 'eager'; }, 1500);
     });
+  }
+
+  /* Social Media -> Index (Nov 24): one movement across the seam. The black card's bottom edge turns to ink (a ragged,
+     noise-shaped front climbing the card); along that front the card breaks into the site's square dots, which shrink and
+     sink toward the index. The whole card is smudged by the same ink filter the headings use, and the index band
+     arrives through the same smudge, easing back to sharp as the card is gone. Scroll-tied, so it runs backwards. */
+  function melt(last) {
+    var inn = last.querySelector('.cc-in'), tail = D.querySelector('.cc-tail'), band = D.querySelector('#index .pf-band');
+    if (!inn || !tail) return;
+    var NS = 'http://www.w3.org/2000/svg', sv = D.createElementNS(NS, 'svg');
+    sv.setAttribute('aria-hidden', 'true'); sv.setAttribute('width', '0'); sv.setAttribute('height', '0'); sv.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+    // one ink texture, two strengths: the card smudges out with it, the band smudges in with it
+    var flt = function (id) { return '<filter id="' + id + '" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.011 0.019" numOctaves="3" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>'; };
+    sv.innerHTML = '<clipPath id="me-melt" clipPathUnits="objectBoundingBox"><path d="M0 0H1V1H0z"/></clipPath>' + (FINE ? flt('me-ink-a') + flt('me-ink-b') : '');
+    D.body.appendChild(sv);
+    var pa = sv.querySelector('path'), dA = sv.querySelector('#me-ink-a feDisplacementMap'), dB = sv.querySelector('#me-ink-b feDisplacementMap');
+    var nx = 0, ny = 0, cols = [], last0 = -1, on = false;
     var measure = function () {
-      var vh = W.innerHeight, S = W.innerWidth < 640 ? 11 : 15, cs0 = getComputedStyle(cs[0]);
-      geo.vh = vh; geo.top0 = sec.getBoundingClientRect().top + W.scrollY + (parseFloat(getComputedStyle(sec).paddingTop) || 0);
-      geo.step = cs[0].offsetHeight + (parseFloat(cs0.marginBottom) || 0);
-      T.forEach(function (t) { t.k.measure(S); t.r = -1; });
-      if (L) { var g = strips(), cw = (g.xs[2] - g.xs[1]) || 200; L.measure(cw / Math.max(2, Math.round(cw / (W.innerWidth < 640 ? 30 : 46)))); geo.dz = -1; }
+      var w = inn.offsetWidth, h = inn.offsetHeight, S = W.innerWidth < 640 ? 18 : 24;
+      nx = Math.max(8, Math.round(w / S)); ny = Math.max(8, Math.round(h / S)); cols = [];
+      // a slow, uneven front (three waves) and a little grain per cell
+      for (var i = 0; i < nx; i++) {
+        var cx = (i + 0.5) / nx, row = [];
+        for (var j = 0; j < ny; j++) row.push(hash(i, j + 91));
+        cols.push({ cx: cx, n: 0.5 * Math.sin(cx * 7.3 + 1.3) + 0.3 * Math.sin(cx * 15.1 + 0.4) + 0.2 * Math.sin(cx * 31.7 + 2.2), g: row });
+      }
+      last0 = -1;
     };
-    var frame = function () {
-      var y = W.scrollY, vh = geo.vh;
-      T.forEach(function (t) {
-        if (!t.k.cells) return;
-        // the card's own arrival: 0 when its top is 62% down the screen, 1 a third of a screen after it has settled
-        var R = cl((y - (geo.top0 + t.i * geo.step) + 0.62 * vh) / (0.95 * vh));
-        var gap = t.n > 1 ? Math.min(0.13, 0.4 / (t.n - 1)) : 0, r = cl((R - t.j * gap) / (1 - gap * (t.n - 1)));
-        r = Math.round(r * 240) / 240;
-        if (r === t.r) return; t.r = r;
-        if (r >= 1) { t.k.clip(false); return; }
-        t.k.clip(true);
-        // a faint pin-hole grid first (the image is there, only just), then the dots grow, from the bottom up
-        t.k.draw(function (cx, cy, h) { var q = sm(cl((r - ((1 - cy) * 0.55 + h * 0.45) * 0.7) / 0.3)); return 0.15 + 0.89 * q; });
-      });
-      if (L && L.cells && tail) {
-        var tr = tail.getBoundingClientRect(), tl = cl((vh - tr.top) / (tail.offsetHeight || 1)), dz = Math.round(cl((tl - 0.5) / 0.5) * 240) / 240;
-        if (dz !== geo.dz) {
-          geo.dz = dz;
-          last.classList.toggle('me-dz', dz > 0.55);
-          if (dz <= 0) L.clip(false);
-          else {
-            L.clip(true);
-            // the black card breaks into dots from the bottom edge, where the index's own dot field is coming up
-            L.draw(function (cx, cy, h) { return 1 - sm(cl((dz - ((1 - cy) * 0.62 + h * 0.38) * 0.6) / 0.4)); });
-          }
+    var set = function (z) {
+      var want = z > 0 && z < 1 || z >= 1;
+      if (want !== on) {
+        on = want; var v = on ? 'url(#me-melt)' : '';
+        inn.style.clipPath = v; inn.style.webkitClipPath = v;
+        // the ink pulls the edges in; a margin of the card's own black keeps the screen edges covered
+        inn.style.boxShadow = on && FINE ? '0 0 0 48px ' + getComputedStyle(inn).backgroundColor : '';
+        if (FINE) { last.style.filter = on ? 'url(#me-ink-a)' : ''; if (band) band.style.filter = on && z < 1 ? 'url(#me-ink-b)' : ''; }
+      }
+      last.classList.toggle('me-dz', z > 0.6);
+      if (!on) return;
+      var E = sm(z), F = 1.32 - 1.78 * E, hw = 0.5 / nx, hh = 0.5 / ny, d = '';
+      for (var i = 0; i < nx; i++) {
+        var c = cols[i], x0 = c.cx - hw, run = 0, j;
+        // above the front the card is whole: one strip per column
+        for (j = 0; j < ny; j++) { var cy = (j + 0.5) / ny, u = (cy - F + c.n * 0.11 + c.g[j] * 0.15) / 0.34; if (u > 0) break; run = j + 1; }
+        if (run) { var xa = i ? x0 : -0.06, wa = 2 * hw + (i ? 0 : 0.06) + (i === nx - 1 ? 0.06 : 0); d += 'M' + xa.toFixed(4) + ' -0.08h' + wa.toFixed(4) + 'v' + (run / ny + 0.08).toFixed(4) + 'h' + (-wa).toFixed(4) + 'z'; }
+        for (; j < ny; j++) {
+          var cy2 = (j + 0.5) / ny, u2 = sm(cl((cy2 - F + c.n * 0.11 + c.g[j] * 0.15) / 0.34)), s = 1 - u2;
+          if (s <= 0.03) continue;
+          var a = hw * s, b = hh * s, dy = u2 * (0.035 + 0.05 * c.g[j]);   // dots sink as they shrink, into the index
+          d += 'M' + (c.cx - a).toFixed(4) + ' ' + (cy2 + dy - b).toFixed(4) + 'h' + (2 * a).toFixed(4) + 'v' + (2 * b).toFixed(4) + 'h' + (-2 * a).toFixed(4) + 'z';
         }
       }
+      pa.setAttribute('d', d || 'M0 0z');
+      if (dA) dA.setAttribute('scale', (34 * Math.sin(Math.PI * Math.min(1, E * 1.15))).toFixed(2));   // ink swells mid-way, settles at the end
+      if (dB) { dB.setAttribute('scale', (30 * (1 - E)).toFixed(2)); if (band) band.style.filter = z < 1 ? 'url(#me-ink-b)' : ''; }
+    };
+    var frame = function () {
+      var vh = W.innerHeight, tr = tail.getBoundingClientRect(), tl = cl((vh - tr.top) / (tail.offsetHeight || 1));
+      var z = Math.round(cl((tl - 0.5) / 0.5) * 400) / 400;
+      if (z === last0) return; last0 = z;
+      set(z);
     };
     var raf = 0, kick = function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; frame(); }); };
     measure(); frame();
     W.addEventListener('scroll', kick, { passive: true });
     W.addEventListener('resize', function () { measure(); kick(); });
-    [].forEach.call(D.querySelectorAll('.cc-t img'), function (im) { if (!im.complete) im.addEventListener('load', function () { measure(); kick(); }, { once: true }); });
-    setTimeout(function () { measure(); kick(); }, 800);
-    cardLife(cs);
   }
 
   /* the cards answer the cursor, each its own way (pointer devices); the Social arrow also answers touch */

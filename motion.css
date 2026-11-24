@@ -250,3 +250,8 @@ html.mhs-on .ab-tl .mhs-track > div > *:nth-child(n+3){transform:translate3d(0,c
 html.mhs-on .ab-tl .mhs-track > div > span:first-child{position:relative;padding-left:16px}
 html.mhs-on .ab-tl .mhs-track > div > span:first-child::before{content:'';position:absolute;left:0;top:50%;width:8px;height:8px;margin-top:-4px;background:#7a82ff;transform:scale(calc(.25 + .75 * var(--f,1)))}
 html.mhs-on .ab-ax .q{position:absolute;top:-5px;left:0;width:9px;height:9px;background:#7a82ff;transform:translate3d(calc(var(--p,0) * (var(--aw,0) * 1px) - 4px),0,0)}
+/* card images resolve from pixels (Nov 24) */
+.cc-t .me-px{position:absolute;display:block;pointer-events:none;image-rendering:pixelated;transition:opacity .24s linear}
+.cc-t.me-pxw img{opacity:0}
+.cc-t.me-pxd img{opacity:1;transition:opacity .24s linear}
+.cc-t.me-pxd .me-px{opacity:0}
