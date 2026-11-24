@@ -1600,7 +1600,9 @@
       if (dot !== mk) dot.style.opacity = q > 0 ? '0' : '';
       var t = cl(q / 0.18), c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * t); });
       var top = Math.max(0, cy - R), left = Math.max(0, cx - R), right = Math.max(0, vw - (cx + R)), bot = Math.max(0, vh - (cy + R));
-      if (ct < vh) bot = Math.max(bot, vh - ct);                                         // above the rising card only
+      // above the rising card only, but reaching 80px into its empty top margin (same colour): scrolling moves the card
+      // before this can follow, and without the overlap the page showed through the seam as a dark line
+      if (ct < vh) bot = Math.max(bot, vh - ct - Math.min(80, Math.max(0, vh - ct)));
       var hide = ct <= 0.5 || r.top > vh + 40 || (q <= 0 && (r.bottom < -40));
       var key = [top, right, bot, left, c.join(), hide].map(function (x) { return typeof x === 'number' ? x.toFixed(1) : x; }).join('|'); if (key === last) return; last = key;
       o.style.visibility = hide ? 'hidden' : 'visible';
