@@ -926,7 +926,7 @@
     var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'me-lf'; host.insertBefore(cv, host.firstChild);
     var x = cv.getContext('2d'); if (!x) return;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
-    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, TOP = 56, P = 0, K = 2, G = 0, COL = '122,130,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0;
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, TOP = 56, P = 0, K = 2, G = 0, COL = '142,107,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0;
     var NM = null, BM = null, ngr = 0, split = 0, I = null, ORD = null, gx0 = 0, IN = W.__meIntro || null, tr0 = now();
     W.__meIntroCanvas = true; H.classList.add('me-lfon');
     var DPm = null, PCm = null, pcN = -1, pcF = 0, pcX = 0, pcB = 0;
@@ -1126,7 +1126,7 @@
         }
       } else {
         if (!MV) MV = morph();
-        var lv = [122, 130, 255];
+        var lv = [142, 107, 255];
         for (var m = 0; m < MV.length; m++) {
           var q = MV[m], u = cl((tl * 1.25 - q.d) / 0.85), e2 = u * u * (3 - 2 * u);
           var px = Math.round(q.ax + (q.bx - q.ax) * e2), py = Math.round(q.ay + (q.by - q.ay) * e2 - Math.sin(Math.PI * e2) * 2);   // a slight lift on the way
@@ -1587,7 +1587,7 @@
     // the dot turns into a square of the UI/UX blue (the card's own colour) that fills the screen before the card arrives;
     // the card then rises into the blue, so the switch to the section is one colour field
     var blue = getComputedStyle(D.querySelector('#c-uiux .cc-in') || D.body).backgroundColor || 'rgb(43,53,255)';
-    var A = [122, 130, 255], B = (/(\d+),\s*(\d+),\s*(\d+)/.exec(blue) || [0, 43, 53, 255]).slice(1, 4).map(Number), last = '';
+    var A = [142, 107, 255], B = (/(\d+),\s*(\d+),\s*(\d+)/.exec(blue) || [0, 43, 53, 255]).slice(1, 4).map(Number), last = '';
     var dot = null;
     var run = function () {
       // the square opens from the full stop at the end of the statement (the rule's dot if there is none)
@@ -1645,8 +1645,8 @@
     var NS = 'http://www.w3.org/2000/svg', svg = D.createElementNS(NS, 'svg'), tip = D.createElementNS(NS, 'rect'), scr = D.createElementNS(NS, 'rect'), g = D.createElementNS(NS, 'g');
     svg.setAttribute('class', 'me-ul'); svg.setAttribute('aria-hidden', 'true');
     g.setAttribute('fill', 'none'); g.setAttribute('stroke', 'rgba(244,243,239,.62)'); g.setAttribute('stroke-width', '1.25'); g.setAttribute('stroke-linecap', 'round'); g.setAttribute('stroke-linejoin', 'round');
-    tip.setAttribute('width', '5'); tip.setAttribute('height', '5'); tip.setAttribute('fill', '#7a82ff');
-    scr.setAttribute('fill', '#7a82ff'); scr.setAttribute('opacity', '0');
+    tip.setAttribute('width', '5'); tip.setAttribute('height', '5'); tip.setAttribute('fill', '#8e6bff');
+    scr.setAttribute('fill', '#8e6bff'); scr.setAttribute('opacity', '0');
     svg.appendChild(scr); svg.appendChild(g); svg.appendChild(tip); st.appendChild(svg);
     var kws = [].slice.call(p.querySelectorAll('.kw')), caps = SKETCH.map(function (o, i) {
       var c = D.createElement('div'); c.className = 'me-kc'; c.setAttribute('aria-hidden', 'true');
