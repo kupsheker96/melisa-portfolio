@@ -951,92 +951,86 @@
     return { setIdle: function (sp) { idle = sp; if (!active) shape(idle); }, busy: function () { return !!active; } };
   }
 
-  /* landing, line version (Nov 24, after her reference): the page's columns split into fine vertical lines; the name is
-     made where the lines thicken, cell by cell, like a line-screen print. With the music the letters keep time: every
-     bass hit fills them out and knocks a few cells back to thin, the columns thicken with the spectrum. The cursor
-     pushes the thick pieces out of the name; they flow back when it leaves. (?hero=dots shows the dot version.) */
+  /* landing, line version (Nov 24, after her reference): the page's columns split into fine vertical lines that never
+     move; the name flows underneath them and shows where the lines thicken, like a line-screen print. Each band of the
+     name sways sideways on a slow travelling wave, so the letters stream through the lines; with the music the wave
+     follows the song (faster and wider with its energy, a push on every bass hit) and the columns thicken with the
+     spectrum. The cursor is a magnet: the type parts and bends around it. (?hero=dots shows the dot version.) */
   function lineHero(hb, x0, pr) {
     var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'pf-cv'; hb.appendChild(cv);
     var x = cv.getContext('2d'); if (!x) return;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
-    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, CH = 0, cols = 0, colX = [], Q = [], vis = true, raf = 0, mx = -1e4, my = -1e4, t0 = now();
-    var avg = 0, prevB = 0, pulse = 0, lastBeat = 0, beatN = 0, still = !LIVE || RM;
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, CH = 0, cols = 0, rows = 0, colX = [], A = null, OW = 0, OH = 0;
+    var vis = true, raf = 0, mx = -1e4, my = -1e4, cmx = -1e4, cmy = -1e4, mk = 0, still = !LIVE || RM;
+    var phase = 0, speed = 0, amp = 0, avg = 0, prevB = 0, lastBeat = 0, kickV = 0, lastT = now(), wt = null;
     var build = function () {
       W0 = hb.offsetWidth; H0 = hb.offsetHeight; if (!W0 || !H0) return;
       cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
       var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4;
       P = cw / Math.max(6, Math.round(cw / (W.innerWidth < 640 ? 5 : 6.5)));   // whole lines per grid column
-      CH = Math.round(P * 2);
-      var start = g.rule % P; colX = []; for (var cx = start; cx < W0; cx += P) colX.push(cx); cols = colX.length;
-      // the name, drawn once offscreen and read back as coverage per cell
-      off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
+      CH = Math.max(6, Math.round(P * 1.5));
+      var start = g.rule % P; colX = []; for (var cx = start; cx < W0; cx += P) colX.push(cx); cols = colX.length; rows = Math.ceil(H0 / CH);
+      wt = new Float32Array(cols * rows);
+      // the name, drawn once offscreen; its alpha is read back every frame through the moving wave
+      OW = Math.ceil(W0); OH = Math.ceil(H0); off.width = OW; off.height = OH; oc.clearRect(0, 0, OW, OH);
       var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
       var lines = ['MELISA', 'ERGANI'], lhk = 1.12, room = W0 - x0 - pr, fs = H0 / (2 * 0.72 * lhk); font(fs);
       var longest = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; }));
       if (longest > room) { fs *= room / longest; font(fs); }
-      var cap = fs * 0.72, lh = cap * lhk, top = H0 - (2 * lh - (lh - cap)) - CH * 2;
+      var cap = fs * 0.72, lh = cap * lhk, top = H0 - (2 * lh - (lh - cap)) - CH * 3;
       oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
       lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
-      var data = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width;
-      Q = [];
-      for (var c = 0; c < cols; c++) for (var y = 0; y < H0 - CH / 2; y += CH) {
-        var hit = 0, n = 0;
-        for (var sy = 0.2; sy < 1; sy += 0.3) for (var sx = -0.35; sx <= 0.36; sx += 0.35) {
-          var px = Math.floor(colX[c] + sx * P), py = Math.floor(y + sy * CH); n++;
-          if (px >= 0 && px < ow && py < off.height && data[(py * ow + px) * 4 + 3] > 110) hit++;
-        }
-        if (hit) Q.push({ c: c, x: colX[c], y: y, cov: hit / n, ox: 0, oy: 0, vx: 0, vy: 0, f: 0, w: 0 });
-      }
+      var d = oc.getImageData(0, 0, OW, OH).data; A = new Uint8Array(OW * OH);
+      for (var i = 0, j = 3; i < A.length; i++, j += 4) A[i] = d[j];
     };
+    var at = function (px, py) { px = px | 0; py = py | 0; return (px < 0 || py < 0 || px >= OW || py >= OH) ? 0 : A[py * OW + px]; };
     var frame = function () {
-      raf = 0; if (!W0) return;
-      var L = LV() || { b: 0, m: 0, h: 0, on: 0 }, on = L.on || 0, t = now();
-      // beats: the bass jumping clearly above its own running level
+      raf = 0; if (!W0 || !A) return;
+      var t = now(), dt = Math.min(50, t - lastT) / 16.67; lastT = t;
+      var L = LV() || { b: 0, m: 0, h: 0, a: 0, on: 0 }, on = L.on || 0;
+      // the wave's tempo and width follow the song; a bass hit gives it a push
       var bnow = L.b || 0, flux = bnow - prevB; prevB = bnow; avg += (bnow - avg) * 0.04;
-      if (on > 0.3 && (flux > 0.09 || bnow > avg * 1.3) && bnow > 0.45 && t - lastBeat > 230) {
-        lastBeat = t; pulse = 1; beatN++;
-        // on every hit, blocks of the name close up solid (different blocks each time), then open back into lines
-        for (var k = 0; k < Q.length; k++) { var qq = Q[k]; if (hash(Math.floor(qq.c / 9) + beatN * 7, Math.floor(qq.y / CH / 4) + beatN * 3) < 0.42) qq.f = 1; }
-      }
-      pulse *= 0.9;
+      if (on > 0.3 && (flux > 0.09 || bnow > avg * 1.3) && bnow > 0.45 && t - lastBeat > 230) { lastBeat = t; kickV = 1; }
+      kickV *= 0.9;
+      var tSpeed = still ? 0 : 0.012 + on * (0.02 + (L.a || 0) * 0.05), tAmp = P * (1.8 + on * (1.6 + (L.m || 0) * 2.6));
+      speed += (tSpeed - speed) * 0.05; amp += (tAmp - amp) * 0.05;
+      phase += (speed + kickV * 0.09) * dt;
+      mk += ((mx > -1e3 ? 1 : 0) - mk) * 0.08; if (mx > -1e3) { cmx += (mx - cmx) * 0.2; cmy += (my - cmy) * 0.2; }
       x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W0, H0);
-      // the thin lines; with the song each column thickens with its part of the spectrum (low on the left, high on the right)
+      // the fixed lines; with the song each column thickens with its part of the spectrum (bass left, treble right)
       var spec = L.spec, hz = L.hz || 43;
       x.fillStyle = 'rgba(244,243,239,.2)';
       for (var c = 0; c < cols; c++) {
         var lw = 1;
-        if (spec && on > 0.01) { var fq = 40 * Math.pow(300, c / cols), lv = spec[Math.min(spec.length - 1, Math.round(fq / hz))] / 255; lw += on * lv * lv * (P * 0.42); }
+        if (spec && on > 0.01) { var fq = 40 * Math.pow(300, c / cols), lv = spec[Math.min(spec.length - 1, Math.round(fq / hz))] / 255; lw += on * lv * lv * (P * 0.4); }
         x.fillRect(colX[c] - lw / 2, 0, lw, H0);
       }
-      // the name's pieces
-      var R = Math.max(80, Math.min(150, W0 * 0.09)), moving = false, full = P * 0.82, breath = 0.5 + 0.5 * Math.sin((t - t0) / 1400);
+      // the name, read through the wave and the magnet
+      var R = Math.max(90, Math.min(170, W0 * 0.1)), full = P * (0.86 - on * 0.2), solid = P + 0.6;
       x.fillStyle = FG;
-      for (var i = 0; i < Q.length; i++) {
-        var q = Q[i];
-        if (!still) {
-          var ax = -q.ox * 0.06, ay = -q.oy * 0.06, px = q.x + q.ox, py = q.y + CH / 2 + q.oy, dx = px - mx, dy = py - my, d2 = dx * dx + dy * dy;
-          if (d2 < R * R) { var d = Math.sqrt(d2) || 1, fo = (1 - d / R) * 3.4; ax += dx / d * fo; ay += dy / d * fo * 1.4; }
-          q.vx = (q.vx + ax) * 0.82; q.vy = (q.vy + ay) * 0.82; q.ox += q.vx; q.oy += q.vy;
-          if (Math.abs(q.vx) + Math.abs(q.vy) > 0.05) moving = true;
+      for (var r = 0; r < rows; r++) {
+        var yc = r * CH + CH / 2, sway = amp * Math.sin(phase + r * 0.16) + amp * 0.45 * Math.sin(phase * 0.63 - r * 0.07 + 1.7);
+        for (var c2 = 0; c2 < cols; c2++) {
+          var X = colX[c2], sx = X - sway, sy = yc;
+          if (mk > 0.01) {   // magnet: the type is pushed out from the cursor and bends around it
+            var dx = X - cmx, dy = yc - cmy, dd = Math.sqrt(dx * dx + dy * dy);
+            if (dd < R) { var f = (1 - dd / R); f = f * f * mk * R * 0.55; sx -= dx / (dd || 1) * f; sy -= dy / (dd || 1) * f; }
+          }
+          var cov = (at(sx - P * 0.3, sy - CH * 0.3) + at(sx, sy - CH * 0.3) + at(sx + P * 0.3, sy - CH * 0.3) + at(sx - P * 0.3, sy + CH * 0.3) + at(sx, sy + CH * 0.3) + at(sx + P * 0.3, sy + CH * 0.3) + 2 * at(sx, sy)) / (8 * 255);
+          var k = r * cols + c2, tw = cov > 0.02 ? (full + (solid - full) * kickV * on * (0.5 + 0.5 * Math.sin(c2 * 0.21 + phase * 3))) * (0.3 + 0.7 * cov) : 0;
+          wt[k] += (tw - wt[k]) * 0.45;
+          var w = wt[k]; if (w < 1.05) continue;
+          x.fillRect(X - w / 2, r * CH, w, CH + 0.5);
         }
-        q.f *= 0.88;
-        // paused: even lines with a slow breath at the edges; playing: thinner lines that close up solid on the hits
-        var lineW = full * (1 - on * 0.36), solid = P + 0.6, base = lineW + (solid - lineW) * q.f * on;
-        var tw = base * (0.35 + 0.65 * q.cov) * (q.cov < 1 ? 0.85 + 0.15 * breath : 1);
-        q.w += (tw - q.w) * 0.35;
-        var w = Math.max(1, q.w), dist = Math.hypot(q.ox, q.oy);
-        x.globalAlpha = dist > 2 ? Math.max(0.35, 1 - dist / 260) : 1;
-        x.fillRect(q.x + q.ox - w / 2, q.y + q.oy, w, CH + 0.5);
       }
-      x.globalAlpha = 1;
-      if (vis && !D.hidden && (moving || on > 0.01 || pulse > 0.01 || mx > -1e3 || !still)) raf = requestAnimationFrame(frame);
+      if (vis && !D.hidden && !still) raf = requestAnimationFrame(frame);
     };
     var kick = function () { if (!raf && vis) raf = requestAnimationFrame(frame); };
     var hit = D.getElementById('top') || hb;
-    hit.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; kick(); }, { passive: true });
+    hit.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; if (cmx < -1e3) { cmx = mx; cmy = my; } kick(); }, { passive: true });
     hit.addEventListener('pointerleave', function () { mx = my = -1e4; kick(); });
-    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; kick(); }).observe(hb);
-    D.addEventListener('visibilitychange', kick);
+    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; lastT = now(); kick(); }).observe(hb);
+    D.addEventListener('visibilitychange', function () { lastT = now(); kick(); });
     var start = function () { build(); kick(); };
     try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
     var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 150); });
