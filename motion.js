@@ -37,6 +37,14 @@
     var lp = null; try { lp = JSON.parse(st('sessionStorage', 'me-last') || 'null'); } catch (e) { }
     if (lp && Date.now() - lp.ts < 60000) incoming = { c: lp.c, fg: lp.fg, t: '', k: '', ox: 0.5, oy: 0.5, ts: Date.now(), back: 1 };
   }
+  // (Nov 24) a refresh starts from the top with every effect; only back / forward returns to where you were
+  if (!EMB) {
+    try { history.scrollRestoration = 'manual'; } catch (e) { }
+    var backY = null; if (navType === 'back_forward') { try { backY = JSON.parse(st('sessionStorage', 'me-y:' + location.pathname) || 'null'); } catch (e) { } }
+    var toTop = function () { if (backY != null) W.scrollTo(0, backY); else if (!location.hash) W.scrollTo(0, 0); };
+    toTop(); D.addEventListener('DOMContentLoaded', toTop); W.addEventListener('load', function () { toTop(); setTimeout(toTop, 60); });
+    W.addEventListener('pagehide', function () { st('sessionStorage', 'me-y:' + location.pathname, String(Math.round(W.scrollY))); });
+  }
   var doIntro = LIVE && !RM && PAGE === 'home' && !incoming && !SHELLED;
   var doIn = LIVE && !RM && !doIntro && !!incoming;
   var waiters = [];
