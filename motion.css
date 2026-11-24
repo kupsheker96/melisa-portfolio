@@ -135,6 +135,9 @@ html.hl-on .hw.lit{opacity:1}
 html.dot-on [data-inkroot] .vmark{opacity:0}
 .me-dot{position:fixed;inset:0;z-index:7;pointer-events:none;clip-path:inset(50%);visibility:hidden}
 
+/* the statement's underline */
+.me-ul{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;transition:opacity .25s}
+
 /* ---------- Home: the pixel band and its index ---------- */
 .pf{position:relative;z-index:1;margin-top:-48vh;padding:clamp(24px,3vw,48px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
 @media (prefers-reduced-motion: reduce){.pf{margin-top:0}}

@@ -313,7 +313,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline();
     if (!EMB && !SHELLED) music();
   }
 
@@ -959,5 +959,52 @@
     };
     W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
     var t0 = now(); (function warm() { run(); if (now() - t0 < 3000) requestAnimationFrame(warm); })();
+  }
+
+  /* Home: once the statement has assembled, the circuit line carries on under the sentence, line by line, and stops at
+     the full stop at its end (which then opens into the blue square). Tied to the scroll, reversible. */
+  function underline() {
+    var w = D.querySelector('[data-inkroot] .stw'), st = w && w.querySelector('.sts'), p = st && st.querySelector('.stmt'); if (!p || !LIVE || RM) return;
+    var NS = 'http://www.w3.org/2000/svg', svg = D.createElementNS(NS, 'svg'), path = D.createElementNS(NS, 'path'), tip = D.createElementNS(NS, 'rect');
+    svg.setAttribute('class', 'me-ul'); svg.setAttribute('aria-hidden', 'true');
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'rgba(244,243,239,.5)'); path.setAttribute('stroke-width', '1'); path.setAttribute('stroke-linecap', 'square');
+    tip.setAttribute('width', '5'); tip.setAttribute('height', '5'); tip.setAttribute('fill', '#7a82ff');
+    svg.appendChild(path); svg.appendChild(tip); st.appendChild(svg);
+    var len = 0, geo = '';
+    var build = function () {
+      var sr = st.getBoundingClientRect(), rg = D.createRange(); rg.selectNodeContents(p);
+      var rects = Array.prototype.filter.call(rg.getClientRects(), function (r) { return r.width > 1 && r.height > 4; });
+      var lines = [];
+      rects.forEach(function (r) {
+        var L = lines.filter(function (l) { return Math.abs(l.mid - (r.top + r.height / 2)) < r.height * 0.5; })[0];
+        if (!L) { L = { mid: r.top + r.height / 2, l: r.left, r: r.right, b: r.bottom }; lines.push(L); }
+        else { L.l = Math.min(L.l, r.left); L.r = Math.max(L.r, r.right); L.b = Math.max(L.b, r.bottom); }
+      });
+      lines.sort(function (a, b) { return a.mid - b.mid; });
+      if (!lines.length) return;
+      var vl = D.querySelector('[data-inkroot] .vl'), x0 = vl ? vl.getBoundingClientRect().left : lines[0].l - 24;
+      var scs = p.querySelectorAll('.sc'), fs = scs[scs.length - 1], fr = fs ? fs.getBoundingClientRect() : null;
+      var gap = Math.max(4, parseFloat(getComputedStyle(p).fontSize) * 0.14);
+      // a snake under the lines that always ends left-to-right on the last line, at the full stop
+      var n = lines.length, d = '';
+      lines.forEach(function (L, i) {
+        var ltr = (n - 1 - i) % 2 === 0, y = (L.b + gap - sr.top).toFixed(1);
+        var a = ltr ? (i === 0 ? x0 : L.l) : L.r, b = ltr ? L.r : L.l;
+        if (i === n - 1 && fr) b = fr.left + fr.width / 2;
+        d += (i === 0 ? 'M' + (a - sr.left).toFixed(1) + ' ' + y : 'V' + y) + 'H' + (b - sr.left).toFixed(1);
+      });
+      if (d === geo) return; geo = d;
+      path.setAttribute('d', d); len = path.getTotalLength();
+      path.style.strokeDasharray = len; 
+    };
+    var run = function () {
+      build(); if (!len) return;
+      var r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;
+      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.64) / 0.3), e = u * u * (3 - 2 * u);
+      path.style.strokeDashoffset = (len * (1 - e)).toFixed(1);
+      var pt = path.getPointAtLength(len * e); tip.setAttribute('x', (pt.x - 2.5).toFixed(1)); tip.setAttribute('y', (pt.y - 2.5).toFixed(1));
+      svg.style.opacity = u > 0 ? '1' : '0';
+    };
+    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', function () { geo = ''; run(); }); run();
   }
 })();
