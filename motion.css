@@ -91,8 +91,8 @@ html.hl-on .hw.lit{opacity:1}
 .me-mu{position:fixed;right:clamp(12px,2vw,28px);bottom:clamp(12px,2vw,28px);z-index:960;font:300 11px/1.35 'JetBrains Mono',ui-monospace,monospace;color:#f4f3ef}
 .me-mu button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 .me-mu button:focus-visible,.me-mu a:focus-visible{outline:2px solid #7a82ff;outline-offset:3px}
-.me-mb{display:flex;align-items:center;gap:10px;padding:8px 12px;text-align:left;background:rgba(18,19,22,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid #2c2e33;transition:border-color .2s}
-.me-mb:hover{border-color:#9a9ea6}
+.me-mu .me-mb{display:flex;align-items:center;gap:10px;padding:8px 12px;text-align:left;background:rgba(18,19,22,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid #2c2e33;transition:border-color .2s}
+.me-mu .me-mb:hover{border-color:#9a9ea6}
 .me-mb .me-lbl{display:flex;flex-direction:column;white-space:nowrap}
 .me-mb .me-lbl small{font-size:10px;color:#9a9ea6}
 .me-wv{display:flex;align-items:flex-end;gap:2px;height:13px;width:17px;flex:0 0 auto}
