@@ -985,11 +985,13 @@
       var vl = D.querySelector('[data-inkroot] .vl'), x0 = vl ? vl.getBoundingClientRect().left : lines[0].l - 24;
       var scs = p.querySelectorAll('.sc'), fs = scs[scs.length - 1], fr = fs ? fs.getBoundingClientRect() : null;
       var gap = Math.max(4, parseFloat(getComputedStyle(p).fontSize) * 0.14);
-      // a snake under the lines that always ends left-to-right on the last line, at the full stop
-      var n = lines.length, d = '';
+      // a snake in the gaps between the lines: it turns on the vertical rule at the left and on the longest line's end at
+      // the right, and the last stretch ends under the full stop
+      var n = lines.length, d = '', R = Math.max.apply(null, lines.map(function (L) { return L.r; })) + gap;
+      var lh = n > 1 ? (lines[n - 1].mid - lines[0].mid) / (n - 1) : parseFloat(getComputedStyle(p).fontSize) * 1.18;
       lines.forEach(function (L, i) {
-        var ltr = (n - 1 - i) % 2 === 0, y = (L.b + gap - sr.top).toFixed(1);
-        var a = ltr ? (i === 0 ? x0 : L.l) : L.r, b = ltr ? L.r : L.l;
+        var ltr = (n - 1 - i) % 2 === 0, y = (L.mid + lh * 0.5 - sr.top).toFixed(1);
+        var a = ltr ? x0 : R, b = ltr ? R : x0;
         if (i === n - 1 && fr) b = fr.left + fr.width / 2;
         d += (i === 0 ? 'M' + (a - sr.left).toFixed(1) + ' ' + y : 'V' + y) + 'H' + (b - sr.left).toFixed(1);
       });
