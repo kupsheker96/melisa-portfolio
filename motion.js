@@ -41,6 +41,7 @@
   var doIn = LIVE && !RM && !doIntro && !!incoming;
   var waiters = [];
   W.__introWait = function (cb) { if (doIntro) waiters.push(cb); else cb(); };
+  if (PAGE === 'home') H.classList.add('me-home');
   if (doIntro) { H.classList.add('intro'); H.style.setProperty('--pt-c', BG); }
   else if (doIn) { H.classList.add('pt-in'); H.style.setProperty('--pt-c', incoming.c); }
 
@@ -966,7 +967,7 @@
     var off = D.createElement('canvas'), oc = off.getContext('2d');
     var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, TOP = 56, P = 0, K = 2, G = 0, COL = '122,130,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0;
     var NM = null, ngr = 0, split = 0, I = null, ORD = null, gx0 = 0;
-    var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, t0 = now(), lastStep = 0, avg = 0, prevB = 0, sh = [0, 0], LIT = 0;
+    var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, t0 = now(), tm = 0, lastT = now(), lastStep = 0, avg = 0, prevB = 0, sh = [0, 0], LIT = 0;
     var stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts');
     var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
     // draw some text offscreen and read it back as coarse pixels on the line grid
@@ -984,7 +985,7 @@
       return M;
     };
     var build = function () {
-      TOP = 56; W0 = H.clientWidth || W.innerWidth; H0 = W.innerHeight - TOP; var hbH = hb.offsetHeight;
+      TOP = 0; W0 = H.clientWidth || W.innerWidth; H0 = W.innerHeight - TOP; var hbH = hb.offsetHeight;
       if (!W0 || !H0 || !hbH) return;
       cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
       var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4, small = W.innerWidth < 640;
@@ -1018,13 +1019,17 @@
       }
       cv.style.visibility = gone ? 'hidden' : '';
       if (gone) { raf = 0; return; }
-      var t = now(), tt = (t - t0) / 1000, L = LV() || { b: 0, m: 0, h: 0, a: 0, on: 0 }, on = L.on || 0;
+      var t = now(), L = LV() || { b: 0, m: 0, h: 0, a: 0, on: 0 }, on = still ? 0 : (L.on || 0);
+      // Nov 24: the screen moves only with the music. Its clock runs at the music's pace, so pausing slows everything
+      // to a stop and the name settles, whole and still, in its place; playing picks it up where it stopped.
+      tm += Math.min(0.05, (t - lastT) / 1000) * on; lastT = t; var tt = tm;
       var bnow = L.b || 0, flux = bnow - prevB; prevB = bnow; avg += (bnow - avg) * 0.04;
       var beat = on > 0.3 && (flux > 0.09 || bnow > avg * 1.3) && bnow > 0.45 && t - lastStep > 260;
-      if (!still && p0 < 1 && (beat || t - lastStep > (on > 0.3 ? 1400 : 1100))) {
+      if (on < 0.3) { sh[0] = 0; sh[1] = 0; }
+      else if (p0 < 1 && (beat || t - lastStep > 1400)) {
         lastStep = t;
         var b = Math.random() < 0.5 ? 0 : 1, nv = sh[b];
-        while (nv === sh[b]) nv = Math.round((Math.random() * 2 - 1) * (on > 0.3 ? 3 : 2));
+        while (nv === sh[b]) nv = Math.round((Math.random() * 2 - 1) * 3);
         sh[b] = nv; if (Math.random() < 0.35) sh[1 - b] = 0;
         if (beat) LIT = 1;
       }
@@ -1039,7 +1044,7 @@
         var lv = 0;
         if (spec && on > 0.01) { var fq = 40 * Math.pow(300, (c % 97) / 97), bi = Math.min(spec.length - 1, Math.round(fq / hz)); lv = spec[bi] / 255; lv *= lv; }
         LS[c] = lv;
-        var pul = 0.5 + 0.5 * Math.sin(tt * ph[c * 3 + 1] + ph[c * 3]), a0 = (0.26 + 0.2 * pul + on * lv * 0.4) * bgK;
+        var pul = 0.5 + on * 0.5 * Math.sin(tt * ph[c * 3 + 1] + ph[c * 3]), a0 = (0.26 + 0.2 * pul + on * lv * 0.4) * bgK;
         x.fillStyle = 'rgba(' + COL + ',' + a0.toFixed(3) + ')';
         x.fillRect(colX[c] - 0.5, 0, 1 + on * lv * 1.2, H0);
       }
@@ -1056,16 +1061,16 @@
         var r = el.getBoundingClientRect(), padX = r.height * 0.5, padY = r.height * 0.35;
         KR.push({ x0: (r.left - padX - gx0 + G) / G, x1: (r.right + padX - gx0 + G) / G, y0: (r.top - padY - TOP) / G, y1: (r.bottom + padY - TOP) / G, e: ks.e });
       });
-      var R = Math.max(110, Math.min(200, W0 * 0.12)), mgx = (mx - gx0 + G) / G, mgy = my / G, Rg = R / G;
+      var moved = 0, R = Math.max(110, Math.min(200, W0 * 0.12)), mgx = (mx - gx0 + G) / G, mgy = my / G, Rg = R / G;
       for (var gy = 0; gy < gr; gy++) {
         var ny = gy - rowOff, s0 = sh[ny < split ? 0 : 1];
         for (var gx = 0; gx < gc; gx++) {
           var k = gy * gc + gx, od = ORD[k], tgt = 0;
-          var field = 0.5 + 0.5 * Math.sin(gx * 0.23 - tt * (0.9 + on * 1.6) + Math.sin(gy * 0.19 + tt * 0.5) * 1.6);
+          var field = 1 + on * (-0.5 + 0.5 * Math.sin(gx * 0.23 - tt * 2.5 + Math.sin(gy * 0.19 + tt * 0.5) * 1.6));   // still: evenly lit
           if (p0 < 1 && ny >= 0 && ny < ngr) {
             var sx = gx - s0, sy = ny, push = 0;
             var ddx = (gx + 0.5 - mgx) / Rg, ddy = (gy + 0.5 - mgy) / Rg, dd = Math.sqrt(ddx * ddx + ddy * ddy);
-            if (dd < 1) { push = 1 - dd; var st2 = push * 2.4; sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2 * 1.6); }
+            if (dd < 1 && on > 0.05) { push = (1 - dd) * on; var st2 = push * 2.4; sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2 * 1.6); }
             if (sx >= 0 && sx < gc && sy >= 0 && sy < ngr && NM[sy * gc + sx]) {
               var keep = 1 - sm(cl((p0 * 1.25 - od * 0.6) / 0.4));   // pixel by pixel, in an uneven order, back into lines
               tgt = Math.min(1, (0.5 + 0.5 * field) * (1 + LIT * on * 0.6) + push * 0.8) * keep;
@@ -1078,13 +1083,13 @@
             var edge = sm(cl(Math.min(ux, uy) * 1.8 + 0.15 - od * 0.75));
             tgt = Math.max(tgt, Math.min(0.6, kr.e * edge * (0.6 + 0.4 * field) * (1 + LIT * on * 0.4)));
           }
-          I[k] += (tgt - I[k]) * (tgt > I[k] ? 0.3 : 0.18);
+          var dI = (tgt - I[k]) * (tgt > I[k] ? 0.3 : 0.18); I[k] += dI; if (dI > moved || -dI > moved) moved = dI < 0 ? -dI : dI;
           var v = I[k]; if (v < 0.04) continue;
           for (var j = 0; j < K; j++) {
             var ci = gx * K + j; if (ci >= cols) break;
             var q0 = ph[ci * 3], q1 = ph[ci * 3 + 1], hv = hash(ci, gy);
             var n = 0.55 + 0.25 * Math.sin(tt * (1.3 + q1 * 1.7) + q0 + gy * 0.9) + 0.2 * Math.sin(tt * (3.1 + hv * 4) + hv * 9);
-            if (on > 0.01) n = n * (1 - on * 0.45) + on * 0.45 * Math.min(1, LS[ci] * 1.6 + 0.2);
+            n = 0.82 + on * (n * 0.55 + 0.45 * Math.min(1, LS[ci] * 1.6 + 0.2) - 0.82);   // still: every line at one steady width
             var e = v * Math.max(0.3, n), wd = 1.2 + e * (P * 0.8 - 1.2);
             if (e < 0.08) continue;
             x.fillStyle = 'rgba(' + COL + ',' + Math.min(1, 0.5 + e * 1.1).toFixed(3) + ')';
@@ -1092,7 +1097,8 @@
           }
         }
       }
-      if (vis && !D.hidden && !still) raf = requestAnimationFrame(frame);
+      if (vis && !D.hidden && !still && (on > 0.001 || moved > 0.002 || KR.length || (W.__meMusicPlaying && W.__meMusicPlaying()))) raf = requestAnimationFrame(frame);
+      else if (!still) setTimeout(kick, 400);   // asleep: look again for the music now and then
     };
     var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
     W.addEventListener('pointermove', function (e) { if (e.pointerType !== 'mouse') return; mx = e.clientX; my = e.clientY - TOP; }, { passive: true });
@@ -1237,6 +1243,7 @@
       var X = n >= 6 ? [g.xs[4], g.xs[5], g.xs[6]] : [g.xs[3], (g.xs[3] + g.xs[4]) / 2, g.xs[4]];
       Array.prototype.forEach.call(as, function (a, i) { if (X[i] != null) put(a, X[i] + gut); });
     };
+    if (PAGE === 'home') return navBoxes(nav, links);
     align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
     var cards = D.getElementById('work'), last = W.scrollY, hid = false;
     var set = function (h) { if (h !== hid) { hid = h; H.classList.toggle('nav-hide', h); } };
@@ -1248,6 +1255,40 @@
     }, { passive: true });
   }
 
+  /* Home top bar (Nov 24): outlined boxes, one per grid column, floating over the line screen; each label leans
+     toward the cursor as it comes near, like the type in the screen behind it */
+  function navBoxes(nav, links) {
+    var logo = nav.querySelector('.logo'), as = links ? [].slice.call(links.querySelectorAll('a')) : [], items = (logo ? [logo] : []).concat(as);
+    items.forEach(function (a) {
+      if (a.querySelector('.nt')) return;
+      a.classList.add('nb'); var t = D.createElement('span'); t.className = 'nt';
+      while (a.firstChild) t.appendChild(a.firstChild); a.appendChild(t);
+    });
+    var align = function () {
+      var g = strips(), gut = Math.round(Math.max(14, Math.min(24, W.innerWidth * 0.016))), n = g.xs.length - 2, R = g.vw - g.pad;
+      var put = function (el, l, r) { el.style.position = 'absolute'; el.style.left = Math.round(l) + 'px'; el.style.width = Math.round(r - l + 1) + 'px'; el.style.top = '8px'; el.style.paddingLeft = gut + 'px'; el.style.margin = '0'; el.style.transform = 'none'; };
+      if (n < 4) { items.forEach(function (el) { el.style.position = el.style.left = el.style.width = el.style.top = el.style.paddingLeft = el.style.margin = el.style.transform = ''; }); return; }
+      if (logo) put(logo, g.pad, g.rule);
+      var X = n >= 6 ? [g.xs[4], g.xs[5], g.xs[6], R] : [g.xs[3], (g.xs[3] + g.xs[4]) / 2, g.xs[4], R];
+      as.forEach(function (a, i) { if (X[i + 1] != null) put(a, X[i], X[i + 1]); });
+    };
+    align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
+    if (!FINE || RM) return;
+    var mx = -1e4, my = -1e4, raf = 0, st = items.map(function () { return { x: 0, y: 0 }; });
+    var tick = function () {
+      raf = 0; var busy = false;
+      items.forEach(function (a, i) {
+        var r = a.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, dx = mx - cx, dy = my - cy, d = Math.hypot(dx, dy), reach = Math.max(120, r.width * 0.8);
+        var k = d < reach ? (1 - d / reach) : 0, tx = Math.max(-1, Math.min(1, dx / (r.width / 2))) * k * Math.min(16, r.width * 0.12), ty = Math.max(-1, Math.min(1, dy / 20)) * k * 4;
+        var s0 = st[i]; s0.x += (tx - s0.x) * 0.18; s0.y += (ty - s0.y) * 0.18;
+        a.firstElementChild.style.transform = Math.abs(s0.x) + Math.abs(s0.y) > 0.05 ? 'translate3d(' + s0.x.toFixed(2) + 'px,' + s0.y.toFixed(2) + 'px,0)' : '';
+        if (Math.abs(tx - s0.x) + Math.abs(ty - s0.y) > 0.05) busy = true;
+      });
+      if (busy) raf = requestAnimationFrame(tick);
+    };
+    W.addEventListener('pointermove', function (e) { if (e.clientY > 140) { if (mx < -1e3) return; mx = my = -1e4; } else { mx = e.clientX; my = e.clientY; } if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+  }
+
   /* Home: the dot on the vertical rule grows as you scroll and becomes the UI/UX blue, opening onto the first card */
   /* ---------- category cards (Nov 24). The images develop through the site's square dots as each card arrives
      (scroll-tied, staggered tile by tile, so it runs backwards too); the last card, Social Media, breaks up into the same
@@ -1256,7 +1297,6 @@
     var cs = [].slice.call(D.querySelectorAll('.cc-card')), sec = D.querySelector('.cc');
     if (!cs.length || !sec || !LIVE || RM) return;
     pixReveal();
-    melt(cs[cs.length - 1]);
     cardLife(cs);
   }
 

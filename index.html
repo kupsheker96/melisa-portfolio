@@ -478,10 +478,10 @@ class Component extends DCLogic {
         const nx = cards[i + 1];
         let p, fade = 0;
         if (nx) p = cl(1 - (nx.getBoundingClientRect().top - top) / span);   // how far the next card has covered this one
-        else { p = 0; }   // last card: hold, then sink away
+        else { p = gone; fade = p; }   // last card: hold, then sink away
         const k = p * p * (3 - 2 * p);
         ins[i].style.transform = p > 0 ? `perspective(1600px) translate3d(0,${(-k * (fade ? 6 : 2.5)).toFixed(2)}%,0) rotateX(${(k * (fade ? 14 : 9)).toFixed(2)}deg) scale(${(1 - k * (fade ? .2 : .1)).toFixed(4)})` : '';
-        ins[i].style.opacity = gk > 0 ? (nx ? '0' : '') : '';   // cards under the last one step out first, so nothing ghosts through
+        ins[i].style.opacity = gk > 0 ? (nx ? '0' : (1 - gk).toFixed(3)) : '';   // cards under the last one step out first, so nothing ghosts through
         dims[i].style.opacity = (k * .55).toFixed(3);
       }
     };

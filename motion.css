@@ -141,10 +141,10 @@ html.dot-on [data-inkroot] .vmark{opacity:0}
 .me-ul{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;transition:opacity .25s}
 
 /* ---------- Home: the pixel band and its index ---------- */
-.pf{position:relative;z-index:1;margin-top:-95vh;padding:clamp(24px,3vw,48px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
+.pf{position:relative;z-index:1;margin-top:-48vh;padding:clamp(24px,3vw,48px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
 @media (prefers-reduced-motion: reduce){.pf{margin-top:0}}
 /* the last card leaves sooner, so the index follows straight after Branding */
-.cc-tail{height:120vh !important;pointer-events:none}
+.cc-tail{height:55vh !important;pointer-events:none}
 /* the index slides up under the last card: let the pointer through the empty part of the cards section */
 .cc{pointer-events:none}.cc .cc-card{pointer-events:auto}
 /* each category holds the screen a little longer before the next one slides over it */
@@ -256,7 +256,7 @@ html.mhs-on .ab-ax .q{position:absolute;top:-5px;left:0;width:9px;height:9px;bac
 .cc-t.me-pxd img{opacity:1;transition:opacity .24s linear}
 .cc-t.me-pxd .me-px{opacity:0}
 /* landing (Nov 24): the index's dot field, full screen, the name in relief */
-.me-hero{position:relative;height:calc(100svh - 56px);min-height:520px;display:flex;flex-direction:column;padding:0 0 clamp(20px,2.6vw,36px) !important}
+.me-hero{position:relative;height:100svh;min-height:520px;display:flex;flex-direction:column;padding:0 0 clamp(20px,2.6vw,36px) !important}
 .me-hn{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
 .me-pfb{position:relative;flex:1;min-height:0;margin:0 calc(-1 * clamp(16px,4vw,56px));touch-action:pan-y}
 .me-hb{position:relative;margin-left:16%;padding-left:clamp(14px,1.6vw,24px);pointer-events:none}
@@ -274,6 +274,16 @@ html.mhs-on .ab-ax .q{position:absolute;top:-5px;left:0;width:9px;height:9px;bac
 .me-pfb.me-lines canvas{filter:drop-shadow(0 0 2px rgba(122,130,255,.8)) drop-shadow(0 0 9px rgba(122,130,255,.36))}
 @media (max-width:759px){.me-pfb.me-lines canvas{filter:drop-shadow(0 0 4px rgba(122,130,255,.55))}}
 /* the landing's line screen stays behind the page through the statement (Nov 24) */
-.me-lf{position:fixed;left:0;top:56px;z-index:-1;pointer-events:none;display:block}
+.me-lf{position:fixed;left:0;top:0;z-index:-1;pointer-events:none;display:block}
 html.me-shell .me-lf{display:none}
 @media print{.me-lf{display:none}}
+/* Home (Nov 24): the top bar is no longer a band of its own; it floats, fixed, over the line screen as a row of
+   outlined boxes on the grid, drawn in difference so it reads over every colour beneath it */
+html.me-home nav[aria-label="Main"]{position:fixed !important;left:0;right:0;top:0;background:transparent !important;border-bottom:0 !important;mix-blend-mode:difference;transform:none !important;pointer-events:none}
+html.me-home nav[aria-label="Main"] a{pointer-events:auto}
+html.me-home nav[aria-label="Main"] .nb{box-sizing:border-box;display:flex !important;align-items:center !important;height:40px;border:1px solid rgba(244,243,239,.55);color:#f4f3ef !important;text-decoration:none !important;transition:background .25s,color .25s,border-color .25s}
+html.me-home nav[aria-label="Main"] .nb:hover,html.me-home nav[aria-label="Main"] .nb:focus-visible{background:#f4f3ef;color:#121316 !important;border-color:#f4f3ef;outline:none}
+html.me-home nav[aria-label="Main"] .nb[aria-current="page"] .nt{text-decoration:underline;text-underline-offset:6px}
+html.me-home nav[aria-label="Main"] .nt{display:inline-block;will-change:transform;white-space:nowrap}
+@media (max-width:639px){html.me-home nav[aria-label="Main"] .nb{height:32px;padding:0 10px}html.me-home nav[aria-label="Main"] .mainnav{gap:0 !important}html.me-home nav[aria-label="Main"] .mainnav .nb + .nb{margin-left:-1px}}
+html.me-home .cc-in{padding-top:calc(clamp(24px,3.4vw,52px) + 52px) !important}
