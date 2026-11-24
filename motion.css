@@ -255,13 +255,12 @@ html.mhs-on .ab-ax .q{position:absolute;top:-5px;left:0;width:9px;height:9px;bac
 .cc-t.me-pxw img{opacity:0}
 .cc-t.me-pxd img{opacity:1;transition:opacity .24s linear}
 .cc-t.me-pxd .me-px{opacity:0}
-/* landing (Nov 24): listening dot field + the name, smaller, in Archivo */
-.me-hero{position:relative;height:calc(100svh - 56px);min-height:520px;display:flex;flex-direction:column;justify-content:flex-end;padding:0 0 clamp(20px,2.6vw,36px) !important}
-.me-df{position:absolute;top:0;bottom:0;left:calc(-1 * clamp(16px,4vw,56px));right:calc(-1 * clamp(16px,4vw,56px));width:calc(100% + 2 * clamp(16px,4vw,56px));height:100%;display:block}
+/* landing (Nov 24): the index's dot field, full screen, the name in relief */
+.me-hero{position:relative;height:calc(100svh - 56px);min-height:520px;display:flex;flex-direction:column;padding:0 0 clamp(20px,2.6vw,36px) !important}
+.me-hn{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
+.me-pfb{position:relative;flex:1;min-height:0;margin:0 calc(-1 * clamp(16px,4vw,56px));touch-action:pan-y}
 .me-hb{position:relative;margin-left:16%;padding-left:clamp(14px,1.6vw,24px);pointer-events:none}
-.me-hn{margin:0;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;text-transform:uppercase;font-size:clamp(56px,9vw,168px);line-height:.84;letter-spacing:-.03em;color:#f4f3ef;display:flex;flex-wrap:wrap;column-gap:.2em}
-.me-hw{display:block;overflow:hidden;padding-top:.08em}
-.me-hm{display:flex;justify-content:space-between;gap:16px;margin-top:clamp(16px,1.8vw,26px);padding-top:12px;border-top:1px solid #3a3d45;font-size:11px;color:#9a9ea6}
+.me-hm{display:flex;justify-content:space-between;gap:16px;padding-top:12px;border-top:1px solid #3a3d45;font-size:11px;color:#9a9ea6}
 @media (max-width:639px){.me-hb{margin-left:0;padding-left:0}.me-hm{flex-wrap:wrap}.me-hm > span:nth-child(2){display:none}}
 /* statement keyword drawings (Nov 24) */
 .me-kc{position:absolute;display:flex;flex-direction:column;gap:3px;font:400 10.5px/1.35 'JetBrains Mono',ui-monospace,monospace;color:#9a9ea6;opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s cubic-bezier(.2,.7,.2,1);pointer-events:none}

@@ -414,7 +414,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge(); field();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge();
     if (!EMB && !SHELLED) music();
   }
 
@@ -818,7 +818,7 @@
     var ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
     var still = !LIVE || RM, W0 = 0, H0 = 0, dpr = 1, S = 6, P = [], N = 0, vis = false, raf = 0, mx = -1e4, my = -1e4, spec = null, sz = 1.6, cur = o.fg, calm = 0;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
-    var idle = o.idle ? { w: o.idle, arrow: '', c: o.fg } : null;
+    var idle = o.idle ? (typeof o.idle === 'object' ? o.idle : { w: o.idle, arrow: '', c: o.fg }) : null;
     var build = function () {
       var pt = parseFloat(getComputedStyle(band).paddingTop) || 0; W0 = band.offsetWidth; H0 = band.offsetHeight - pt; dpr = Math.min(2, W.devicePixelRatio || 1);
       cv.style.top = pt + 'px';
@@ -841,11 +841,11 @@
       oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
       var parts = (sp.w || '').split(' ');
       if (sp.lines) {   // a sentence on several lines, starting a gutter after the margin line, last line carrying the arrow
-        var x0 = W0 * (sp.x0 || 0) + (sp.x0 ? Math.max(14, Math.min(24, W.innerWidth * 0.016)) : 0), nl = sp.lines.length;
-        fs = H0 / (nl * 0.72 * 1.22); font(fs);
+        var x0 = sp.px != null ? sp.px : W0 * (sp.x0 || 0) + (sp.x0 ? Math.max(14, Math.min(24, W.innerWidth * 0.016)) : 0), nl = sp.lines.length;
+        fs = H0 / (nl * 0.72 * (sp.lh || 1.22)); font(fs);
         var aw2 = ar ? fs * 0.5 : 0, longest = Math.max.apply(null, sp.lines.map(function (l) { return oc.measureText(l).width; }));
-        if (longest + aw2 * 1.4 > W0 - x0) { fs *= (W0 - x0) / (longest + aw2 * 1.4); font(fs); }
-        cap = fs * 0.72; var lh = cap * 1.22, top = (H0 - (nl * lh - (lh - cap))) / 2;
+        if (longest + aw2 * 1.4 > W0 - x0 - (sp.pr || 0)) { fs *= (W0 - x0 - (sp.pr || 0)) / (longest + aw2 * 1.4); font(fs); }
+        cap = fs * 0.72; var lh = cap * (sp.lh || 1.22), top = sp.bottom ? H0 - (nl * lh - (lh - cap)) - S * 4 : (H0 - (nl * lh - (lh - cap))) / 2;
         sp.lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
         if (ar) {
           var lw2 = fs * 0.09, axx = x0 + oc.measureText(sp.lines[nl - 1]).width + fs * 0.25, ayy = top + (nl - 1) * lh, aw3 = cap * 0.62;
@@ -874,12 +874,42 @@
       for (var t = 0; t < M; t++) { var p = order[Math.floor(t * N / M)]; p.tx = T[t][0]; p.ty = T[t][1]; p.ta = 1; if (!keep && !still) { p.vx += (Math.random() - 0.5) * 9; p.vy += (Math.random() - 0.5) * 9; } }
       kick();
     };
+    var hist = o.music ? new Float32Array(240) : null, hi0 = 0, LVL = null, t0 = now();
     var draw = function () {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W0, H0);
       var lo = [], hi = [];
       for (var i = 0; i < N; i++) { var p = P[i]; if (p.a < 0.04) continue; (p.a > 0.7 ? hi : lo).push(p); }
-      ctx.fillStyle = o.dim; for (var a = 0; a < lo.length; a++) ctx.fillRect(lo[a].x - sz / 2, lo[a].y - sz / 2, sz, sz);
-      ctx.fillStyle = cur; var s2 = sz * (o.big || 1.45); for (var b = 0; b < hi.length; b++) ctx.fillRect(hi[b].x - s2 / 2, hi[b].y - s2 / 2, s2, s2);
+      var s2 = sz * (o.big || 1.45);
+      if (o.music) {
+        // the same dots, listening: asleep they only breathe; with the song the bass sends rings out from the name's
+        // first letter (each dot hears it a moment later the further away it is), the highs make the letters shiver
+        var L = LVL = LV() || { b: 0, h: 0, on: 0 }, on = L.on || 0, tt = (now() - t0) / 1000;
+        hist[hi0 = (hi0 + 1) % hist.length] = (L.b || 0) * on;
+        var ox = o.origin ? o.origin[0] : 0, oy = o.origin ? o.origin[1] : H0 / 2;
+        // the whole grid stays (the name is raised out of it, not cut from it); it parts around the cursor like the index
+        var RR = Math.max(60, Math.min(110, W0 * 0.07));
+        ctx.fillStyle = o.dim;
+        for (var a = 0; a < N; a++) {
+          var q = P[a], gx = q.hx, gy = q.hy, d = Math.hypot(gx - ox, gy - oy), lag = Math.min(hist.length - 1, Math.floor(d / 7)), bb = hist[(hi0 - lag + hist.length) % hist.length];
+          var dmx = gx - mx, dmy = gy - my, dm = Math.hypot(dmx, dmy);
+          if (dm < RR) { var fm = (1 - dm / RR); fm *= fm; gx += dmx / (dm || 1) * fm * S * 1.1; gy += dmy / (dm || 1) * fm * S * 1.1; }
+          var br = 0.14 * Math.sin(tt * 0.7 + q.hx * 0.01 + q.hy * 0.013), sk = Math.min(S * 0.56, sz * (1 + br + bb * bb * 0.6));
+          ctx.fillRect(gx - sk / 2, gy - sk / 2, sk, sk);
+        }
+        var jit = (L.h || 0) * on * S * 0.16, pulse = 1 + hist[hi0] * 0.25;
+        s2 *= pulse;
+        // relief: each raised dot casts a short shadow down-right and catches light on its top-left edge
+        if (o.relief) {
+          var sh = Math.max(1.5, s2 * 0.7);
+          ctx.fillStyle = 'rgba(0,0,0,.85)'; for (var c = 0; c < hi.length; c++) ctx.fillRect(hi[c].x - s2 / 2 + sh, hi[c].y - s2 / 2 + sh, s2, s2);
+        }
+        ctx.fillStyle = cur;
+        for (var b = 0; b < hi.length; b++) { var jx = jit ? (Math.random() - 0.5) * jit : 0, jy = jit ? (Math.random() - 0.5) * jit : 0; ctx.fillRect(hi[b].x - s2 / 2 + jx, hi[b].y - s2 / 2 + jy, s2, s2); }
+        return;
+      }
+      ctx.fillStyle = o.dim; for (var a2 = 0; a2 < lo.length; a2++) ctx.fillRect(lo[a2].x - sz / 2, lo[a2].y - sz / 2, sz, sz);
+      if (o.relief) { ctx.fillStyle = 'rgba(0,0,0,.72)'; var sh2 = s2 * 0.55; for (var c2 = 0; c2 < hi.length; c2++) ctx.fillRect(hi[c2].x - s2 / 2 + sh2, hi[c2].y - s2 / 2 + sh2, s2, s2); }
+      ctx.fillStyle = cur; for (var b2 = 0; b2 < hi.length; b2++) ctx.fillRect(hi[b2].x - s2 / 2, hi[b2].y - s2 / 2, s2, s2);
     };
     var step = function () {
       var R = Math.max(60, Math.min(110, W0 * 0.07)), R2 = R * R, moving = false;
@@ -895,7 +925,7 @@
       }
       return moving;
     };
-    var loop = function () { var mv = step(); draw(); calm = mv ? 0 : calm + 1; raf = (vis && (calm < 20 || mx > -1e3)) ? requestAnimationFrame(loop) : 0; };
+    var loop = function () { var mv = step(); draw(); calm = mv ? 0 : calm + 1; raf = (vis && !D.hidden && (calm < 20 || mx > -1e3 || o.music)) ? requestAnimationFrame(loop) : 0; };
     var kick = function () { if (!raf && (vis || still)) raf = requestAnimationFrame(loop); };
     var hit = o.hit || band;
     hit.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(), k = r.width ? W0 / r.width : 1; mx = (e.clientX - r.left) * k; my = (e.clientY - r.top) * k; kick(); }, { passive: true });
@@ -943,6 +973,13 @@
         };
         W.addEventListener('scroll', zoom, { passive: true }); W.addEventListener('resize', zoom); zoom();
       }
+    }
+    // Home landing (Nov 24): the index's own dot field, full screen, the name standing out of it in relief, big and
+    // left-aligned on the margin line; it listens to the music (see pixelField's music option)
+    var hb = D.querySelector('.me-pfb');
+    if (hb) {
+      var hg = strips(), hx = W.innerWidth < 640 ? hg.pad : hg.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
+      pixelField(hb, [], { fg: FG, dim: 'rgba(244,243,239,.24)', grid: true, idle: { w: 'MELISA ERGANI', lines: ['MELISA', 'ERGANI'], px: hx, pr: hg.pad, lh: 1.12, bottom: true, c: FG }, relief: true, music: true, origin: [hx, hb.offsetHeight * 0.55], hit: D.getElementById('top'), big: 1.5 });
     }
     // Home footer: the name in pixels, ink on lavender; its contact links reshape it
     var wm = D.querySelector('footer .wmark');
@@ -1294,80 +1331,7 @@
     W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
   }
 
-  /* landing dot field (Nov 24). The page grid, in square dots. With the music paused it barely breathes; once the
-     song plays it listens: the bass sends rings out from the name, the mids lift the columns like a spectrum read
-     left to right, the highs strike single dots in lavender. The cursor parts and enlarges the dots near it. */
   function LV() { try { return W.__meLevels ? W.__meLevels() : (SHELLED && W.parent.__meLevels ? W.parent.__meLevels() : null); } catch (e) { return null; } }
-  function field() {
-    var cv = D.querySelector('.me-df'), hero = D.getElementById('top'); if (!cv || !hero) return;
-    var x = cv.getContext('2d'), dpr = Math.min(2, W.devicePixelRatio || 1), w = 0, h = 0, S = 22, xs0 = 0, P = [], nx = 0, ny = 0;
-    var mx = -1e4, my = -1e4, mk = 0, oy = 0, vis = true, raf = 0, hist = new Float32Array(180), hi = 0, ox = 0, oyc = 0, spark = {};
-    var measure = function () {
-      var r = cv.getBoundingClientRect(); w = r.width; h = r.height; if (!w || !h) return;
-      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); x.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var g = strips(), cw = (g.xs[2] - g.xs[1]) || w / 4;
-      S = cw / Math.max(3, Math.round(cw / (W.innerWidth < 640 ? 20 : 24)));
-      xs0 = (g.rule % S); nx = Math.ceil((w - xs0) / S); ny = Math.ceil(h / S);
-      P = [];
-      for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) P.push(xs0 + (i + 0.5) * S, (j + 0.5) * S, hash(i, j));
-      // the rings start from the name's first letter
-      var hn = hero.querySelector('.me-hn'), hr = hn ? hn.getBoundingClientRect() : null;
-      ox = hr ? hr.left - r.left + 10 : w * 0.3; oyc = hr ? hr.top - r.top + hr.height * 0.4 : h * 0.75;
-    };
-    var draw = function (t) {
-      raf = 0; if (!vis || !w) return;
-      var L = LV() || { b: 0, m: 0, h: 0, on: 0 }, on = L.on || 0;
-      hist[hi = (hi + 1) % hist.length] = L.b || 0;
-      mk += ((mx > -1e3 ? 1 : 0) - mk) * 0.08;
-      x.clearRect(0, 0, w, h);
-      var spec = L.spec, hz = L.hz || 43, tt = t / 1000, maxd = Math.hypot(Math.max(ox, w - ox), Math.max(oyc, h - oyc)), ring = 9;   // ring speed: px per frame of history
-      for (var k = 0; k < P.length; k += 3) {
-        var px = P[k], py = P[k + 1], rn = P[k + 2];
-        var breathe = 0.5 + 0.5 * Math.sin(tt * 0.6 + px * 0.004 + py * 0.006 + rn * 2);   // asleep
-        var s = 1.2 + 0.5 * breathe, a = 0.1 + 0.06 * breathe;
-        if (on > 0.01) {
-          var d = Math.hypot(px - ox, py - oyc), lag = Math.min(hist.length - 1, Math.floor(d / ring)), b = hist[(hi - lag + hist.length) % hist.length] * (1 - d / maxd * 0.55);
-          var m = 0;
-          if (spec) {   // a spectrum read left to right on a log scale, lifting dots up from the bottom of the field
-            var f = 40 * Math.pow(400, px / w), bi = Math.min(spec.length - 1, Math.round(f / hz)), lvl = spec[bi] / 255;
-            m = cl((lvl * 1.15 - (1 - py / h)) * 2.2) * (L.m || 0.5);
-          }
-          s += on * (b * b * 6.5 + m * 3.4);
-          a += on * (b * b * 0.55 + m * 0.42);
-        }
-        if (mk > 0.01) {
-          var dx = px - mx, dy = py - my, dd = Math.hypot(dx, dy), q = cl(1 - dd / 170) * mk;
-          if (q > 0) { s += q * q * 5; a += q * 0.5; px += dx / (dd || 1) * q * 7; py += dy / (dd || 1) * q * 7; }
-        }
-        var foot = cl((py - h * 0.62) / (h * 0.3)); a *= 1 - foot * 0.78; s *= 1 - foot * 0.45;   // the name sits on a calmer floor
-        s = Math.min(S - 2, s);
-        x.fillStyle = 'rgba(244,243,239,' + Math.min(0.95, a).toFixed(3) + ')';
-        x.fillRect(px - s / 2, py - s / 2, s, s);
-      }
-      // highs strike single dots in lavender; each fades over half a second
-      if (on > 0.05 && (L.h || 0) > 0.55 && Math.random() < (L.h - 0.45) * 1.6) spark[Math.floor(Math.random() * P.length / 3)] = t;
-      x.fillStyle = '#7a82ff';
-      for (var id in spark) {
-        var age = (t - spark[id]) / 520; if (age > 1) { delete spark[id]; continue; }
-        var sz = (S - 4) * (1 - age) * on, i3 = id * 3;
-        if (sz > 0.5) { x.globalAlpha = 1 - age; x.fillRect(P[i3] - sz / 2, P[i3 + 1] - sz / 2, sz, sz); }
-      }
-      x.globalAlpha = 1;
-      if (!RM) raf = requestAnimationFrame(draw);
-    };
-    var kick = function () { if (!raf && vis) raf = requestAnimationFrame(draw); };
-    measure();
-    if (RM) { draw(0); W.addEventListener('resize', function () { measure(); draw(0); }); return; }
-    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; kick(); }).observe(hero);
-    D.addEventListener('visibilitychange', function () { vis = !D.hidden; kick(); });
-    hero.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; });
-    hero.addEventListener('pointerleave', function () { mx = my = -1e4; });
-    W.addEventListener('resize', function () { measure(); kick(); });
-    if (D.fonts && D.fonts.ready) D.fonts.ready.then(function () { measure(); });
-    setTimeout(measure, 1200);
-    kick();
-  }
-
   function railDot() {
     var mk = D.querySelector('[data-inkroot] .vmark'), cards = D.getElementById('work'); if (!mk || !cards || !LIVE || RM) return;
     var o = D.createElement('div'); o.className = 'me-dot'; o.setAttribute('aria-hidden', 'true'); D.body.appendChild(o);
