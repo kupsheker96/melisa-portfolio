@@ -131,7 +131,7 @@ html.hl-on .hw.lit{opacity:1}
 /* ---------- Home: the rule's dot, without its percentage; it grows into the UI/UX blue ---------- */
 [data-inkroot] .vmark::after{content:none !important}
 html.dot-on [data-inkroot] .vmark{opacity:0}
-.me-dot{position:fixed;inset:0;z-index:7;pointer-events:none;clip-path:circle(0 at 0 0);visibility:hidden}
+.me-dot{position:fixed;inset:0;z-index:7;pointer-events:none;clip-path:inset(50%);visibility:hidden}
 
 /* ---------- Home: the pixel band and its index ---------- */
 .pf{position:relative;z-index:1;margin-top:-48vh;padding:clamp(24px,3vw,48px) clamp(16px,4vw,56px) 0;color:#f4f3ef}

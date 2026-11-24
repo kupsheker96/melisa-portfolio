@@ -891,18 +891,24 @@
     var mk = D.querySelector('[data-inkroot] .vmark'), cards = D.getElementById('work'); if (!mk || !cards || !LIVE || RM) return;
     var o = D.createElement('div'); o.className = 'me-dot'; o.setAttribute('aria-hidden', 'true'); D.body.appendChild(o);
     H.classList.add('dot-on');
-    var A = [122, 130, 255], B = [43, 53, 255], last = '';
+    // the dot turns into a square of the UI/UX blue (the card's own colour) that fills the screen before the card arrives;
+    // the card then rises into the blue, so the switch to the section is one colour field
+    var blue = getComputedStyle(D.querySelector('#c-uiux .cc-in') || D.body).backgroundColor || 'rgb(43,53,255)';
+    var A = [122, 130, 255], B = (/(\d+),\s*(\d+),\s*(\d+)/.exec(blue) || [0, 43, 53, 255]).slice(1, 4).map(Number), last = '';
     var run = function () {
-      var r = mk.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, vh = W.innerHeight, vw = W.innerWidth;
-      var ct = cards.getBoundingClientRect().top, q = cl(1 - ct / vh), e = q * q * (3 - 2 * q);
-      var far = Math.hypot(Math.max(cx, vw - cx), Math.max(cy, vh - cy)) + 4;
-      var R = 3.5 + (far - 3.5) * Math.pow(e, 1.6);
-      var hide = ct <= 0.5 || r.bottom < -40 || r.top > vh + 40;
-      var c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * e); });
-      var key = [Math.round(cx), Math.round(cy), R.toFixed(1), c.join(), hide].join('|'); if (key === last) return; last = key;
+      var r = mk.getBoundingClientRect(), vh = W.innerHeight, vw = W.innerWidth;
+      var cx = Math.max(0, Math.min(vw, r.left + r.width / 2)), cy = Math.max(0, Math.min(vh, r.top + r.height / 2));
+      var ct = cards.getBoundingClientRect().top;
+      var q = cl((1.9 * vh - ct) / (0.9 * vh)), e = q * q * (3 - 2 * q);            // full exactly when the card reaches the screen
+      var far = Math.max(cx, vw - cx, cy, vh - cy) + 2, R = 3.5 + (far - 3.5) * Math.pow(e, 1.5);
+      var t = cl(q / 0.18), c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * t); });
+      var top = Math.max(0, cy - R), left = Math.max(0, cx - R), right = Math.max(0, vw - (cx + R)), bot = Math.max(0, vh - (cy + R));
+      if (ct < vh) bot = Math.max(bot, vh - ct);                                         // above the rising card only
+      var hide = ct <= 0.5 || r.top > vh + 40 || (q <= 0 && (r.bottom < -40));
+      var key = [top, right, bot, left, c.join(), hide].map(function (x) { return typeof x === 'number' ? x.toFixed(1) : x; }).join('|'); if (key === last) return; last = key;
       o.style.visibility = hide ? 'hidden' : 'visible';
       o.style.background = 'rgb(' + c.join(',') + ')';
-      o.style.clipPath = 'circle(' + R.toFixed(1) + 'px at ' + cx.toFixed(1) + 'px ' + cy.toFixed(1) + 'px)';
+      o.style.clipPath = 'inset(' + top.toFixed(1) + 'px ' + right.toFixed(1) + 'px ' + bot.toFixed(1) + 'px ' + left.toFixed(1) + 'px)';
     };
     W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
     var t0 = now(); (function warm() { run(); if (now() - t0 < 3000) requestAnimationFrame(warm); })();
