@@ -59,7 +59,7 @@
     el.style.setProperty('--c', c); el.style.setProperty('--fg', fg);
     el.style.setProperty('--ln', lum(c) > 0.5 ? 'rgba(18,19,22,.16)' : 'rgba(244,243,239,.2)');
     var html = '';
-    for (var i = 0; i < g.xs.length - 1; i++) html += '<span class="me-st" style="left:' + g.xs[i] + 'px;width:' + (g.xs[i + 1] - g.xs[i] + 1) + 'px">' + (i < g.xs.length - 2 ? '<i class="me-ln"></i>' : '') + '</span>';
+    for (var i = 0; i < g.xs.length - 1; i++) html += '<span class="me-st" style="left:' + g.xs[i] + 'px;width:' + (g.xs[i + 1] - g.xs[i] + 1) + 'px">' + (i > 0 ? '<i class="me-ln"></i>' : '') + '</span>';
     html += '<span class="me-wl" style="left:' + (g.rule + Math.max(20, Math.min(44, g.vw * 0.026))) + 'px"></span>';
     html += '<span class="me-wk" style="left:' + g.pad + 'px"></span>';
     el.innerHTML = html;
@@ -110,44 +110,41 @@
     rendered(function () { fontsReady(function () { setTimeout(function () { lift(el); }, 60); }, 700); });
   });
 
-  /* ---------- intro (every time Home is opened): the four category dots hop in while the page loads, fold into
-     the dot of "ME.", and that dot opens the site ---------- */
+  /* ---------- intro (every time Home is opened). Built from the site's own parts: the grid draws itself, four square
+     pixels mark the four categories as the page loads, they close into the square of "ME.", the logo inks in and
+     the grid columns lift onto the page, the same way every page change opens. ---------- */
   if (doIntro) onBody(function () {
-    var g = strips(), CS = ['#2b35ff', '#d9f24a', '#f4f3ef', '#ff4fb0'];
+    var g = strips(), CS = ['#5d66ff', '#d9f24a', '#f4f3ef', '#ff4fb0'];
+    var sw = wipe(BG, FG, '', '', 'block');
+    var lns = sw.querySelectorAll('.me-ln');
+    for (var i = 0; i < lns.length; i++) { lns[i].style.transform = 'scaleY(0)'; anim(lns[i], [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 1100, delay: 120 + i * 60, easing: 'cubic-bezier(.65,0,.2,1)', fill: 'forwards' }); }
     var el = D.createElement('div'); el.className = 'mi'; el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = '<div class="mi-c"><span class="mi-me">ME</span><span class="mi-ds">' + CS.map(function (c, i) { return '<i class="mi-d" style="--c:' + c + ';--i:' + i + '"></i>'; }).join('') + '</span></div>'
-      + '<span class="mi-bl" style="left:' + g.pad + 'px">Melisa Ergani<br><span>UI/UX &amp; Visual Designer — Portfolio //2026</span></span>'
-      + '<span class="mi-n" style="right:' + g.pad + 'px">000</span><span class="mi-o"></span>';
+    el.innerHTML = '<div class="mi-c"><span class="mi-me">ME</span><span class="mi-ds">' + CS.map(function (c, i) { return '<i class="mi-d" style="--c:' + c + '"></i>'; }).join('') + '</span></div>'
+      + '<span class="mi-tl" style="left:' + g.pad + 'px">[ Portfolio //2026 ]</span>'
+      + '<span class="mi-bl" style="left:' + g.pad + 'px">Melisa Ergani<br><span>UI/UX &amp; Visual Designer, Ankara</span></span>'
+      + '<span class="mi-n" style="right:' + g.pad + 'px">000</span>';
     D.body.appendChild(el);
-    H.classList.remove('intro');   // the intro's own dark ground covers the page now
-    H.classList.add('intro');
-    var ds = el.querySelectorAll('.mi-d'), n = el.querySelector('.mi-n'), o = el.querySelector('.mi-o'), t0 = now(), ready = false;
-    for (var i = 0; i < ds.length; i++) (function (d, i) { setTimeout(function () { d.classList.add('in'); }, 180 + i * 150); })(ds[i], i);
-    setTimeout(function () { el.classList.add('hop'); }, 820);
+    var ds = el.querySelectorAll('.mi-d'), n = el.querySelector('.mi-n'), t0 = now(), ready = false, lit = 0;
     rendered(function () { fontsReady(function () { ready = true; }, 2500); });
-    var MIN = 1700, MAX = 6000;
+    var MIN = 1900, MAX = 6000;
     var finish = function () {
       n.textContent = '100';
-      // the dots fold into one: the lavender dot of ME.
-      el.classList.remove('hop'); el.classList.add('fold');
+      el.classList.add('fold');                       // pixels close into the square of ME., the letters ink in
       setTimeout(function () {
-        var r = ds[0].getBoundingClientRect(), vw = W.innerWidth, vh = W.innerHeight;
-        // the square dot of ME. grows until it is the whole screen
-        anim(o, [{ clipPath: 'inset(' + r.top + 'px ' + (vw - r.right) + 'px ' + (vh - r.bottom) + 'px ' + r.left + 'px)' }, { clipPath: 'inset(0px 0px 0px 0px)' }], { duration: 640, easing: 'cubic-bezier(.7,0,.25,1)', fill: 'forwards' });
-        o.style.visibility = 'visible';
-        setTimeout(function () {
-          el.classList.add('done');   // dark ground + logo go; the lavender panel lifts off the page
-          H.classList.remove('intro');
-          var ws = waiters; waiters = []; doIntro = false; ws.forEach(function (f) { f(); });
-          var a = anim(o, [{ transform: 'translateY(0)' }, { transform: 'translateY(-101%)' }], { duration: 720, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' });
-          if (a) a.onfinish = function () { el.remove(); }; else el.remove();
-        }, 660);
-      }, 640);
+        el.classList.add('out');                      // the logo blurs away, the grid lifts onto the page
+        H.classList.remove('intro');
+        var ws = waiters; waiters = []; doIntro = false; ws.forEach(function (f) { f(); });
+        sw.classList.remove('block');
+        lift(sw);
+        setTimeout(function () { el.remove(); }, 500);
+      }, 1000);
     };
     (function tick() {
       var t = now() - t0, p = Math.min(ready ? 1 : 0.94, t / MIN);
       n.textContent = ('00' + Math.round(p * 100)).slice(-3);
-      if ((ready && t >= MIN) || t >= MAX) return finish();
+      // one pixel per quarter of the load, each in its category colour
+      while (lit < ds.length && p >= (lit + 1) / (ds.length + 0.6)) ds[lit++].classList.add('in');
+      if ((ready && t >= MIN) || t >= MAX) { while (lit < ds.length) ds[lit++].classList.add('in'); return setTimeout(finish, 260); }
       requestAnimationFrame(tick);
     })();
   });
@@ -631,108 +628,90 @@
     });
   }
 
-  /* Home: a flat field of the words of the work. Three kinds of rows, three reactions to the cursor:
-     Mondwest words light up and lift, condensed capitals scatter away, mono labels scramble and settle. */
+  /* Home: a band of square pixels on the grid. The cursor pushes them aside; pointing at a word in the index below
+     gathers them into that word (in its category colour), and they fall back into the grid when you leave. */
   function words() {
-    var sec = D.querySelector('.tf'); if (!sec) return;
-    var cv = sec.querySelector('canvas'), ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
-    var LIST = (sec.getAttribute('data-words') || '').split('|').filter(Boolean);
-    var ANG = -12 * Math.PI / 180, CO = Math.cos(ANG), SI = Math.sin(ANG);
-    var still = !LIVE || RM, W0 = 0, H0 = 0, dpr = 1, rows = [], R = 0, RAD = 200, vis = false, raf = 0, t0 = now();
-    var px = -1e4, py = -1e4, tx = -1e4, ty = -1e4, lastMove = -1e9;
-    var GLY = '#*+/=<>01_-:;%&@';
-    var sty = function (W) {
-      var m = Math.max(30, Math.min(70, W * 0.044)), c = Math.max(26, Math.min(58, W * 0.036)), s = Math.max(12, Math.min(15, W * 0.011));
-      return [
-        { k: 'ink', font: '400 ' + m + 'px Mondwest, MeMondwest, serif', size: m, lh: m * 1.18, gap: m * 0.55, up: false, sp: 14 },
-        { k: 'scr', font: '300 ' + s + 'px "JetBrains Mono", monospace', size: s, lh: s * 2.6, gap: s * 2.4, up: true, sp: -22 },
-        { k: 'sct', font: '800 ' + c + 'px Archivo, sans-serif', size: c, lh: c * 1.08, gap: c * 0.6, up: true, sp: -10 },
-        { k: 'scr', font: '300 ' + s + 'px "JetBrains Mono", monospace', size: s, lh: s * 2.6, gap: s * 2.4, up: true, sp: 18 }];
-    };
+    var sec = D.querySelector('.pf'); if (!sec) return;
+    var band = sec.querySelector('.pf-band'), cv = band.querySelector('canvas'), ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
+    var still = !LIVE || RM, W0 = 0, H0 = 0, dpr = 1, S = 6, P = [], N = 0, vis = false, raf = 0, mx = -1e4, my = -1e4, active = null, sz = 1.6, cur = FG, calm = 0;
+    var off = D.createElement('canvas'), oc = off.getContext('2d');
     var build = function () {
-      var r = sec.querySelector('.tf-st').getBoundingClientRect();
-      W0 = r.width; H0 = r.height; dpr = Math.min(2, W.devicePixelRatio || 1);
+      var r = band.getBoundingClientRect(); W0 = r.width; H0 = r.height; dpr = Math.min(2, W.devicePixelRatio || 1);
       cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
-      R = Math.hypot(W0, H0) / 2 + 40; RAD = Math.max(130, Math.min(240, W0 * 0.15));
-      var S = sty(W0); rows = [];
-      var y = -R, i = 0;
-      while (y < R) {
-        var s = S[i % S.length], seq = [], x = 0;
-        ctx.font = s.font;
-        for (var w = 0; w < LIST.length; w++) {
-          var word = LIST[(w * 7 + i * 5) % LIST.length]; if (s.up) word = word.toUpperCase();
-          var gl = [], gx = 0;
-          for (var c = 0; c < word.length; c++) { var ch = word[c], cw = ctx.measureText(ch).width; gl.push({ ch: ch, x: gx, w: cw }); gx += cw; }
-          seq.push({ x: x, w: gx, gl: gl, txt: word }); x += gx + s.gap;
-        }
-        rows.push({ s: s, y: y + s.lh * 0.8, L: x, seq: seq, sp: s.sp * (i % 2 ? 1 : -1) * (0.7 + (i % 3) * 0.25), seed: i * 13 });
-        y += s.lh; i++;
-      }
+      S = Math.max(4.5, Math.min(7, W0 / 250)); sz = Math.max(1.3, S * 0.3);
+      var cols = Math.floor(W0 / S), rows = Math.floor(H0 / S), ox = (W0 - (cols - 1) * S) / 2, oy = (H0 - (rows - 1) * S) / 2;
+      P = []; for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) { var hx = ox + x * S, hy = oy + y * S; P.push({ x: hx, y: hy, vx: 0, vy: 0, hx: hx, hy: hy, tx: hx, ty: hy, a: 0.42, ta: 0.42 }); }
+      N = P.length; if (active) shape(active, true);
     };
-    var draw = function (t) {
+    // the word, drawn once off screen and sampled on the same pixel pitch
+    var shape = function (it, keep) {
+      active = it;
+      if (!it) { cur = FG; P.forEach(function (p) { p.tx = p.hx; p.ty = p.hy; p.ta = 0.42; }); kick(); return; }
+      var word = it.getAttribute('data-w'), arrow = it.tagName === 'A';
+      cur = it.getAttribute('data-c') || FG;
+      off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
+      var fs = H0 * 1.02; oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { }
+      var tw = oc.measureText(word).width, aw = arrow ? fs * 0.62 : 0, gap = arrow ? fs * 0.25 : 0, room = W0 * 0.96;
+      if (tw + gap + aw > room) { fs *= room / (tw + gap + aw); oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } tw = oc.measureText(word).width; aw = arrow ? fs * 0.62 : 0; gap = arrow ? fs * 0.25 : 0; }
+      var cap = fs * 0.72, base = (H0 + cap) / 2, x0 = arrow ? 0 : 0;
+      oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic'; oc.fillText(word, x0, base);
+      if (arrow) {   // ↗ drawn as strokes, sitting at the right edge like the rows below
+        var ax = W0 - aw * 0.95, ay = base - cap, lw = fs * 0.11;
+        oc.strokeStyle = '#fff'; oc.lineWidth = lw; oc.lineCap = 'square';
+        oc.beginPath(); oc.moveTo(ax + lw, ay + cap - lw); oc.lineTo(ax + aw - lw, ay + lw); oc.moveTo(ax + aw * 0.28, ay + lw); oc.lineTo(ax + aw - lw, ay + lw); oc.lineTo(ax + aw - lw, ay + cap * 0.72); oc.stroke();
+      }
+      var data = oc.getImageData(0, 0, off.width, off.height).data, T = [];
+      for (var y = S / 2; y < H0; y += S) for (var x = S / 2; x < W0; x += S) { if (data[(Math.floor(y) * off.width + Math.floor(x)) * 4 + 3] > 120) T.push([x, y]); }
+      // hand the targets to the pixels nearest in column order, so the word gathers from where it stands
+      var order = P.slice().sort(function (a, b) { return a.hx - b.hx || a.hy - b.hy; });
+      T.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+      var M = Math.min(T.length, N), used = {};
+      order.forEach(function (p) { p.ta = 0; p.tx = p.hx; p.ty = p.hy + (Math.random() - 0.5) * S * 2; });
+      for (var t = 0; t < M; t++) { var p = order[Math.floor(t * N / M)]; p.tx = T[t][0]; p.ty = T[t][1]; p.ta = 1; if (!keep && !still) { p.vx += (Math.random() - 0.5) * 9; p.vy += (Math.random() - 0.5) * 9; } }
+      kick();
+    };
+    var draw = function () {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W0, H0);
-      ctx.translate(W0 / 2, H0 / 2); ctx.rotate(ANG); ctx.textBaseline = 'alphabetic';
-      // pointer in the rotated frame
-      var dx = px - W0 / 2, dy = py - H0 / 2, rx = dx * CO + dy * SI, ry = -dx * SI + dy * CO;
-      var tick = Math.floor(t * 14);
-      for (var r = 0; r < rows.length; r++) {
-        var row = rows[r], s = row.s, off = still ? 0 : ((t * row.sp) % row.L + row.L) % row.L;
-        ctx.font = s.font;
-        var near = Math.abs(row.y - s.size * 0.35 - ry) < RAD + s.size;
-        for (var start = -R - row.L + off; start < R; start += row.L) {
-          for (var q = 0; q < row.seq.length; q++) {
-            var wd = row.seq[q], wx = start + wd.x;
-            if (wx > R || wx + wd.w < -R) continue;
-            var far = !near || wx > rx + RAD || wx + wd.w < rx - RAD;
-            if (far) {
-              ctx.fillStyle = s.k === 'scr' ? 'rgba(154,158,166,.34)' : 'rgba(244,243,239,.09)';
-              ctx.fillText(wd.txt, wx, row.y); continue;
-            }
-            for (var g = 0; g < wd.gl.length; g++) {
-              var G = wd.gl[g], gx = wx + G.x + G.w / 2, gy = row.y - s.size * 0.35;
-              var d = Math.hypot(gx - rx, gy - ry), k = d < RAD ? 1 - d / RAD : 0; k = k * k * (3 - 2 * k);
-              var ch = G.ch, X = wx + G.x, Y = row.y, a;
-              if (s.k === 'ink') {
-                a = 0.09 + 0.91 * k; Y -= k * s.size * 0.16;
-                ctx.fillStyle = 'rgba(244,243,239,' + a.toFixed(3) + ')';
-                ctx.fillText(ch, X, Y);
-              } else if (s.k === 'sct') {
-                var ux = (gx - rx) / (d || 1), uy = (gy - ry) / (d || 1), push = Math.pow(k, 1.4) * s.size * 1.3;
-                var rot = k * 0.5 * ((g + row.seed) % 2 ? 1 : -1);
-                ctx.save(); ctx.translate(X + G.w / 2 + ux * push, Y - s.size * 0.35 + uy * push); ctx.rotate(rot);
-                ctx.fillStyle = 'rgba(244,243,239,' + (0.09 + 0.91 * k).toFixed(3) + ')';
-                ctx.fillText(ch, -G.w / 2, s.size * 0.35); ctx.restore();
-              } else {
-                if (k > 0.12 && ch !== ' ' && ((tick + g * 3 + row.seed) % 5) < k * 5) ch = GLY[(tick * 7 + g * 11 + row.seed) % GLY.length];
-                ctx.fillStyle = k > 0.05 ? 'rgba(122,130,255,' + (0.4 + 0.6 * k).toFixed(3) + ')' : 'rgba(154,158,166,.34)';
-                ctx.fillText(ch, X, Y);
-              }
-            }
-          }
-        }
-      }
+      var lo = [], hi = [];
+      for (var i = 0; i < N; i++) { var p = P[i]; if (p.a < 0.04) continue; (p.a > 0.7 ? hi : lo).push(p); }
+      ctx.fillStyle = 'rgba(244,243,239,.4)'; for (var a = 0; a < lo.length; a++) ctx.fillRect(lo[a].x - sz / 2, lo[a].y - sz / 2, sz, sz);
+      ctx.fillStyle = cur; var s2 = sz * 1.45; for (var b = 0; b < hi.length; b++) ctx.fillRect(hi[b].x - s2 / 2, hi[b].y - s2 / 2, s2, s2);
     };
-    var loop = function () {
-      var t = (now() - t0) / 1000;
-      if (now() - lastMove > 2200 && !still) {   // nobody moving: a slow ghost keeps the field alive
-        tx = W0 / 2 + W0 * 0.34 * Math.sin(t * 0.33); ty = H0 / 2 + H0 * 0.3 * Math.sin(t * 0.51 + 1);
+    var step = function () {
+      var R = Math.max(60, Math.min(110, W0 * 0.07)), R2 = R * R, moving = false;
+      for (var i = 0; i < N; i++) {
+        var p = P[i];
+        if (still) { p.x = p.tx; p.y = p.ty; p.a = p.ta; continue; }
+        var ax = (p.tx - p.x) * 0.055, ay = (p.ty - p.y) * 0.055;
+        var dx = p.x - mx, dy = p.y - my, d2 = dx * dx + dy * dy;
+        if (d2 < R2) { var d = Math.sqrt(d2) || 1, f = (1 - d / R) * 3.2; ax += dx / d * f; ay += dy / d * f; }
+        p.vx = (p.vx + ax) * 0.8; p.vy = (p.vy + ay) * 0.8; p.x += p.vx; p.y += p.vy;
+        p.a += (p.ta - p.a) * 0.12;
+        if (!moving && (Math.abs(p.vx) > 0.05 || Math.abs(p.vy) > 0.05 || Math.abs(p.ta - p.a) > 0.01)) moving = true;
       }
-      px += (tx - px) * 0.14; py += (ty - py) * 0.14;
-      draw(t);
-      raf = vis ? requestAnimationFrame(loop) : 0;
+      return moving;
     };
-    var setP = function (e) { var r = cv.getBoundingClientRect(); tx = e.clientX - r.left; ty = e.clientY - r.top; if (px < -1e3) { px = tx; py = ty; } lastMove = now(); };
-    sec.addEventListener('pointermove', setP, { passive: true });
-    sec.addEventListener('pointerdown', setP, { passive: true });
-    sec.addEventListener('pointerleave', function () { lastMove = -1e9; });
+    var loop = function () { var mv = step(); draw(); calm = mv ? 0 : calm + 1; raf = (vis && (calm < 20 || mx > -1e3)) ? requestAnimationFrame(loop) : 0; };
+    var kick = function () { if (!raf && (vis || still)) raf = requestAnimationFrame(loop); };
+    band.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; kick(); }, { passive: true });
+    band.addEventListener('pointerleave', function () { mx = my = -1e4; kick(); });
+    var items = sec.querySelectorAll('.pf-i'), leaveT = 0;
+    Array.prototype.forEach.call(items, function (it) {
+      var on = function () { clearTimeout(leaveT); if (active !== it) { Array.prototype.forEach.call(items, function (x) { x.classList.toggle('on', x === it); }); shape(it); } };
+      var offf = function () { leaveT = setTimeout(function () { it.classList.remove('on'); shape(null); }, 180); };
+      it.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') on(); });
+      it.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') offf(); });
+      it.addEventListener('focus', on); it.addEventListener('blur', offf);
+      var since = 0; it.addEventListener('focus', function () { since = now(); });
+      if (it.tagName === 'BUTTON') it.addEventListener('click', function () { if (active === it && now() - since > 400) { it.classList.remove('on'); shape(null); } else on(); });
+    });
     var start = function () {
       build();
-      if (still) { px = py = tx = ty = -1e4; draw(0); return; }
-      new IntersectionObserver(function (es) { vis = es[0].isIntersecting; if (vis && !raf) raf = requestAnimationFrame(loop); }, { threshold: 0 }).observe(sec);
+      new IntersectionObserver(function (es) { vis = es[0].isIntersecting; if (vis) kick(); }, { threshold: 0 }).observe(band);
+      kick();
     };
-    var fonts = ['400 40px Mondwest', '800 40px Archivo', '300 14px "JetBrains Mono"'];
-    Promise.all(fonts.map(function (f) { try { return D.fonts.load(f); } catch (e) { return null; } })).then(start, start);
-    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); if (still) draw(0); }, 150); });
+    try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); kick(); }, 150); });
   }
 
   /* Case pages: the brief stays in the margin column while the project scrolls (wide screens) */

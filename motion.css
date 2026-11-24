@@ -9,30 +9,26 @@ html.intro [data-inkroot] *,html.intro .atmos-grid *{animation-play-state:paused
 .me-wipe{position:fixed;inset:0;z-index:2147483001;pointer-events:none;overflow:hidden}
 .me-wipe.block{pointer-events:auto}
 .me-st{position:absolute;top:-1px;bottom:-1px;background:var(--c);will-change:transform}
-.me-ln{position:absolute;top:0;bottom:0;right:0;width:1px;background:var(--ln);transform-origin:50% 0}
+.me-ln{position:absolute;top:0;bottom:0;left:0;width:1px;background:var(--ln);transform-origin:50% 0}
 .me-wl{position:absolute;left:0;top:50%;transform:translateY(-50%);font-family:'MeMondwest','Mondwest',serif;font-weight:400;font-size:clamp(40px,7vw,120px);line-height:.9;color:var(--fg);white-space:nowrap;transition:opacity .18s linear}
 .me-wk{position:absolute;bottom:clamp(14px,1.6vw,24px);font:300 11px/1.4 'JetBrains Mono',ui-monospace,monospace;color:var(--fg);opacity:.62;transition:opacity .18s linear}
 
-/* ---------- intro: four category dots hop, fold into the dot of ME., the dot opens the site ---------- */
-.mi{position:fixed;inset:0;z-index:2147483001;color:#f4f3ef;font:300 11px/1.45 'JetBrains Mono',ui-monospace,monospace;pointer-events:auto}
-.mi::before{content:'';position:absolute;inset:0;background:#121316;transition:opacity .2s linear}
-.mi.done::before,.mi.done .mi-c,.mi.done .mi-bl,.mi.done .mi-n{opacity:0}
-.mi-c{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:flex-end;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:clamp(84px,13vw,210px);line-height:.8;letter-spacing:-.02em;transition:opacity .2s linear}
-.mi-me{display:inline-block;max-width:0;overflow:hidden;opacity:0;filter:blur(18px);white-space:nowrap;transition:max-width .55s cubic-bezier(.7,0,.2,1),opacity .4s ease .1s,filter .55s ease .05s}
+/* ---------- intro: grid draws, four square pixels mark the categories, they close into "ME.", the grid lifts ---------- */
+.mi{position:fixed;inset:0;z-index:2147483002;color:#f4f3ef;font:300 11px/1.45 'JetBrains Mono',ui-monospace,monospace;pointer-events:none}
+.mi-c{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:flex-end;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:clamp(84px,13vw,210px);line-height:.8;letter-spacing:-.02em;transition:opacity .35s ease,filter .45s ease}
+.mi-me{display:inline-block;max-width:0;overflow:hidden;opacity:0;filter:blur(16px);white-space:nowrap;transition:max-width .6s cubic-bezier(.7,0,.2,1),opacity .5s ease .15s,filter .7s ease .1s}
 .mi.fold .mi-me{max-width:2em;opacity:1;filter:none}
-.mi-ds{position:relative;display:flex;align-items:flex-end;gap:.15em;height:.62em;padding-bottom:.005em}
-.mi-d{display:block;width:.12em;height:.12em;border-radius:50%;background:var(--c);transform:scale(0);transition:transform .45s cubic-bezier(.3,1.6,.5,1),width .5s cubic-bezier(.7,0,.2,1),height .5s cubic-bezier(.7,0,.2,1),background .3s ease,opacity .3s ease,margin .5s cubic-bezier(.7,0,.2,1)}
-.mi-d.in{transform:scale(1)}
-.mi.hop .mi-d{animation:miHop .9s cubic-bezier(.4,0,.4,1) infinite;animation-delay:calc(var(--i) * .11s)}
-@keyframes miHop{0%,55%,100%{transform:translateY(0)}22%{transform:translateY(-.32em) scale(.92,1.08)}48%{transform:translateY(0) scale(1.12,.88)}}
-.mi.fold .mi-d{animation:none}
-.mi.fold .mi-d:not(:first-child){width:0;opacity:0;margin-left:-.15em}
-.mi.fold .mi-d:first-child{width:.19em;height:.19em;border-radius:0;background:#7a82ff;margin-left:.02em}
-.mi-bl{position:absolute;bottom:clamp(14px,2vw,28px);color:#f4f3ef;transition:opacity .2s linear}
+.mi-ds{display:flex;align-items:flex-end;gap:.09em;padding-bottom:.005em}
+.mi-d{display:block;width:.19em;height:.19em;background:var(--c);opacity:0;transform:scale(.4);transition:opacity .18s steps(2,end),transform .32s steps(3,end),width .55s cubic-bezier(.7,0,.2,1),margin .55s cubic-bezier(.7,0,.2,1),background .4s ease}
+.mi-d.in{opacity:1;transform:none}
+.mi.fold .mi-d:first-child{background:#7a82ff;margin-left:.02em}
+.mi.fold .mi-d:not(:first-child){width:0;margin-left:-.09em;opacity:0}
+.mi.out .mi-c,.mi.out .mi-bl,.mi.out .mi-n,.mi.out .mi-tl{opacity:0;filter:blur(14px)}
+.mi-tl{position:absolute;top:clamp(16px,2vw,28px);color:#9a9ea6;transition:opacity .3s ease}
+.mi-bl{position:absolute;bottom:clamp(14px,2vw,28px);transition:opacity .3s ease,filter .4s ease}
 .mi-bl span{color:#9a9ea6}
-.mi-n{position:absolute;bottom:clamp(6px,1.4vw,20px);font-family:'MeMondwest','Mondwest',serif;font-size:clamp(56px,8vw,128px);line-height:.8;font-variant-numeric:tabular-nums;transition:opacity .2s linear}
+.mi-n{position:absolute;bottom:clamp(6px,1.4vw,20px);font-family:'MeMondwest','Mondwest',serif;font-size:clamp(56px,8vw,128px);line-height:.8;font-variant-numeric:tabular-nums;transition:opacity .3s ease,filter .4s ease}
 @media (max-width:759px){.mi-bl span{display:none}.mi-n{font-size:clamp(44px,14vw,64px)}}
-.mi-o{position:absolute;inset:0;background:#7a82ff;visibility:hidden;clip-path:inset(50%);will-change:clip-path,transform}
 
 /* ---------- music shell: the page in a frame, so the sound carries on ---------- */
 #me-frame{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:950;background:#121316}
@@ -132,12 +128,25 @@ html.hl-on .hw.lit{opacity:1}
 .pg-ft button:hover,.pg-ft a:hover{color:#7a82ff}
 @media (max-width:1099px){.pg-h{grid-column:1 / span 8}.pg-tx{grid-column:1 / span 8}}
 @media (max-width:759px){.pg-h,.pg-tx{grid-column:1 / -1}.pg-stage{height:min(62vh,520px)}}
-/* ---------- Home: the words of the work, a flat field that answers the cursor ---------- */
-.tf{position:relative;padding-top:clamp(100px,12vw,200px);color:#f4f3ef}
-.tf-hd{display:flex;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,56px) 18px;font-size:11px;color:#9a9ea6}
-.tf-st{position:relative;height:min(86vh,820px);overflow:hidden;border-top:1px solid #2c2e33;border-bottom:1px solid #2c2e33;-webkit-mask-image:linear-gradient(180deg,transparent,#000 9%,#000 91%,transparent);mask-image:linear-gradient(180deg,transparent,#000 9%,#000 91%,transparent);touch-action:pan-y}
-.tf-st canvas{position:absolute;left:0;top:0;display:block}
-@media (hover:none){.tf-hint .f{display:none}}@media (hover:hover){.tf-hint .t{display:none}}
+/* ---------- Home: the pixel band and its index ---------- */
+.pf{position:relative;padding:clamp(100px,12vw,200px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
+.pf-hd{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6;padding-bottom:16px}
+.pf-band{position:relative;height:clamp(150px,17vw,300px);touch-action:pan-y}
+.pf-band canvas{position:absolute;left:0;top:0;display:block}
+.pf-ls{display:grid;grid-template-columns:16% repeat(2,minmax(0,1fr));column-gap:clamp(20px,2.6vw,44px);margin-top:clamp(28px,4vw,56px)}
+.pf-col{min-width:0}
+.pf-col:first-child{grid-column:2}
+.pf-col h3{margin:0 0 10px;font-family:'Archivo',sans-serif;font-weight:400;font-size:clamp(18px,1.6vw,24px);letter-spacing:-.01em}
+.pf-col ul{list-style:none;margin:0;padding:0}
+.pf-i{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;padding:8px 0;border:0;border-top:1px solid #2c2e33;background:none;color:#9a9ea6;font:300 12px/1.3 'JetBrains Mono',ui-monospace,monospace;text-align:left;cursor:pointer;transition:color .2s ease,padding-left .35s cubic-bezier(.2,.7,.2,1)}
+.pf-col li:last-child .pf-i{border-bottom:1px solid #2c2e33}
+.pf-i i{width:7px;height:7px;background:var(--c,#f4f3ef);opacity:.35;transition:opacity .2s}
+.pf-i .k{opacity:.6}
+.pf-i:hover,.pf-i:focus-visible,.pf-i.on{color:#f4f3ef;padding-left:8px}
+.pf-i.on i,.pf-i:hover i{opacity:1}
+.pf-i:focus-visible{outline:2px solid #7a82ff;outline-offset:2px}
+.pf-i:hover{color:#f4f3ef}
+@media (max-width:759px){.pf-ls{grid-template-columns:1fr;row-gap:28px}.pf-col:first-child{grid-column:auto}}
 
 /* ---------- case pages: the brief stays in the margin column ---------- */
 .cb{display:none}
