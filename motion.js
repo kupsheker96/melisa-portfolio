@@ -919,12 +919,13 @@
     var off = D.createElement('canvas'), oc = off.getContext('2d');
     var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, TOP = 56, P = 0, K = 2, G = 0, COL = '122,130,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0;
     var NM = null, BM = null, ngr = 0, split = 0, I = null, ORD = null, gx0 = 0, IN = W.__meIntro || null, tr0 = now();
-    W.__meIntroCanvas = true;
+    W.__meIntroCanvas = true; H.classList.add('me-lfon');
+    var DPm = null, PCm = null, pcN = -1, pcF = 0, pcX = 0, pcB = 0;
     var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, t0 = now(), tm = 0, lastT = now(), lastStep = 0, avg = 0, prevB = 0, sh = [0, 0], LIT = 0;
     var stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts');
     var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
     // draw some text offscreen and read it back as coarse pixels on the line grid
-    var cells = function (rowsN, paint) {
+    var cells = function (rowsN, paint, thr) {
       oc.clearRect(0, 0, off.width, off.height); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic'; paint();
       var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height, M = new Uint8Array(gc * rowsN);
       for (var gy = 0; gy < rowsN; gy++) for (var gx = 0; gx < gc; gx++) {
@@ -933,7 +934,7 @@
           var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * G); n++;
           if (px >= 0 && px < ow && py < oh && d[(py * ow + px) * 4 + 3] > 120) hit++;
         }
-        M[gy * gc + gx] = hit / n > 0.4 ? 1 : 0;
+        M[gy * gc + gx] = hit / n > (thr || 0.4) ? 1 : 0;
       }
       return M;
     };
@@ -955,10 +956,16 @@
       var cap = fs * 0.72, lh = cap * lhk, top = hbH - (2 * lh - (lh - cap)) - G * 2;
       NM = cells(ngr, function () { font(fs); lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); }); });
       // the intro's name: the same, bigger (as much of the screen as it can take), on the same baseline
-      var roomB = small ? W0 - x0 - pr - G * 2 : W0 - x0 - pr, fsB = hbH * 0.9 / (2 * 0.72 * lhk); font(fsB);
-      var lB = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (lB > roomB) fsB *= roomB / lB;
-      var capB = fsB * 0.72, lhB = capB * lhk, topB = hbH - (2 * lhB - (lhB - capB)) - G * 2;
-      BM = cells(ngr, function () { font(fsB); lines.forEach(function (l, i) { oc.fillText(l, x0, topB + capB + i * lhB); }); });
+      // the intro: "DESIGN PORTFOLIO" over the loading percentage, both in the screen's pixels, in the bottom-left corner
+      var roomB = W0 - x0 - pr - (small ? G * 2 : 0);
+      pcF = hbH * (small ? 0.26 : 0.34) / 0.72; font(pcF); var wP = oc.measureText('100%').width; if (wP > roomB) pcF *= roomB / wP;
+      pcX = x0; pcB = hbH - G * 2;
+      // big enough that the pixels can draw its letters (eight pixels tall at least); on phones, two lines
+      var dL = ['DESIGN', 'PORTFOLIO'], dF = Math.max(hbH * 0.11, G * 7) / 0.72; font(dF);
+      var wD = Math.max.apply(null, dL.map(function (l) { return oc.measureText(l).width; })); if (wD > roomB) dF *= roomB / wD;
+      var dCap = dF * 0.72, dLh = dCap * 1.3, dB = pcB - pcF * 0.72 - G * 3 - (dL.length - 1) * dLh;
+      DPm = cells(ngr, function () { font(dF); dL.forEach(function (l, i) { oc.fillText(l, x0, dB + i * dLh); }); }, 0.28);
+      pcN = -1;
       split = Math.round((top + cap + (lh - cap) / 2) / G);
       I = new Float32Array(gc * gr);
       ORD = new Float32Array(gc * gr);
@@ -1071,14 +1078,15 @@
         var pul = 0.5 + 0.5 * Math.sin(tr * ph[c * 3 + 1] + ph[c * 3]);
         x.fillStyle = 'rgba(' + COL + ',' + (0.22 + 0.2 * pul).toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1, H0);
       }
-      var settle = sm(cl((tl - 0.35) / 0.6)), fr = Math.floor(tr * 9);
+      var settle = sm(cl((tl - 0.35) / 0.6)), fr = Math.floor(tr * 9), pn = Math.floor(p * 100);
+      if (pn !== pcN) { pcN = pn; PCm = cells(ngr, function () { font(pcF); oc.fillText(pn + '%', pcX, pcB); }); }   // the number, redrawn as it counts
       for (var gy = 0; gy < Math.min(gr, ngr); gy++) for (var gx = 0; gx < gc; gx++) {
-        var k = gy * gc + gx, od = ORD[k], mB = BM[gy * gc + gx], mN = NM[gy * gc + gx], tgt = 0, big = 0;
-        if (mB) { big = (od < p * 1.12 ? 1 : 0) * (1 - sm(cl((tl * 1.5 - od * 0.5) / 0.5))); }
+        var k = gy * gc + gx, od = ORD[k], mD = DPm[k] && od < p * 1.4 + 0.15, mP = PCm && PCm[k], mN = NM[gy * gc + gx], tgt = 0, big = 0;
+        if (mD || mP) { big = 1 - sm(cl((tl * 1.5 - od * 0.5) / 0.5)); }
         var sml = mN ? sm(cl((tl * 1.5 - (1 - od) * 0.5 - 0.2) / 0.5)) : 0;
         var gl = 0.5 + 0.5 * Math.sin(gx * 0.21 - tr * 2.2 + Math.sin(gy * 0.17 + tr * 0.8) * 1.8);
         tgt = Math.max(big * (0.45 + 0.55 * gl), sml);
-        var dI = (tgt - I[k]) * (tgt > I[k] ? 0.35 : 0.2); I[k] += dI;
+        var dI = (tgt - I[k]) * (tgt > I[k] ? 0.4 : (IN.phase === 'leave' ? 0.2 : 0.5)); I[k] += dI;   // old digits clear quickly
         var v = I[k]; if (v < 0.04) continue;
         // glimmer: a band of colour travels through the name; single pixels flare cream
         var ci0 = Math.floor((((gx * 0.045 - gy * 0.03 + tr * 0.32 + hash(gx, gy) * 0.35) % 1) + 1) % 1 * 4), flare = hash(gx * 3 + fr, gy * 7 - fr) > 0.985;

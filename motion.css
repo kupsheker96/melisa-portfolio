@@ -317,3 +317,5 @@ html.intro2 [data-inkroot] *,html.intro2 .atmos-grid *{animation-play-state:paus
 .mi2.ask .mi2-go{opacity:1;transform:none;pointer-events:auto;animation:miPulse 1.6s steps(2,end) infinite}
 .mi2.out{opacity:0;filter:blur(8px)}
 @media (max-width:639px){.mi2{bottom:auto;top:72px}}
+html.me-lfon .mi2-n{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}   /* drawn in the line screen instead */
+html.me-lfon .mi2{bottom:auto;top:clamp(18px,2.6vw,36px)}
