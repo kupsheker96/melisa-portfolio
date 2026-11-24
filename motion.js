@@ -960,7 +960,7 @@
     var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'pf-cv'; hb.appendChild(cv); hb.classList.add('me-lines');
     var x = cv.getContext('2d'); if (!x) return;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
-    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, K = 4, G = 0, GH = 0, RED = '255,24,72', ph = null, cols = 0, colX = [], gc = 0, gr = 0, M = null, I = null, split = 0, gx0 = 0;
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, K = 4, G = 0, GH = 0, RED = '122,130,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0, M = null, I = null, split = 0, gx0 = 0;
     var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, t0 = now(), lastStep = 0, avg = 0, prevB = 0, sh = [0, 0], LIT = 0;
     var build = function () {
       W0 = hb.offsetWidth; H0 = hb.offsetHeight; if (!W0 || !H0) return;
