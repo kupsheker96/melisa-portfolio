@@ -1077,14 +1077,15 @@
     };
     // the intro: the big name builds up out of the lines with the loading, glimmering through the site's colours; leaving,
     // it sinks back into the lines while the landing's name surfaces and everything settles into the lavender
-    var PAL = [[122, 130, 255], [93, 102, 255], [217, 242, 74], [255, 79, 176], [244, 243, 239]];
+    var PAL = [[150, 152, 158], [184, 185, 189], [214, 214, 216], [196, 197, 201], [252, 252, 250]];   // (Nov 24) greyish whites, a flare of near-white
     var introFrame = function (t) {
       var tr = (t - tr0) / 1000, p = IN.p || 0, tl = IN.phase === 'leave' ? cl((t - IN.t0) / 1600) : 0;
       if (tl >= 1) { IN.phase = 'done'; W.__meIntro = null; IN = null; raf = requestAnimationFrame(frame); return; }
       x.fillStyle = '#030304'; x.fillRect(0, 0, W0, H0);
       for (var c = 0; c < cols; c++) {
         var pul = 0.5 + 0.5 * Math.sin(tr * ph[c * 3 + 1] + ph[c * 3]);
-        x.fillStyle = 'rgba(' + COL + ',' + (0.22 + 0.2 * pul).toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1, H0);
+        var lc = tl > 0.3 ? COL : '200,201,205', la = (0.22 + 0.2 * pul) * (tl > 0.3 ? 1 : 0.8);   // grey while loading, lavender as the landing takes over
+        x.fillStyle = 'rgba(' + lc + ',' + la.toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1, H0);
       }
       var settle = sm(cl((tl - 0.35) / 0.6)), fr = Math.floor(tr * 9), pn = Math.floor(p * 100);
       if (pn !== pcN) { pcN = pn; PCm = cells(ngr, function () { font(pcF); oc.fillText(pn + '%', pcX, pcB); }); }   // the number, redrawn as it counts
