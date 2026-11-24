@@ -320,3 +320,5 @@ html.intro2 [data-inkroot] *,html.intro2 .atmos-grid *{animation-play-state:paus
 html.me-lfon .mi2-n{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}   /* drawn in the line screen instead */
 html.me-lfon .mi2{bottom:auto;top:clamp(18px,2.6vw,36px)}
 html.me-lock,html.me-lock body{overflow:hidden}
+/* (Nov 24) the margin rule is one steady line, not a scroll-progress bar */
+[data-inkroot] .vlit{transform:none !important}
