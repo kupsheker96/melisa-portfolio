@@ -142,6 +142,9 @@ html.dot-on [data-inkroot] .vmark{opacity:0}
 .cc-tail{height:55vh !important;pointer-events:none}
 /* the index slides up under the last card: let the pointer through the empty part of the cards section */
 .cc{pointer-events:none}.cc .cc-card{pointer-events:auto}
+/* each category holds the screen a little longer before the next one slides over it */
+.cc-card:not(:last-of-type){margin-bottom:50vh}
+@media (prefers-reduced-motion: reduce){.cc-card:not(:last-of-type){margin-bottom:0}}
 .pf-band{transform-origin:50% 50%;will-change:transform,opacity}
 .pf-hd{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6;padding-bottom:16px}
 .pf-band{position:relative;height:clamp(220px,27vw,500px);touch-action:pan-y}
