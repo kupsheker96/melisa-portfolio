@@ -951,6 +951,97 @@
     return { setIdle: function (sp) { idle = sp; if (!active) shape(idle); }, busy: function () { return !!active; } };
   }
 
+  /* landing, line version (Nov 24, after her reference): the page's columns split into fine vertical lines; the name is
+     made where the lines thicken, cell by cell, like a line-screen print. With the music the letters keep time: every
+     bass hit fills them out and knocks a few cells back to thin, the columns thicken with the spectrum. The cursor
+     pushes the thick pieces out of the name; they flow back when it leaves. (?hero=dots shows the dot version.) */
+  function lineHero(hb, x0, pr) {
+    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'pf-cv'; hb.appendChild(cv);
+    var x = cv.getContext('2d'); if (!x) return;
+    var off = D.createElement('canvas'), oc = off.getContext('2d');
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, CH = 0, cols = 0, colX = [], Q = [], vis = true, raf = 0, mx = -1e4, my = -1e4, t0 = now();
+    var avg = 0, prevB = 0, pulse = 0, lastBeat = 0, beatN = 0, still = !LIVE || RM;
+    var build = function () {
+      W0 = hb.offsetWidth; H0 = hb.offsetHeight; if (!W0 || !H0) return;
+      cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4;
+      P = cw / Math.max(6, Math.round(cw / (W.innerWidth < 640 ? 5 : 6.5)));   // whole lines per grid column
+      CH = Math.round(P * 2);
+      var start = g.rule % P; colX = []; for (var cx = start; cx < W0; cx += P) colX.push(cx); cols = colX.length;
+      // the name, drawn once offscreen and read back as coverage per cell
+      off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
+      var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+      var lines = ['MELISA', 'ERGANI'], lhk = 1.12, room = W0 - x0 - pr, fs = H0 / (2 * 0.72 * lhk); font(fs);
+      var longest = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; }));
+      if (longest > room) { fs *= room / longest; font(fs); }
+      var cap = fs * 0.72, lh = cap * lhk, top = H0 - (2 * lh - (lh - cap)) - CH * 2;
+      oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+      lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
+      var data = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width;
+      Q = [];
+      for (var c = 0; c < cols; c++) for (var y = 0; y < H0 - CH / 2; y += CH) {
+        var hit = 0, n = 0;
+        for (var sy = 0.2; sy < 1; sy += 0.3) for (var sx = -0.35; sx <= 0.36; sx += 0.35) {
+          var px = Math.floor(colX[c] + sx * P), py = Math.floor(y + sy * CH); n++;
+          if (px >= 0 && px < ow && py < off.height && data[(py * ow + px) * 4 + 3] > 110) hit++;
+        }
+        if (hit) Q.push({ c: c, x: colX[c], y: y, cov: hit / n, ox: 0, oy: 0, vx: 0, vy: 0, f: 0, w: 0 });
+      }
+    };
+    var frame = function () {
+      raf = 0; if (!W0) return;
+      var L = LV() || { b: 0, m: 0, h: 0, on: 0 }, on = L.on || 0, t = now();
+      // beats: the bass jumping clearly above its own running level
+      var bnow = L.b || 0, flux = bnow - prevB; prevB = bnow; avg += (bnow - avg) * 0.04;
+      if (on > 0.3 && (flux > 0.09 || bnow > avg * 1.3) && bnow > 0.45 && t - lastBeat > 230) {
+        lastBeat = t; pulse = 1; beatN++;
+        // on every hit, blocks of the name close up solid (different blocks each time), then open back into lines
+        for (var k = 0; k < Q.length; k++) { var qq = Q[k]; if (hash(Math.floor(qq.c / 9) + beatN * 7, Math.floor(qq.y / CH / 4) + beatN * 3) < 0.42) qq.f = 1; }
+      }
+      pulse *= 0.9;
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W0, H0);
+      // the thin lines; with the song each column thickens with its part of the spectrum (low on the left, high on the right)
+      var spec = L.spec, hz = L.hz || 43;
+      x.fillStyle = 'rgba(244,243,239,.2)';
+      for (var c = 0; c < cols; c++) {
+        var lw = 1;
+        if (spec && on > 0.01) { var fq = 40 * Math.pow(300, c / cols), lv = spec[Math.min(spec.length - 1, Math.round(fq / hz))] / 255; lw += on * lv * lv * (P * 0.42); }
+        x.fillRect(colX[c] - lw / 2, 0, lw, H0);
+      }
+      // the name's pieces
+      var R = Math.max(80, Math.min(150, W0 * 0.09)), moving = false, full = P * 0.82, breath = 0.5 + 0.5 * Math.sin((t - t0) / 1400);
+      x.fillStyle = FG;
+      for (var i = 0; i < Q.length; i++) {
+        var q = Q[i];
+        if (!still) {
+          var ax = -q.ox * 0.06, ay = -q.oy * 0.06, px = q.x + q.ox, py = q.y + CH / 2 + q.oy, dx = px - mx, dy = py - my, d2 = dx * dx + dy * dy;
+          if (d2 < R * R) { var d = Math.sqrt(d2) || 1, fo = (1 - d / R) * 3.4; ax += dx / d * fo; ay += dy / d * fo * 1.4; }
+          q.vx = (q.vx + ax) * 0.82; q.vy = (q.vy + ay) * 0.82; q.ox += q.vx; q.oy += q.vy;
+          if (Math.abs(q.vx) + Math.abs(q.vy) > 0.05) moving = true;
+        }
+        q.f *= 0.88;
+        // paused: even lines with a slow breath at the edges; playing: thinner lines that close up solid on the hits
+        var lineW = full * (1 - on * 0.36), solid = P + 0.6, base = lineW + (solid - lineW) * q.f * on;
+        var tw = base * (0.35 + 0.65 * q.cov) * (q.cov < 1 ? 0.85 + 0.15 * breath : 1);
+        q.w += (tw - q.w) * 0.35;
+        var w = Math.max(1, q.w), dist = Math.hypot(q.ox, q.oy);
+        x.globalAlpha = dist > 2 ? Math.max(0.35, 1 - dist / 260) : 1;
+        x.fillRect(q.x + q.ox - w / 2, q.y + q.oy, w, CH + 0.5);
+      }
+      x.globalAlpha = 1;
+      if (vis && !D.hidden && (moving || on > 0.01 || pulse > 0.01 || mx > -1e3 || !still)) raf = requestAnimationFrame(frame);
+    };
+    var kick = function () { if (!raf && vis) raf = requestAnimationFrame(frame); };
+    var hit = D.getElementById('top') || hb;
+    hit.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; kick(); }, { passive: true });
+    hit.addEventListener('pointerleave', function () { mx = my = -1e4; kick(); });
+    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; kick(); }).observe(hb);
+    D.addEventListener('visibilitychange', kick);
+    var start = function () { build(); kick(); };
+    try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 150); });
+  }
+
   function words() {
     var sec = D.querySelector('.pf');
     // cards that have faded out (the last one sinks away over the index) stop catching the pointer
@@ -979,7 +1070,8 @@
     var hb = D.querySelector('.me-pfb');
     if (hb) {
       var hg = strips(), hx = W.innerWidth < 640 ? hg.pad : hg.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
-      pixelField(hb, [], { fg: FG, dim: 'rgba(244,243,239,.24)', grid: true, idle: { w: 'MELISA ERGANI', lines: ['MELISA', 'ERGANI'], px: hx, pr: hg.pad, lh: 1.12, bottom: true, c: FG }, relief: true, music: true, origin: [hx, hb.offsetHeight * 0.55], hit: D.getElementById('top'), big: 1.5 });
+      if (!/[?&]hero=dots/.test(location.search)) lineHero(hb, hx, hg.pad);
+      else pixelField(hb, [], { fg: FG, dim: 'rgba(244,243,239,.24)', grid: true, idle: { w: 'MELISA ERGANI', lines: ['MELISA', 'ERGANI'], px: hx, pr: hg.pad, lh: 1.12, bottom: true, c: FG }, relief: true, music: true, origin: [hx, hb.offsetHeight * 0.55], hit: D.getElementById('top'), big: 1.5 });
     }
     // Home footer: the name in pixels, ink on lavender; its contact links reshape it
     var wm = D.querySelector('footer .wmark');
