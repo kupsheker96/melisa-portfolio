@@ -140,7 +140,7 @@
       + '<span class="mi-tl" style="left:' + g.pad + 'px">[ Portfolio //2026 ]</span><span class="mi-tr" style="right:' + g.pad + 'px">Ankara</span>'
       + '<span class="mi-bl" style="left:' + g.pad + 'px">Melisa Ergani<br><span>UI/UX &amp; Visual Designer</span></span>'
       + '<span class="mi-n" style="right:' + g.pad + 'px">000</span>'
-      + '<div class="mi-ch" style="top:' + (yL + 22) + 'px;left:' + lx + 'px"><button type="button" class="mi-b mi-on">Enter with sound <span aria-hidden="true">↗</span></button><button type="button" class="mi-b mi-off">Enter in silence</button></div>';
+      + '<div class="mi-ch" style="top:' + (yL + 22) + 'px;left:' + lx + 'px"><button type="button" class="mi-b mi-on">Click anywhere to enter <span aria-hidden="true">↗</span></button></div>';
     D.body.appendChild(el);
     // grain: a small noise tile, stepped like the site's own
     try {
@@ -172,8 +172,9 @@
       setTimeout(function () { sw.classList.remove('block'); lift(sw); }, 260);
       setTimeout(function () { el.remove(); }, 900);
     };
-    el.querySelector('.mi-on').addEventListener('click', function () { leave(true); });
-    el.querySelector('.mi-off').addEventListener('click', function () { leave(false); });
+    // the click that enters is the one the browser needs before it allows sound
+    el.addEventListener('click', function () { if (el.classList.contains('ask')) leave(true); });
+    el.addEventListener('keydown', function (e) { if (el.classList.contains('ask') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); leave(true); } });
     var finish = function () {
       nEl.textContent = '100';
       // the pixels slide along the line into the square of ME.; the letters ink in
@@ -185,8 +186,12 @@
       setTimeout(function () { el.classList.add('fold'); }, 420);
       me.style.filter = 'url(#mi-ink)'; ink(1, 0, 900, function () { me.style.filter = ''; });
       el.classList.add('me-in');
-      setTimeout(function () { el.classList.add('ask'); el.style.pointerEvents = 'auto'; try { el.querySelector('.mi-on').focus({ preventScroll: true }); } catch (e) { } }, 900);
-      setTimeout(function () { leave(false); }, 9000);   // nobody chose: enter quietly (music still starts on the first click)
+      // where the browser already allows sound, the site simply opens with the music; elsewhere one click enters with it
+      setTimeout(function () {
+        var ask = function () { el.classList.add('ask'); el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer'; try { el.querySelector('.mi-on').focus({ preventScroll: true }); } catch (e) { } };
+        if (W.__meMusicTry) W.__meMusicTry(function (ok) { if (ok) leave(true); else ask(); }); else ask();
+      }, 900);
+      setTimeout(function () { leave(false); }, 14000);   // nobody clicked: open anyway; the music starts on their first click
     };
     (function tick() {
       var t = now() - t0, p = Math.min(ready ? 1 : 0.94, t / MIN);
@@ -546,7 +551,17 @@
     var play = function () { state = 'wait'; st('localStorage', 'me-mu-off', null); label(); if (P && ready) go(); else create(); };
     btn.addEventListener('click', function () { if (state === 'play') pause(); else play(); });
     // the intro's two doors
-    W.__meMusicStart = function () { fadeMs = 5000; play(); };
+    W.__meMusicStart = function () { if (state === 'play') return; fadeMs = 5000; play(); };
+    // try sound without a click (allowed on sites a browser already trusts); report whether it is playing
+    W.__meMusicTry = function (cb) {
+      if (state === 'pause') return cb(false);
+      var t0 = now();
+      (function wait() {
+        if (P && ready) { go(); setTimeout(function () { cb(state === 'play'); }, 700); return; }
+        if (now() - t0 > 2500) return cb(false);
+        setTimeout(wait, 100);
+      })();
+    };
     W.__meMusicQuiet = function () { if (state === 'wait') { arm(); } };
     W.__meSaveMusic = function () {
       if (state !== 'play' || !P || !P.getCurrentTime) return;
