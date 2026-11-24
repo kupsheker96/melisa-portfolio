@@ -134,10 +134,17 @@ html.dot-on [data-inkroot] .vmark{opacity:0}
 .me-dot{position:fixed;inset:0;z-index:7;pointer-events:none;clip-path:circle(0 at 0 0);visibility:hidden}
 
 /* ---------- Home: the pixel band and its index ---------- */
-.pf{position:relative;padding:clamp(100px,12vw,200px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
+.pf{position:relative;z-index:1;margin-top:-48vh;padding:clamp(24px,3vw,48px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
+@media (prefers-reduced-motion: reduce){.pf{margin-top:0}}
+/* the last card leaves sooner, so the index follows straight after Branding */
+.cc-tail{height:55vh !important}
+.pf-band{transform-origin:50% 50%;will-change:transform,opacity}
 .pf-hd{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6;padding-bottom:16px}
 .pf-band{position:relative;height:clamp(150px,17vw,300px);touch-action:pan-y}
-.pf-band canvas{position:absolute;left:0;top:0;display:block}
+.pf-band canvas,.pf-cv{position:absolute;left:0;top:0;display:block}
+/* footer: the name is drawn in pixels; the letters stay for size and for readers without the canvas */
+footer .wmark.pf-on{position:relative}
+footer .wmark.pf-on .wmw{opacity:0}
 /* the index sits on the grid's columns: margin column, then 6 (4 on tablets) equal columns; each list starts a gutter after a line */
 .pf-ls{display:grid;grid-template-columns:16% repeat(6,minmax(0,1fr));margin-top:clamp(28px,4vw,56px)}
 .pf-col{min-width:0;padding-left:clamp(14px,1.6vw,24px)}

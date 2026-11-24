@@ -672,44 +672,53 @@
     });
   }
 
-  /* Home: a band of square pixels on the grid. The cursor pushes them aside; pointing at a word in the index below
-     gathers them into that word (in its category colour), and they fall back into the grid when you leave. */
-  function words() {
-    var sec = D.querySelector('.pf'); if (!sec) return;
-    var band = sec.querySelector('.pf-band'), cv = band.querySelector('canvas'), ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
-    var still = !LIVE || RM, W0 = 0, H0 = 0, dpr = 1, S = 6, P = [], N = 0, vis = false, raf = 0, mx = -1e4, my = -1e4, active = null, sz = 1.6, cur = FG, calm = 0;
+  /* Pixel fields. A band of square pixels on the grid: the cursor pushes them aside, and pointing at a word in an index
+     gathers them into that word. Used twice on Home: the index band (idle = the bare grid of pixels) and the footer
+     (idle = MELISA ERGANI, the contact links reshape it). */
+  function pixelField(band, items, o) {
+    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'pf-cv'; band.appendChild(cv);
+    var ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
+    var still = !LIVE || RM, W0 = 0, H0 = 0, dpr = 1, S = 6, P = [], N = 0, vis = false, raf = 0, mx = -1e4, my = -1e4, spec = null, sz = 1.6, cur = o.fg, calm = 0;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
+    var idle = o.idle ? { w: o.idle, arrow: '', c: o.fg } : null;
     var build = function () {
-      var r = band.getBoundingClientRect(); W0 = r.width; H0 = r.height; dpr = Math.min(2, W.devicePixelRatio || 1);
+      var pt = parseFloat(getComputedStyle(band).paddingTop) || 0; W0 = band.offsetWidth; H0 = band.offsetHeight - pt; dpr = Math.min(2, W.devicePixelRatio || 1);
+      cv.style.top = pt + 'px';
       cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
-      S = Math.max(4.5, Math.min(7, W0 / 250)); sz = Math.max(1.3, S * 0.3);
+      S = Math.max(4.5, Math.min(7, W0 / (o.pitch || 250))); sz = Math.max(1.3, S * (o.dot || 0.3));
       var cols = Math.floor(W0 / S), rows = Math.floor(H0 / S), ox = (W0 - (cols - 1) * S) / 2, oy = (H0 - (rows - 1) * S) / 2;
-      P = []; for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) { var hx = ox + x * S, hy = oy + y * S; P.push({ x: hx, y: hy, vx: 0, vy: 0, hx: hx, hy: hy, tx: hx, ty: hy, a: 0.42, ta: 0.42 }); }
-      N = P.length; if (active) shape(active, true);
+      P = []; for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) { var hx = ox + x * S, hy = oy + y * S; P.push({ x: hx, y: hy, vx: 0, vy: 0, hx: hx, hy: hy, tx: hx, ty: hy, a: o.grid ? 0.42 : 0, ta: o.grid ? 0.42 : 0 }); }
+      N = P.length; shape(spec || idle, true);
     };
-    // the word, drawn once off screen and sampled on the same pixel pitch
-    var shape = function (it, keep) {
-      active = it;
-      if (!it) { cur = FG; P.forEach(function (p) { p.tx = p.hx; p.ty = p.hy; p.ta = 0.42; }); kick(); return; }
-      var word = it.getAttribute('data-w'), arrow = it.tagName === 'A';
-      cur = it.getAttribute('data-c') || FG;
+    var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+    var shape = function (sp, keep) {
+      spec = sp;
+      if (!sp) { cur = o.fg; P.forEach(function (p) { p.tx = p.hx; p.ty = p.hy; p.ta = o.grid ? 0.42 : 0; }); kick(); return; }
+      cur = sp.c || o.fg;
       off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
-      var fs = H0 * 1.02; oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { }
-      var tw = oc.measureText(word).width, aw = arrow ? fs * 0.62 : 0, gap = arrow ? fs * 0.25 : 0, room = W0 * 0.96;
-      if (tw + gap + aw > room) { fs *= room / (tw + gap + aw); oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } tw = oc.measureText(word).width; aw = arrow ? fs * 0.62 : 0; gap = arrow ? fs * 0.25 : 0; }
-      var cap = fs * 0.72, base = (H0 + cap) / 2, x0 = arrow ? 0 : 0;
-      oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic'; oc.fillText(word, x0, base);
-      if (arrow) {   // ↗ drawn as strokes, sitting at the right edge like the rows below
+      var fs = o.capFill ? H0 / 0.72 : H0 * 1.02; font(fs);
+      var ar = sp.arrow, tw = oc.measureText(sp.w).width, aw = ar ? fs * 0.62 : 0, gap = ar ? fs * 0.25 : 0, room = W0 * (o.fit || 0.96);
+      if (tw + gap + aw > room) { fs *= room / (tw + gap + aw); font(fs); tw = oc.measureText(sp.w).width; aw = ar ? fs * 0.62 : 0; gap = ar ? fs * 0.25 : 0; }
+      var cap = fs * 0.72, base = (H0 + cap) / 2;
+      oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+      var parts = sp.w.split(' ');
+      if (o.split && !ar && parts.length === 2) {   // like the footer's name: first word on the left edge, second on the right
+        var w1 = oc.measureText(parts[0]).width, w2 = oc.measureText(parts[1]).width;
+        if (w1 + w2 > W0 * 0.97) { fs *= W0 * 0.97 / (w1 + w2); font(fs); cap = fs * 0.72; base = (H0 + cap) / 2; w1 = oc.measureText(parts[0]).width; w2 = oc.measureText(parts[1]).width; }
+        oc.fillText(parts[0], 0, base); oc.fillText(parts[1], W0 - w2, base);
+      } else oc.fillText(sp.w, 0, base);
+      if (ar) {
         var ax = W0 - aw * 0.95, ay = base - cap, lw = fs * 0.11;
-        oc.strokeStyle = '#fff'; oc.lineWidth = lw; oc.lineCap = 'square';
-        oc.beginPath(); oc.moveTo(ax + lw, ay + cap - lw); oc.lineTo(ax + aw - lw, ay + lw); oc.moveTo(ax + aw * 0.28, ay + lw); oc.lineTo(ax + aw - lw, ay + lw); oc.lineTo(ax + aw - lw, ay + cap * 0.72); oc.stroke();
+        oc.strokeStyle = '#fff'; oc.lineWidth = lw; oc.lineCap = 'square'; oc.beginPath();
+        if (ar === 'up') { var mx2 = ax + aw / 2; oc.moveTo(mx2, ay + cap - lw); oc.lineTo(mx2, ay + lw); oc.moveTo(ax + lw, ay + aw * 0.42); oc.lineTo(mx2, ay + lw); oc.lineTo(ax + aw - lw, ay + aw * 0.42); }
+        else { oc.moveTo(ax + lw, ay + cap - lw); oc.lineTo(ax + aw - lw, ay + lw); oc.moveTo(ax + aw * 0.28, ay + lw); oc.lineTo(ax + aw - lw, ay + lw); oc.lineTo(ax + aw - lw, ay + cap * 0.72); }
+        oc.stroke();
       }
       var data = oc.getImageData(0, 0, off.width, off.height).data, T = [];
       for (var y = S / 2; y < H0; y += S) for (var x = S / 2; x < W0; x += S) { if (data[(Math.floor(y) * off.width + Math.floor(x)) * 4 + 3] > 120) T.push([x, y]); }
-      // hand the targets to the pixels nearest in column order, so the word gathers from where it stands
       var order = P.slice().sort(function (a, b) { return a.hx - b.hx || a.hy - b.hy; });
       T.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
-      var M = Math.min(T.length, N), used = {};
+      var M = Math.min(T.length, N);
       order.forEach(function (p) { p.ta = 0; p.tx = p.hx; p.ty = p.hy + (Math.random() - 0.5) * S * 2; });
       for (var t = 0; t < M; t++) { var p = order[Math.floor(t * N / M)]; p.tx = T[t][0]; p.ty = T[t][1]; p.ta = 1; if (!keep && !still) { p.vx += (Math.random() - 0.5) * 9; p.vy += (Math.random() - 0.5) * 9; } }
       kick();
@@ -718,8 +727,8 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W0, H0);
       var lo = [], hi = [];
       for (var i = 0; i < N; i++) { var p = P[i]; if (p.a < 0.04) continue; (p.a > 0.7 ? hi : lo).push(p); }
-      ctx.fillStyle = 'rgba(244,243,239,.4)'; for (var a = 0; a < lo.length; a++) ctx.fillRect(lo[a].x - sz / 2, lo[a].y - sz / 2, sz, sz);
-      ctx.fillStyle = cur; var s2 = sz * 1.45; for (var b = 0; b < hi.length; b++) ctx.fillRect(hi[b].x - s2 / 2, hi[b].y - s2 / 2, s2, s2);
+      ctx.fillStyle = o.dim; for (var a = 0; a < lo.length; a++) ctx.fillRect(lo[a].x - sz / 2, lo[a].y - sz / 2, sz, sz);
+      ctx.fillStyle = cur; var s2 = sz * (o.big || 1.45); for (var b = 0; b < hi.length; b++) ctx.fillRect(hi[b].x - s2 / 2, hi[b].y - s2 / 2, s2, s2);
     };
     var step = function () {
       var R = Math.max(60, Math.min(110, W0 * 0.07)), R2 = R * R, moving = false;
@@ -737,17 +746,19 @@
     };
     var loop = function () { var mv = step(); draw(); calm = mv ? 0 : calm + 1; raf = (vis && (calm < 20 || mx > -1e3)) ? requestAnimationFrame(loop) : 0; };
     var kick = function () { if (!raf && (vis || still)) raf = requestAnimationFrame(loop); };
-    band.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; kick(); }, { passive: true });
-    band.addEventListener('pointerleave', function () { mx = my = -1e4; kick(); });
-    var items = sec.querySelectorAll('.pf-i'), leaveT = 0;
+    var hit = o.hit || band;
+    hit.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(), k = r.width ? W0 / r.width : 1; mx = (e.clientX - r.left) * k; my = (e.clientY - r.top) * k; kick(); }, { passive: true });
+    hit.addEventListener('pointerleave', function () { mx = my = -1e4; kick(); });
+    var leaveT = 0, active = null;
     Array.prototype.forEach.call(items, function (it) {
-      var on = function () { clearTimeout(leaveT); if (active !== it) { Array.prototype.forEach.call(items, function (x) { x.classList.toggle('on', x === it); }); shape(it); } };
-      var offf = function () { leaveT = setTimeout(function () { it.classList.remove('on'); shape(null); }, 180); };
+      var sp = { w: it.getAttribute('data-w'), arrow: it.getAttribute('data-arrow') || (it.tagName === 'A' ? 'ne' : ''), c: it.getAttribute('data-c') || o.fg };
+      var on = function () { clearTimeout(leaveT); if (active !== it) { active = it; Array.prototype.forEach.call(items, function (x) { x.classList.toggle('on', x === it); }); shape(sp); } };
+      var offf = function () { leaveT = setTimeout(function () { it.classList.remove('on'); active = null; shape(idle); }, 180); };
       it.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') on(); });
       it.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') offf(); });
       it.addEventListener('focus', on); it.addEventListener('blur', offf);
       var since = 0; it.addEventListener('focus', function () { since = now(); });
-      if (it.tagName === 'BUTTON') it.addEventListener('click', function () { if (active === it && now() - since > 400) { it.classList.remove('on'); shape(null); } else on(); });
+      if (it.tagName === 'BUTTON') it.addEventListener('click', function () { if (active === it && now() - since > 400) { it.classList.remove('on'); active = null; shape(idle); } else on(); });
     });
     var start = function () {
       build();
@@ -756,6 +767,39 @@
     };
     try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
     var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); kick(); }, 150); });
+  }
+
+  function words() {
+    var sec = D.querySelector('.pf');
+    if (sec) {
+      var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
+      pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
+      // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
+      if (LIVE && !RM) {
+        var zl = '';
+        var zoom = function () {
+          var vh = W.innerHeight, r = sec.getBoundingClientRect(), b = bd.getBoundingClientRect();
+          var p = cl((vh - r.top) / (vh * 0.85)), e = 1 - Math.pow(1 - p, 3);
+          var q = cl((vh * 0.3 - (r.top + bd.offsetTop + bd.offsetHeight)) / (vh * 0.6)), f = q * q;
+          var s = (0.5 + 0.5 * e) * (1 + 0.35 * f), o = Math.min(0.45 + 0.55 * e, 1 - 0.85 * f);
+          var key = s.toFixed(3) + o.toFixed(3); if (key === zl) return; zl = key;
+          bd.style.transform = 'scale(' + s.toFixed(4) + ')'; bd.style.opacity = o.toFixed(3);
+          if (ls) { ls.style.opacity = cl(p * 1.6 - 0.6).toFixed(3); ls.style.transform = 'translateY(' + ((1 - cl(p * 1.6 - 0.6)) * 40).toFixed(1) + 'px)'; }
+        };
+        W.addEventListener('scroll', zoom, { passive: true }); W.addEventListener('resize', zoom); zoom();
+      }
+    }
+    // Home footer: the name in pixels, ink on lavender; its contact links reshape it
+    var wm = D.querySelector('footer .wmark');
+    if (wm) {
+      var ft = wm.closest('footer');
+      var its = [];
+      var mail = ft.querySelector('.fmail a'); if (mail) { mail.setAttribute('data-w', 'EMAIL'); its.push(mail); }
+      Array.prototype.forEach.call(ft.querySelectorAll('a.crow'), function (a) { var t = /linkedin/i.test(a.href) ? 'LINKEDIN' : /behance/i.test(a.href) ? 'BEHANCE' : ''; if (t) { a.setAttribute('data-w', t); its.push(a); } });
+      Array.prototype.forEach.call(ft.querySelectorAll('a'), function (a) { if (/back to top/i.test(a.textContent)) { a.setAttribute('data-w', 'BACK TO TOP'); a.setAttribute('data-arrow', 'up'); its.push(a); } });
+      wm.classList.add('pf-on');
+      pixelField(wm, its, { fg: '#121316', dim: 'rgba(18,19,22,.22)', grid: false, idle: 'MELISA ERGANI', split: true, capFill: true, fit: 1, hit: ft, pitch: 260, dot: 0.34, big: 1.55 });
+    }
   }
 
   /* Case pages: the brief stays in the margin column while the project scrolls (wide screens) */
