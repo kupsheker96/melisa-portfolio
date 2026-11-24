@@ -995,7 +995,7 @@
       ph = new Float32Array(cols * 3); for (var pi = 0; pi < cols; pi++) { ph[pi * 3] = hash(pi, 1) * 6.283; ph[pi * 3 + 1] = 0.6 + hash(pi, 2) * 1.8; ph[pi * 3 + 2] = hash(pi, 3); }
       off.width = Math.ceil(W0); off.height = Math.ceil(Math.max(H0, hbH));
       // the name, on the hero band
-      var lines = ['MELISA', 'ERGANI'], lhk = 1.2, room = W0 - x0 - pr, fs = hbH / (2 * 0.72 * lhk); font(fs);
+      var lines = ['MELISA', 'ERGANI'], lhk = 1.2, room = W0 - x0 - pr - (small ? G * 3 : 0), fs = hbH / (2 * 0.72 * lhk); font(fs);
       var longest = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; }));
       if (longest > room) { fs *= room / longest; font(fs); }
       var cap = fs * 0.72, lh = cap * lhk, top = hbH - (2 * lh - (lh - cap)) - G * 2;
