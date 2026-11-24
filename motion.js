@@ -951,56 +951,77 @@
     return { setIdle: function (sp) { idle = sp; if (!active) shape(idle); }, busy: function () { return !!active; } };
   }
 
-  /* landing, line version (Nov 24, matched to her reference): fine vertical lines that never move; the name is set in
-     coarse square pixels (four lines to a pixel) and appears where the lines thicken. Each line of the name steps
-     sideways a pixel or two at a time and the letters pass through a slow, moving field of light, so they keep
-     surfacing and fading: on its own at an easy pace, with the music on every bass hit. The cursor is a magnet: the
-     pixels near it light up and are pushed out a step. (?hero=dots shows the dot version.) */
+  /* landing, line version (Nov 24, matched to her reference; scroll added the same night). A screen of fine vertical
+     lines in the footer's lavender; the name is set in coarse pixels (two lines to a pixel) and shows where the lines
+     thicken. It steps sideways and passes through a slow moving light; with the music it keeps time and every line
+     carries its own slice of the spectrum; the cursor pushes pixels aside.
+     Scrolling, the screen does not leave: it is fixed behind the page. The name rises slower than the page and breaks
+     back into plain lines, pixel by pixel, while the black settles into the page colour, so the lines become the
+     background of the statement. Then each keyword of the statement surfaces from the same lines (cells thicken in an
+     uneven order, lit by the same light) and sinks back as the sentence moves on. (?hero=dots: the dot version.) */
   function lineHero(hb, x0, pr) {
-    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'pf-cv'; hb.appendChild(cv); hb.classList.add('me-lines');
+    var host = hb.closest('.mainc') || D.body;
+    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'me-lf'; host.insertBefore(cv, host.firstChild);
     var x = cv.getContext('2d'); if (!x) return;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
-    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, K = 4, G = 0, GH = 0, RED = '122,130,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0, M = null, I = null, split = 0, gx0 = 0;
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, TOP = 56, P = 0, K = 2, G = 0, COL = '122,130,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0;
+    var NM = null, ngr = 0, split = 0, I = null, ORD = null, gx0 = 0;
     var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, t0 = now(), lastStep = 0, avg = 0, prevB = 0, sh = [0, 0], LIT = 0;
-    var build = function () {
-      W0 = hb.offsetWidth; H0 = hb.offsetHeight; if (!W0 || !H0) return;
-      cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
-      var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4, small = W.innerWidth < 640;
-      K = 2;
-      P = cw / Math.max(K * 3, Math.round(cw / (small ? 7 : 10) / K) * K);   // a whole number of pixels, and of lines, per grid column
-      G = P * K;
-      var start = g.rule % G; gx0 = start;
-      colX = []; for (var cx = start + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); cols = colX.length;
-      GH = G; gc = Math.ceil(cols / K); gr = Math.ceil(H0 / GH);
-      // the name, drawn once and read back as coarse pixels
-      off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
-      var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
-      var lines = ['MELISA', 'ERGANI'], lhk = 1.2, room = W0 - x0 - pr, fs = H0 / (2 * 0.72 * lhk); font(fs);
-      var longest = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; }));
-      if (longest > room) { fs *= room / longest; font(fs); }
-      var cap = fs * 0.72, lh = cap * lhk, top = H0 - (2 * lh - (lh - cap)) - G * 2;
-      ph = new Float32Array(cols * 3); for (var pi = 0; pi < cols; pi++) { ph[pi * 3] = hash(pi, 1) * 6.283; ph[pi * 3 + 1] = 0.6 + hash(pi, 2) * 1.8; ph[pi * 3 + 2] = hash(pi, 3); }
-      oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
-      lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
-      split = Math.round((top + cap + (lh - cap) / 2) / GH);
-      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width;
-      M = new Uint8Array(gc * gr); I = new Float32Array(gc * gr);
-      for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
-        var px0 = start - G + gx * G, py0 = gy * GH, hit = 0, n = 0;
+    var stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts');
+    var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+    // draw some text offscreen and read it back as coarse pixels on the line grid
+    var cells = function (rowsN, paint) {
+      oc.clearRect(0, 0, off.width, off.height); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic'; paint();
+      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height, M = new Uint8Array(gc * rowsN);
+      for (var gy = 0; gy < rowsN; gy++) for (var gx = 0; gx < gc; gx++) {
+        var px0 = gx0 - G + gx * G, py0 = gy * G, hit = 0, n = 0;
         for (var sy = 0.2; sy < 1; sy += 0.2) for (var sx = 0.2; sx < 1; sx += 0.2) {
-          var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * GH); n++;
-          if (px >= 0 && px < ow && py < off.height && d[(py * ow + px) * 4 + 3] > 120) hit++;
+          var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * G); n++;
+          if (px >= 0 && px < ow && py < oh && d[(py * ow + px) * 4 + 3] > 120) hit++;
         }
         M[gy * gc + gx] = hit / n > 0.4 ? 1 : 0;
       }
+      return M;
     };
+    var build = function () {
+      TOP = 56; W0 = H.clientWidth || W.innerWidth; H0 = W.innerHeight - TOP; var hbH = hb.offsetHeight;
+      if (!W0 || !H0 || !hbH) return;
+      cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4, small = W.innerWidth < 640;
+      P = cw / Math.max(K * 3, Math.round(cw / (small ? 7 : 10) / K) * K);   // a whole number of pixels, and of lines, per grid column
+      G = P * K; gx0 = g.rule % G;
+      colX = []; for (var cx = gx0 + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); cols = colX.length;
+      gc = Math.ceil(cols / K); gr = Math.ceil(H0 / G) + 1; ngr = Math.ceil(hbH / G);
+      ph = new Float32Array(cols * 3); for (var pi = 0; pi < cols; pi++) { ph[pi * 3] = hash(pi, 1) * 6.283; ph[pi * 3 + 1] = 0.6 + hash(pi, 2) * 1.8; ph[pi * 3 + 2] = hash(pi, 3); }
+      off.width = Math.ceil(W0); off.height = Math.ceil(Math.max(H0, hbH));
+      // the name, on the hero band
+      var lines = ['MELISA', 'ERGANI'], lhk = 1.2, room = W0 - x0 - pr, fs = hbH / (2 * 0.72 * lhk); font(fs);
+      var longest = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; }));
+      if (longest > room) { fs *= room / longest; font(fs); }
+      var cap = fs * 0.72, lh = cap * lhk, top = hbH - (2 * lh - (lh - cap)) - G * 2;
+      NM = cells(ngr, function () { font(fs); lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); }); });
+      split = Math.round((top + cap + (lh - cap) / 2) / G);
+      I = new Float32Array(gc * gr);
+      ORD = new Float32Array(gc * gr);
+      for (var k = 0; k < ORD.length; k++) { var cx2 = k % gc, cy2 = Math.floor(k / gc); ORD[k] = 0.55 * hash(cx2 + 7, cy2 + 3) + 0.45 * (0.5 + 0.5 * Math.sin(cx2 * 0.17 + cy2 * 0.23)); }
+    };
+    // the statement's keywords: each one, as it lights, is lit from within the lines behind it
+    var kws = [].slice.call(D.querySelectorAll('[data-inkroot] .stmt .kw')), KS = kws.map(function () { return { e: 0, fl: 0, lit: false }; });
     var frame = function () {
-      raf = 0; if (!W0 || !M) return;
+      raf = 0; if (!W0 || !NM) return;
+      // where the page is: the hero leaving (p0) and the statement's own progress (ta, as the sentence assembles)
+      var hr = hb.getBoundingClientRect(), p0 = cl((TOP - hr.top) / (hr.height * 0.85)), ta = -1, gone = false;
+      if (stw && sts) {
+        var wr = stw.getBoundingClientRect(), stT = parseFloat(getComputedStyle(sts).top) || 0, span = Math.max(1, stw.offsetHeight - sts.offsetHeight);
+        ta = (stT - wr.top) / (span * 0.495);
+        gone = wr.bottom < TOP;
+      }
+      cv.style.visibility = gone ? 'hidden' : '';
+      if (gone) { raf = 0; return; }
       var t = now(), tt = (t - t0) / 1000, L = LV() || { b: 0, m: 0, h: 0, a: 0, on: 0 }, on = L.on || 0;
-      // steps: on the bass hits while the song plays, otherwise at an easy walking pace
       var bnow = L.b || 0, flux = bnow - prevB; prevB = bnow; avg += (bnow - avg) * 0.04;
       var beat = on > 0.3 && (flux > 0.09 || bnow > avg * 1.3) && bnow > 0.45 && t - lastStep > 260;
-      if (!still && (beat || t - lastStep > (on > 0.3 ? 1400 : 1100))) {
+      if (!still && p0 < 1 && (beat || t - lastStep > (on > 0.3 ? 1400 : 1100))) {
         lastStep = t;
         var b = Math.random() < 0.5 ? 0 : 1, nv = sh[b];
         while (nv === sh[b]) nv = Math.round((Math.random() * 2 - 1) * (on > 0.3 ? 3 : 2));
@@ -1009,59 +1030,97 @@
       }
       LIT *= 0.9;
       x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W0, H0);
-      // the fixed lines; with the song each line thickens with its part of the spectrum (bass left, treble right)
-      var spec = L.spec, hz = L.hz || 43;
-      var LS = W.__meLS || (W.__meLS = new Float32Array(4096));
+      // the black of the hero settles into the page colour
+      var e0 = sm(p0);
+      if (e0 < 1) { x.fillStyle = 'rgba(3,3,4,' + (1 - e0).toFixed(3) + ')'; x.fillRect(0, Math.max(0, hr.bottom - TOP > H0 ? 0 : 0), W0, H0); }
+      // the lines: their own slow pulse, their slice of the spectrum; quieter once they are the background
+      var spec = L.spec, hz = L.hz || 43, LS = W.__meLS || (W.__meLS = new Float32Array(4096)), bgK = 1 - 0.45 * e0;
       for (var c = 0; c < cols; c++) {
-        // every line has its own slow pulse; with the song it also carries its own slice of the spectrum
         var lv = 0;
         if (spec && on > 0.01) { var fq = 40 * Math.pow(300, (c % 97) / 97), bi = Math.min(spec.length - 1, Math.round(fq / hz)); lv = spec[bi] / 255; lv *= lv; }
         LS[c] = lv;
-        var pul = 0.5 + 0.5 * Math.sin(tt * ph[c * 3 + 1] + ph[c * 3]), a0 = 0.26 + 0.2 * pul + on * lv * 0.4;
-        x.fillStyle = 'rgba(' + RED + ',' + a0.toFixed(3) + ')';
+        var pul = 0.5 + 0.5 * Math.sin(tt * ph[c * 3 + 1] + ph[c * 3]), a0 = (0.26 + 0.2 * pul + on * lv * 0.4) * bgK;
+        x.fillStyle = 'rgba(' + COL + ',' + a0.toFixed(3) + ')';
         x.fillRect(colX[c] - 0.5, 0, 1 + on * lv * 1.2, H0);
       }
-      // the name: shifted pixels, lit by a slow moving field (and by the cursor)
+      // the name rides up at 60% of the page's speed, in whole pixels
+      var rowOff = Math.round((hr.top - TOP) * 0.6 / G), KR = [];
+      if (ta > -0.4 && ta < 1.6) kws.forEach(function (el, i) {
+        var o = parseFloat(el.style.opacity || getComputedStyle(el).opacity) || 0, ks = KS[i], on2 = cl((o - 0.38) / 0.6);
+        if (on2 > 0.9 && !ks.lit) { ks.lit = true; ks.fl = 1; } else if (on2 < 0.5) ks.lit = false;
+        ks.fl *= 0.965;
+        var settle = 1 - sm(cl((ta - 0.6) / 0.25));   // once the words take their places in the sentence, the lines let go
+        var tg = (0.12 + 0.5 * on2 + 0.7 * ks.fl) * settle * cl((ta + 0.3) / 0.3);
+        ks.e += (tg - ks.e) * 0.12;
+        if (ks.e < 0.01) return;
+        var r = el.getBoundingClientRect(), padX = r.height * 0.5, padY = r.height * 0.35;
+        KR.push({ x0: (r.left - padX - gx0 + G) / G, x1: (r.right + padX - gx0 + G) / G, y0: (r.top - padY - TOP) / G, y1: (r.bottom + padY - TOP) / G, e: ks.e });
+      });
       var R = Math.max(110, Math.min(200, W0 * 0.12)), mgx = (mx - gx0 + G) / G, mgy = my / G, Rg = R / G;
-      var mgy2 = my / GH, RgY = R / GH;
       for (var gy = 0; gy < gr; gy++) {
-        var s0 = sh[gy < split ? 0 : 1];
+        var ny = gy - rowOff, s0 = sh[ny < split ? 0 : 1];
         for (var gx = 0; gx < gc; gx++) {
-          var sx = gx - s0, sy = gy, push = 0;
-          var ddx = (gx + 0.5 - mgx) / Rg, ddy = (gy + 0.5 - mgy2) / RgY, dd = Math.sqrt(ddx * ddx + ddy * ddy);
-          if (dd < 1) { push = 1 - dd; var st2 = push * 2.4; sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2 * 1.6); }
-          var m = (sx >= 0 && sx < gc && sy >= 0 && sy < gr) ? M[sy * gc + sx] : 0;
+          var k = gy * gc + gx, od = ORD[k], tgt = 0;
           var field = 0.5 + 0.5 * Math.sin(gx * 0.23 - tt * (0.9 + on * 1.6) + Math.sin(gy * 0.19 + tt * 0.5) * 1.6);
-          var tgt = m ? Math.min(1, (0.5 + 0.5 * field) * (1 + LIT * on * 0.6) + push * 0.8) : 0;
-          var k = gy * gc + gx; I[k] += (tgt - I[k]) * (tgt > I[k] ? 0.32 : 0.2);   // light comes fast, goes slowly: the ghosting
+          if (p0 < 1 && ny >= 0 && ny < ngr) {
+            var sx = gx - s0, sy = ny, push = 0;
+            var ddx = (gx + 0.5 - mgx) / Rg, ddy = (gy + 0.5 - mgy) / Rg, dd = Math.sqrt(ddx * ddx + ddy * ddy);
+            if (dd < 1) { push = 1 - dd; var st2 = push * 2.4; sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2 * 1.6); }
+            if (sx >= 0 && sx < gc && sy >= 0 && sy < ngr && NM[sy * gc + sx]) {
+              var keep = 1 - sm(cl((p0 * 1.25 - od * 0.6) / 0.4));   // pixel by pixel, in an uneven order, back into lines
+              tgt = Math.min(1, (0.5 + 0.5 * field) * (1 + LIT * on * 0.6) + push * 0.8) * keep;
+            }
+          }
+          for (var w2 = 0; w2 < KR.length; w2++) {
+            var kr = KR[w2]; if (gx + 1 < kr.x0 || gx > kr.x1 || gy + 1 < kr.y0 || gy > kr.y1) continue;
+            // a soft-edged plate of thickened lines behind the word: strongest at its middle, uneven at its edges
+            var ux = Math.min(gx + 0.5 - kr.x0, kr.x1 - gx - 0.5) / Math.max(1, (kr.x1 - kr.x0) * 0.5), uy = Math.min(gy + 0.5 - kr.y0, kr.y1 - gy - 0.5) / Math.max(1, (kr.y1 - kr.y0) * 0.5);
+            var edge = sm(cl(Math.min(ux, uy) * 1.8 + 0.15 - od * 0.75));
+            tgt = Math.max(tgt, Math.min(0.6, kr.e * edge * (0.6 + 0.4 * field) * (1 + LIT * on * 0.4)));
+          }
+          I[k] += (tgt - I[k]) * (tgt > I[k] ? 0.3 : 0.18);
           var v = I[k]; if (v < 0.04) continue;
-          // each line in the pixel has its own width, flickering on its own clock: thick ones burn brighter
           for (var j = 0; j < K; j++) {
             var ci = gx * K + j; if (ci >= cols) break;
-            var p0 = ph[ci * 3], p1 = ph[ci * 3 + 1], hv = hash(ci, gy);
-            var n = 0.55 + 0.25 * Math.sin(tt * (1.3 + p1 * 1.7) + p0 + gy * 0.9) + 0.2 * Math.sin(tt * (3.1 + hv * 4) + hv * 9);
+            var q0 = ph[ci * 3], q1 = ph[ci * 3 + 1], hv = hash(ci, gy);
+            var n = 0.55 + 0.25 * Math.sin(tt * (1.3 + q1 * 1.7) + q0 + gy * 0.9) + 0.2 * Math.sin(tt * (3.1 + hv * 4) + hv * 9);
             if (on > 0.01) n = n * (1 - on * 0.45) + on * 0.45 * Math.min(1, LS[ci] * 1.6 + 0.2);
-            var e = v * Math.max(0.3, n), w = 1.2 + e * (P * 0.8 - 1.2);
+            var e = v * Math.max(0.3, n), wd = 1.2 + e * (P * 0.8 - 1.2);
             if (e < 0.08) continue;
-            x.fillStyle = 'rgba(' + RED + ',' + Math.min(1, 0.5 + e * 1.1).toFixed(3) + ')';
-            x.fillRect(colX[ci] - w / 2, gy * GH, w, GH + 0.5);
+            x.fillStyle = 'rgba(' + COL + ',' + Math.min(1, 0.5 + e * 1.1).toFixed(3) + ')';
+            x.fillRect(colX[ci] - wd / 2, gy * G, wd, G + 0.5);
           }
         }
       }
       if (vis && !D.hidden && !still) raf = requestAnimationFrame(frame);
     };
-    var kick = function () { if (!raf && vis) raf = requestAnimationFrame(frame); };
-    var hit = D.getElementById('top') || hb;
-    hit.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; kick(); }, { passive: true });
-    hit.addEventListener('pointerleave', function () { mx = my = -1e4; kick(); });
-    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; kick(); }).observe(hb);
+    var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
+    W.addEventListener('pointermove', function (e) { if (e.pointerType !== 'mouse') return; mx = e.clientX; my = e.clientY - TOP; }, { passive: true });
+    D.addEventListener('pointerleave', function () { mx = my = -1e4; });
+    W.addEventListener('scroll', kick, { passive: true });
     D.addEventListener('visibilitychange', kick);
     var start = function () { build(); kick(); };
     try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
-    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 150); });
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 200); });
+  }
+
+  /* index links to the category cards (Nov 24): the cards are sticky, so a plain #c-… jump lands where they pile up
+     (on the last one). Go to each card's own place in the run instead. */
+  function cardJump() {
+    D.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#c-"]'); if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey) return;
+      var id = a.getAttribute('href').slice(1), cs = [].slice.call(D.querySelectorAll('.cc-card')), i = cs.map(function (c) { return c.id; }).indexOf(id), sec = D.querySelector('.cc');
+      if (i < 0 || !sec) return;
+      e.preventDefault();
+      var step = cs[0].offsetHeight + (parseFloat(getComputedStyle(cs[0]).marginBottom) || 0);
+      var y = sec.getBoundingClientRect().top + W.scrollY + (parseFloat(getComputedStyle(sec).paddingTop) || 0) + i * step + W.innerHeight * 0.34;
+      W.scrollTo({ top: y, behavior: RM ? 'auto' : 'smooth' });
+      try { history.replaceState(history.state, '', '#' + id); } catch (er) { }
+    });
   }
 
   function words() {
+    cardJump();
     var sec = D.querySelector('.pf');
     // cards that have faded out (the last one sinks away over the index) stop catching the pointer
     var ccs = Array.prototype.map.call(D.querySelectorAll('.cc-card'), function (c) { return [c, c.querySelector('.cc-in')]; });

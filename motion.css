@@ -273,3 +273,7 @@ html.mhs-on .ab-ax .q{position:absolute;top:-5px;left:0;width:9px;height:9px;bac
 .me-pfb.me-lines{background:#030304}
 .me-pfb.me-lines canvas{filter:drop-shadow(0 0 2px rgba(122,130,255,.8)) drop-shadow(0 0 9px rgba(122,130,255,.36))}
 @media (max-width:759px){.me-pfb.me-lines canvas{filter:drop-shadow(0 0 4px rgba(122,130,255,.55))}}
+/* the landing's line screen stays behind the page through the statement (Nov 24) */
+.me-lf{position:fixed;left:0;top:56px;z-index:-1;pointer-events:none;display:block}
+html.me-shell .me-lf{display:none}
+@media print{.me-lf{display:none}}
