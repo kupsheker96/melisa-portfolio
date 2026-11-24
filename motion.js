@@ -216,7 +216,7 @@
       + '<span class="mi-tl" style="left:' + g.pad + 'px">[ Portfolio //2026 ]</span><span class="mi-tr" style="right:' + g.pad + 'px">Ankara</span>'
       + '<span class="mi-bl" style="left:' + g.pad + 'px">Melisa Ergani<br><span>UI/UX &amp; Visual Designer</span></span>'
       + '<span class="mi-n" style="right:' + g.pad + 'px">000</span>'
-      + '<div class="mi-ch" style="top:' + (yL + 22) + 'px;left:' + lx + 'px"><button type="button" class="mi-b mi-on">Click anywhere to enter <span aria-hidden="true">↗</span></button></div>';
+      + '<div class="mi-ch" style="top:' + (yL + 22) + 'px;left:' + lx + 'px"><button type="button" class="mi-b mi-on">Scroll to enter <span aria-hidden="true">↓</span></button></div>';
     D.body.appendChild(el);
     // grain: a small noise tile, stepped like the site's own
     try {
@@ -251,6 +251,17 @@
     // the click that enters is the one the browser needs before it allows sound
     el.addEventListener('click', function () { if (el.classList.contains('ask')) leave(true); });
     el.addEventListener('keydown', function (e) { if (el.classList.contains('ask') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); leave(true); } });
+    // Nov 24: scrolling enters (no click needed). A scroll can't unlock sound in browsers, so the music then starts on the
+    // visitor's first click, tap or key; the dot field sleeps until it does.
+    var scrollIn = function (e) {
+      if (!el.classList.contains('ask') && !el.classList.contains('me-in')) return;
+      if (e.type === 'keydown' && ['ArrowDown', 'PageDown', ' ', 'Spacebar', 'Enter', 'End'].indexOf(e.key) < 0) return;
+      if (e.type === 'wheel' && e.deltaY <= 0) return;
+      if (e.cancelable) e.preventDefault();
+      leave(true);
+      ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.removeEventListener(ev, scrollIn, { passive: false }); });
+    };
+    ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.addEventListener(ev, scrollIn, { passive: false }); });
     var finish = function () {
       nEl.textContent = '100';
       // the pixels slide along the line into the square of ME.; the letters ink in
@@ -403,7 +414,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge(); field();
     if (!EMB && !SHELLED) music();
   }
 
@@ -586,47 +597,79 @@
   /* On repeat while designing. Starts with the site: on Home the intro asks "with sound"; elsewhere (and when the browser
      holds sound back) it starts on the visitor's first click / tap / key. The button plays and pauses; pausing is
      remembered. The YouTube player itself stays out of sight. */
+  /* music (Nov 24): Nils Frahm — Says (Monolink Edit), from 0:13, served with the site so the dots can listen to it.
+     An <audio> element plays it; once the browser lets sound run (first click / key), it is routed through an
+     AnalyserNode and __meLevels() reports bass / mids / highs for the dot fields. Paused = silent levels. */
   function music() {
-    var VID = 'uhiwpPRxVMw', START = 76, VOL = 70;
+    var SRC = 'audio/says.mp3', VOL = 0.72, ART = 'Nils Frahm', SONG = 'Says (Monolink Edit)';
     var saved = null; try { saved = JSON.parse(st('sessionStorage', 'me-mu') || 'null'); } catch (e) { }
     var off = st('localStorage', 'me-mu-off') === '1';
-    var title = st('localStorage', 'me-mu-title') || '';
     var wrap = D.createElement('div'); wrap.className = 'me-mu';
-    wrap.innerHTML = '<div class="me-mv" aria-hidden="true"><div id="me-yt"></div></div>'
-      + '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2">Nils Frahm</small></span></button>';
+    wrap.innerHTML = '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2"></small></span></button>';
     D.body.appendChild(wrap);
     var btn = wrap.querySelector('.me-mb'), t2 = wrap.querySelector('.me-t2');
-    var P = null, ready = false, state = off ? 'pause' : 'wait', fade = null, apiP = null, fadeMs = saved && saved.t ? 1500 : 5000, armed = false;
-    var clean = function (t) { return (t || '').replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, ' ').replace(/^\s*Nils Frahm\s*[-–—:]\s*/i, '').trim(); };
+    var A = new Audio(); A.src = SRC; A.preload = 'auto'; A.loop = true; A.volume = 0; A.setAttribute('playsinline', '');
+    if (saved && saved.t) { try { A.currentTime = saved.t; } catch (e) { } A.addEventListener('loadedmetadata', function () { try { if (A.currentTime < 1) A.currentTime = saved.t; } catch (e) { } }, { once: true }); }
+    var state = off ? 'pause' : 'wait', fade = null, fadeMs = saved && saved.t ? 1500 : 5000, armed = false;
     var label = function () {
-      var song = clean(title);
-      t2.textContent = 'Nils Frahm' + (song ? ' — ' + song : '') + (state === 'play' ? '' : state === 'wait' ? ' · plays on your first click' : ' · paused');
+      t2.textContent = ART + ' — ' + SONG + (state === 'play' ? '' : state === 'wait' ? ' · plays on your first click' : ' · paused');
       wrap.classList.toggle('play', state === 'play');
       btn.setAttribute('aria-pressed', state === 'play' ? 'true' : 'false');
-      btn.setAttribute('aria-label', (state === 'play' ? 'Pause' : 'Play') + ' music: On repeat while designing, Nils Frahm' + (song ? ', ' + song : ''));
-    };
-    var api = function () {
-      if (apiP) return apiP;
-      apiP = new Promise(function (res) {
-        if (W.YT && W.YT.Player) return res();
-        var prev = W.onYouTubeIframeAPIReady; W.onYouTubeIframeAPIReady = function () { if (prev) prev(); res(); };
-        var s = D.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.async = true; D.head.appendChild(s);
-      });
-      return apiP;
+      btn.setAttribute('aria-label', (state === 'play' ? 'Pause' : 'Play') + ' music: ' + ART + ', ' + SONG);
     };
     var ramp = function (to, ms, done) {
-      clearInterval(fade); if (!P || !P.setVolume) { if (done) done(); return; }
-      var from = P.getVolume ? (P.getVolume() || 0) : 0, t0 = now();
+      clearInterval(fade); var from = A.volume, t0 = now();
       fade = setInterval(function () {
         var t = cl((now() - t0) / ms), v = from + (to - from) * (t * t * (3 - 2 * t));
-        try { P.setVolume(Math.round(v)); } catch (e) { }
+        try { A.volume = Math.max(0, Math.min(1, v)); } catch (e) { }
         if (t >= 1) { clearInterval(fade); if (done) done(); }
-      }, 50);
+      }, 40);
     };
-    var go = function () { if (!P || !ready) return; try { P.setVolume(0); P.playVideo(); } catch (e) { } };
+    // the listening part: only connected once the audio context really runs (otherwise the element would go silent)
+    var AC = W.AudioContext || W.webkitAudioContext, ctx = null, an = null, wired = false, fbuf = null, lv = { b: 0, m: 0, h: 0, a: 0, on: 0 }, lvT = 0, pk = { b: 0.3, m: 0.25, h: 0.15 };
+    var wire = function () {
+      if (wired || !AC) return;
+      try {
+        if (!ctx) ctx = new AC();
+        var go2 = function () {
+          if (wired || ctx.state !== 'running') return;
+          var src = ctx.createMediaElementSource(A); an = ctx.createAnalyser(); an.fftSize = 1024; an.smoothingTimeConstant = 0.78;
+          src.connect(an); an.connect(ctx.destination); fbuf = new Uint8Array(an.frequencyBinCount); wired = true;
+        };
+        if (ctx.state === 'running') go2(); else ctx.resume().then(go2).catch(function () { });
+      } catch (e) { }
+    };
+    var band = function (a, b) { var s = 0; for (var i = a; i < b; i++) s += fbuf[i]; return s / ((b - a) * 255); };
+    W.__meLevels = function () {
+      var t = now(); if (t - lvT < 12) return lv; lvT = t;
+      var on = state === 'play' && !A.paused;
+      lv.on += ((on ? 1 : 0) - lv.on) * 0.06;   // wakes up over about a second, settles the same way
+      if (wired && fbuf && on) {
+        an.getByteFrequencyData(fbuf);
+        var hz = ctx.sampleRate / an.fftSize, B = function (f) { return Math.max(1, Math.round(f / hz)); };
+        var b = band(B(30), B(180)), m = band(B(250), B(2000)), h = band(B(3000), B(9000));
+        // each band is measured against its own recent peak, so quiet passages still move
+        pk.b = Math.max(b, pk.b * 0.997, 0.12); pk.m = Math.max(m, pk.m * 0.997, 0.1); pk.h = Math.max(h, pk.h * 0.997, 0.05);
+        lv.b = cl(b / pk.b); lv.m = cl(m / pk.m); lv.h = cl(h / pk.h);
+        lv.spec = fbuf; lv.hz = hz;
+      } else { lv.b *= 0.9; lv.m *= 0.9; lv.h *= 0.9; lv.spec = null; }
+      lv.a = (lv.b + lv.m + lv.h) / 3;
+      return lv;
+    };
+    var go = function () {
+      wire();
+      var p; try { p = A.play(); } catch (e) { p = null; }
+      if (p && p.then) p.then(function () { }).catch(function () { if (state === 'wait') arm(); });
+    };
+    A.addEventListener('playing', function () {
+      if (state === 'pause') { A.pause(); return; }
+      state = 'play'; st('localStorage', 'me-mu-off', null); label(); ramp(VOL, fadeMs); fadeMs = 1500;
+    });
+    A.addEventListener('error', function () { t2.textContent = ART + ' · can’t play here'; });
     var arm = function () {
       if (armed) return; armed = true;
       var g = function (e) {
+        wire();   // any gesture lets the analyser start, even when the music is already playing
         if (state !== 'wait') return disarm();
         if (e.target && e.target.closest && e.target.closest('.me-mu, .mi')) return;   // those buttons decide for themselves
         go(); disarm();
@@ -634,53 +677,24 @@
       var disarm = function () { ['pointerdown', 'keydown', 'touchend'].forEach(function (ev) { D.removeEventListener(ev, g, true); }); armed = false; };
       ['pointerdown', 'keydown', 'touchend'].forEach(function (ev) { D.addEventListener(ev, g, true); });
     };
-    var create = function () {
-      api().then(function () {
-        if (P) return;
-        P = new W.YT.Player('me-yt', {
-          host: 'https://www.youtube-nocookie.com', videoId: VID, width: 256, height: 200,
-          playerVars: { start: Math.floor(saved && saved.t ? saved.t : START), autoplay: 0, controls: 0, rel: 0, playsinline: 1, disablekb: 1, fs: 0, iv_load_policy: 3 },
-          events: {
-            onReady: function (e) {
-              ready = true;
-              var d = e.target.getVideoData && e.target.getVideoData(); if (d && d.title) { title = d.title; st('localStorage', 'me-mu-title', title); }
-              if (state === 'wait' && !(doIntro && !W.__meWantSound)) go();
-              label();
-            },
-            onStateChange: function (e) {
-              if (e.data === 1) { if (state !== 'play') { state = 'play'; st('localStorage', 'me-mu-off', null); label(); ramp(VOL, fadeMs); fadeMs = 1500; } }
-              else if (e.data === 0) { try { P.seekTo(START, true); P.playVideo(); } catch (er) { } }
-            },
-            onError: function () { t2.textContent = 'Nils Frahm · can’t play here'; }
-          }
-        });
-      });
-    };
-    var pause = function () { state = 'pause'; st('localStorage', 'me-mu-off', '1'); st('sessionStorage', 'me-mu', null); label(); ramp(0, 500, function () { try { P.pauseVideo(); } catch (e) { } }); };
-    var play = function () { state = 'wait'; st('localStorage', 'me-mu-off', null); label(); if (P && ready) go(); else create(); };
+    // the analyser needs one gesture even when autoplay was allowed
+    var wg = function () { wire(); if (wired) ['pointerdown', 'keydown', 'touchend'].forEach(function (ev) { D.removeEventListener(ev, wg, true); }); };
+    ['pointerdown', 'keydown', 'touchend'].forEach(function (ev) { D.addEventListener(ev, wg, true); });
+    var pause = function () { state = 'pause'; st('localStorage', 'me-mu-off', '1'); st('sessionStorage', 'me-mu', null); label(); ramp(0, 500, function () { A.pause(); }); };
+    var play = function () { state = 'wait'; st('localStorage', 'me-mu-off', null); label(); go(); };
     btn.addEventListener('click', function () { if (state === 'play') pause(); else play(); });
-    // the intro's two doors
     W.__meMusicStart = function () { if (state === 'play') return; fadeMs = 5000; play(); };
-    // try sound without a click (allowed on sites a browser already trusts); report whether it is playing
     W.__meMusicTry = function (cb) {
       if (state === 'pause') return cb(false);
-      var t0 = now();
-      (function wait() {
-        if (P && ready) { go(); setTimeout(function () { cb(state === 'play'); }, 700); return; }
-        if (now() - t0 > 2500) return cb(false);
-        setTimeout(wait, 100);
-      })();
+      go(); setTimeout(function () { cb(state === 'play' || !A.paused); }, 700);
     };
-    W.__meMusicQuiet = function () { if (state === 'wait') { arm(); } };
-    W.__meSaveMusic = function () {
-      if (state !== 'play' || !P || !P.getCurrentTime) return;
-      try { st('sessionStorage', 'me-mu', JSON.stringify({ t: P.getCurrentTime() })); } catch (e) { }
-    };
+    W.__meMusicQuiet = function () { if (state === 'wait') arm(); };
+    W.__meSaveMusic = function () { if (state !== 'play') return; try { st('sessionStorage', 'me-mu', JSON.stringify({ t: A.currentTime })); } catch (e) { } };
     W.addEventListener('pagehide', W.__meSaveMusic);
     W.__meMusicPlaying = function () { return state === 'play'; };
     label();
     if (W.__meWantSound) play();
-    else if (state !== 'pause') { create(); if (!doIntro) arm(); }
+    else if (state !== 'pause' && !doIntro) { go(); arm(); }
   }
 
   /* Playground: Mawu's six sensory balls, each with its own temperament */
@@ -1280,6 +1294,80 @@
     W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
   }
 
+  /* landing dot field (Nov 24). The page grid, in square dots. With the music paused it barely breathes; once the
+     song plays it listens: the bass sends rings out from the name, the mids lift the columns like a spectrum read
+     left to right, the highs strike single dots in lavender. The cursor parts and enlarges the dots near it. */
+  function LV() { try { return W.__meLevels ? W.__meLevels() : (SHELLED && W.parent.__meLevels ? W.parent.__meLevels() : null); } catch (e) { return null; } }
+  function field() {
+    var cv = D.querySelector('.me-df'), hero = D.getElementById('top'); if (!cv || !hero) return;
+    var x = cv.getContext('2d'), dpr = Math.min(2, W.devicePixelRatio || 1), w = 0, h = 0, S = 22, xs0 = 0, P = [], nx = 0, ny = 0;
+    var mx = -1e4, my = -1e4, mk = 0, oy = 0, vis = true, raf = 0, hist = new Float32Array(180), hi = 0, ox = 0, oyc = 0, spark = {};
+    var measure = function () {
+      var r = cv.getBoundingClientRect(); w = r.width; h = r.height; if (!w || !h) return;
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || w / 4;
+      S = cw / Math.max(3, Math.round(cw / (W.innerWidth < 640 ? 20 : 24)));
+      xs0 = (g.rule % S); nx = Math.ceil((w - xs0) / S); ny = Math.ceil(h / S);
+      P = [];
+      for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) P.push(xs0 + (i + 0.5) * S, (j + 0.5) * S, hash(i, j));
+      // the rings start from the name's first letter
+      var hn = hero.querySelector('.me-hn'), hr = hn ? hn.getBoundingClientRect() : null;
+      ox = hr ? hr.left - r.left + 10 : w * 0.3; oyc = hr ? hr.top - r.top + hr.height * 0.4 : h * 0.75;
+    };
+    var draw = function (t) {
+      raf = 0; if (!vis || !w) return;
+      var L = LV() || { b: 0, m: 0, h: 0, on: 0 }, on = L.on || 0;
+      hist[hi = (hi + 1) % hist.length] = L.b || 0;
+      mk += ((mx > -1e3 ? 1 : 0) - mk) * 0.08;
+      x.clearRect(0, 0, w, h);
+      var spec = L.spec, hz = L.hz || 43, tt = t / 1000, maxd = Math.hypot(Math.max(ox, w - ox), Math.max(oyc, h - oyc)), ring = 9;   // ring speed: px per frame of history
+      for (var k = 0; k < P.length; k += 3) {
+        var px = P[k], py = P[k + 1], rn = P[k + 2];
+        var breathe = 0.5 + 0.5 * Math.sin(tt * 0.6 + px * 0.004 + py * 0.006 + rn * 2);   // asleep
+        var s = 1.2 + 0.5 * breathe, a = 0.1 + 0.06 * breathe;
+        if (on > 0.01) {
+          var d = Math.hypot(px - ox, py - oyc), lag = Math.min(hist.length - 1, Math.floor(d / ring)), b = hist[(hi - lag + hist.length) % hist.length] * (1 - d / maxd * 0.55);
+          var m = 0;
+          if (spec) {   // a spectrum read left to right on a log scale, lifting dots up from the bottom of the field
+            var f = 40 * Math.pow(400, px / w), bi = Math.min(spec.length - 1, Math.round(f / hz)), lvl = spec[bi] / 255;
+            m = cl((lvl * 1.15 - (1 - py / h)) * 2.2) * (L.m || 0.5);
+          }
+          s += on * (b * b * 6.5 + m * 3.4);
+          a += on * (b * b * 0.55 + m * 0.42);
+        }
+        if (mk > 0.01) {
+          var dx = px - mx, dy = py - my, dd = Math.hypot(dx, dy), q = cl(1 - dd / 170) * mk;
+          if (q > 0) { s += q * q * 5; a += q * 0.5; px += dx / (dd || 1) * q * 7; py += dy / (dd || 1) * q * 7; }
+        }
+        var foot = cl((py - h * 0.62) / (h * 0.3)); a *= 1 - foot * 0.78; s *= 1 - foot * 0.45;   // the name sits on a calmer floor
+        s = Math.min(S - 2, s);
+        x.fillStyle = 'rgba(244,243,239,' + Math.min(0.95, a).toFixed(3) + ')';
+        x.fillRect(px - s / 2, py - s / 2, s, s);
+      }
+      // highs strike single dots in lavender; each fades over half a second
+      if (on > 0.05 && (L.h || 0) > 0.55 && Math.random() < (L.h - 0.45) * 1.6) spark[Math.floor(Math.random() * P.length / 3)] = t;
+      x.fillStyle = '#7a82ff';
+      for (var id in spark) {
+        var age = (t - spark[id]) / 520; if (age > 1) { delete spark[id]; continue; }
+        var sz = (S - 4) * (1 - age) * on, i3 = id * 3;
+        if (sz > 0.5) { x.globalAlpha = 1 - age; x.fillRect(P[i3] - sz / 2, P[i3 + 1] - sz / 2, sz, sz); }
+      }
+      x.globalAlpha = 1;
+      if (!RM) raf = requestAnimationFrame(draw);
+    };
+    var kick = function () { if (!raf && vis) raf = requestAnimationFrame(draw); };
+    measure();
+    if (RM) { draw(0); W.addEventListener('resize', function () { measure(); draw(0); }); return; }
+    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; kick(); }).observe(hero);
+    D.addEventListener('visibilitychange', function () { vis = !D.hidden; kick(); });
+    hero.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; });
+    hero.addEventListener('pointerleave', function () { mx = my = -1e4; });
+    W.addEventListener('resize', function () { measure(); kick(); });
+    if (D.fonts && D.fonts.ready) D.fonts.ready.then(function () { measure(); });
+    setTimeout(measure, 1200);
+    kick();
+  }
+
   function railDot() {
     var mk = D.querySelector('[data-inkroot] .vmark'), cards = D.getElementById('work'); if (!mk || !cards || !LIVE || RM) return;
     var o = D.createElement('div'); o.className = 'me-dot'; o.setAttribute('aria-hidden', 'true'); D.body.appendChild(o);
@@ -1313,50 +1401,96 @@
 
   /* Home: once the statement has assembled, the circuit line carries on under the sentence, line by line, and stops at
      the full stop at its end (which then opens into the blue square). Tied to the scroll, reversible. */
+  /* the statement's line (Nov 24, after the reference): once the sentence has assembled, one pen line runs below it and
+     draws a small object for each keyword — a chair for design, a head for psychology, a speech bubble for research,
+     a phone for intuitive — each captioned on the grid. The keyword it is drawing lights in the sentence; the phone's
+     screen fills with the full stop's lavender at the end. Scroll-tied, so it undraws on the way back. */
+  var SKETCH = [
+    { k: 'Design', t: 'how things are made', p: [[[0, 100], [20, 100], [20, 12], [31, 12], [31, 54], [80, 54], [80, 100], [100, 100]], [[31, 70], [80, 70]]] },
+    { k: 'Psychology', t: 'why people use them', p: [[[0, 100], [30, 100], [30, 82], [23, 68], [20, 48], [25, 29], [37, 16], [53, 11], [67, 16], [77, 29], [79, 41], [87, 54], [79, 57], [81, 64], [76, 70], [65, 72], [62, 82], [62, 100], [100, 100]],
+      [[50, 42], [53, 40], [55, 44], [51, 48], [45, 45], [45, 38], [52, 33], [60, 37], [61, 46], [55, 53]]] },
+    { k: 'Research', t: 'where I start', p: [[[0, 100], [24, 100], [24, 88], [31, 76], [12, 76], [12, 22], [88, 22], [88, 76], [44, 76], [24, 88], [24, 100], [100, 100]],
+      [[40, 41], [43, 34], [51, 31], [59, 35], [59, 43], [51, 48], [50, 56]], [[50, 63], [50, 66]]] },
+    { k: 'Intuitive', t: 'until it feels intuitive', p: [[[0, 100], [32, 100], [32, 9], [36, 3], [64, 3], [68, 9], [68, 100], [100, 100]], [[45, 93], [55, 93]]], screen: [37, 12, 26, 72] }
+  ];
+  function hand(pts, seed) {   // a steady but human hand: points every 3 units, a slow wobble across the stroke
+    var out = [], acc = 0;
+    for (var i = 0; i < pts.length - 1; i++) {
+      var a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), n = Math.max(1, Math.round(L / 3)), nx = -dy / (L || 1), ny = dx / (L || 1);
+      for (var k = 0; k < n; k++) {
+        var t = k / n, wob = (k === 0 ? 0 : 1) * (0.9 * Math.sin((acc + t * L) * 0.21 + seed) + 0.5 * Math.sin((acc + t * L) * 0.53 + seed * 2.3));
+        out.push([a[0] + dx * t + nx * wob, a[1] + dy * t + ny * wob]);
+      }
+      acc += L;
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
+  }
   function underline() {
     var w = D.querySelector('[data-inkroot] .stw'), st = w && w.querySelector('.sts'), p = st && st.querySelector('.stmt'); if (!p || !LIVE || RM) return;
-    var NS = 'http://www.w3.org/2000/svg', svg = D.createElementNS(NS, 'svg'), path = D.createElementNS(NS, 'path'), tip = D.createElementNS(NS, 'rect');
+    var NS = 'http://www.w3.org/2000/svg', svg = D.createElementNS(NS, 'svg'), tip = D.createElementNS(NS, 'rect'), scr = D.createElementNS(NS, 'rect'), g = D.createElementNS(NS, 'g');
     svg.setAttribute('class', 'me-ul'); svg.setAttribute('aria-hidden', 'true');
-    path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'rgba(244,243,239,.5)'); path.setAttribute('stroke-width', '1'); path.setAttribute('stroke-linecap', 'square');
+    g.setAttribute('fill', 'none'); g.setAttribute('stroke', 'rgba(244,243,239,.62)'); g.setAttribute('stroke-width', '1.25'); g.setAttribute('stroke-linecap', 'round'); g.setAttribute('stroke-linejoin', 'round');
     tip.setAttribute('width', '5'); tip.setAttribute('height', '5'); tip.setAttribute('fill', '#7a82ff');
-    svg.appendChild(path); svg.appendChild(tip); st.appendChild(svg);
-    var len = 0, geo = '';
+    scr.setAttribute('fill', '#7a82ff'); scr.setAttribute('opacity', '0');
+    svg.appendChild(scr); svg.appendChild(g); svg.appendChild(tip); st.appendChild(svg);
+    var kws = [].slice.call(p.querySelectorAll('.kw')), caps = SKETCH.map(function (o, i) {
+      var c = D.createElement('div'); c.className = 'me-kc'; c.setAttribute('aria-hidden', 'true');
+      c.innerHTML = '<b>0' + (i + 1) + '&nbsp;&nbsp;' + o.k + '</b><span>' + o.t + '</span>'; st.appendChild(c); return c;
+    });
+    // the drawing is a run of strokes (dashes restart on every lifted pen, so each stroke is its own path), drawn in order
+    var segs = [], total = 0, geo = '', marks = [], scrAt = 1;
     var build = function () {
-      var sr = st.getBoundingClientRect(), rg = D.createRange(); rg.selectNodeContents(p);
-      var rects = Array.prototype.filter.call(rg.getClientRects(), function (r) { return r.width > 1 && r.height > 4; });
-      var lines = [];
-      rects.forEach(function (r) {
-        var L = lines.filter(function (l) { return Math.abs(l.mid - (r.top + r.height / 2)) < r.height * 0.5; })[0];
-        if (!L) { L = { mid: r.top + r.height / 2, l: r.left, r: r.right, b: r.bottom }; lines.push(L); }
-        else { L.l = Math.min(L.l, r.left); L.r = Math.max(L.r, r.right); L.b = Math.max(L.b, r.bottom); }
+      var sr = st.getBoundingClientRect(), pr = p.getBoundingClientRect(); if (!sr.width) return;
+      var vl = D.querySelector('[data-inkroot] .vl'), x0 = (vl ? vl.getBoundingClientRect().left : sr.left) - sr.left, R = sr.width;
+      var below = sr.height - (pr.bottom - sr.top), slot = (R - x0) / 4, small = W.innerWidth < 640;
+      var s = Math.max(40, Math.min(small ? 64 : 132, slot * 0.62, below - (small ? 70 : 96)));
+      var top = (pr.bottom - sr.top) + Math.max(20, (below - s - (small ? 46 : 60)) / 2), yb = top + s;
+      var key = [x0, R, s, yb].map(Math.round).join(',');
+      if (key === geo) return; geo = key;
+      while (g.firstChild) g.removeChild(g.firstChild); segs = []; total = 0; marks = [];
+      var add = function (pts) {
+        var d = 'M' + pts.map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('L');
+        var el = D.createElementNS(NS, 'path'); el.setAttribute('d', d); g.appendChild(el);
+        var L = el.getTotalLength(); el.style.strokeDasharray = L + ' ' + (L + 1); el.style.strokeDashoffset = L;
+        segs.push({ el: el, a: total, L: L }); total += L;
+      };
+      var main = [[x0, yb]];
+      SKETCH.forEach(function (o, i) {
+        var cx = x0 + slot * (i + 0.5), L0 = cx - s / 2;
+        var P = function (q) { return [L0 + q[0] * s / 100, yb - s + q[1] * s / 100]; };
+        var a0 = total + (function () { var l = 0; for (var k = 1; k < main.length; k++) l += Math.hypot(main[k][0] - main[k - 1][0], main[k][1] - main[k - 1][1]); return l + Math.hypot(L0 - main[main.length - 1][0], 0); })();
+        main.push([L0, yb]);
+        hand(o.p[0], i * 3.1).forEach(function (q) { main.push(P(q)); });
+        // the outline is part of the one line; lifted-pen details follow it
+        var ex = main[main.length - 1];
+        add(main); main = [ex];
+        o.p.slice(1).forEach(function (pl, j) { add(hand(pl, i * 3.1 + j + 1).map(P)); });
+        marks.push([a0, total]);
+        caps[i].style.left = L0.toFixed(1) + 'px'; caps[i].style.top = (yb + 12).toFixed(1) + 'px'; caps[i].style.width = Math.max(40, slot - 8).toFixed(0) + 'px';
+        if (o.screen) { var q0 = P([o.screen[0], o.screen[1]]); scr.setAttribute('x', q0[0].toFixed(1)); scr.setAttribute('y', q0[1].toFixed(1)); scr.setAttribute('width', (o.screen[2] * s / 100).toFixed(1)); scr.setAttribute('height', (o.screen[3] * s / 100).toFixed(1)); }
       });
-      lines.sort(function (a, b) { return a.mid - b.mid; });
-      if (!lines.length) return;
-      var vl = D.querySelector('[data-inkroot] .vl'), x0 = vl ? vl.getBoundingClientRect().left : lines[0].l - 24;
-      var scs = p.querySelectorAll('.sc'), fs = scs[scs.length - 1], fr = fs ? fs.getBoundingClientRect() : null;
-      var gap = Math.max(4, parseFloat(getComputedStyle(p).fontSize) * 0.14);
-      // a snake in the gaps between the lines: it turns on the vertical rule at the left and on the longest line's end at
-      // the right, and the last stretch ends under the full stop
-      var n = lines.length, d = '', R = Math.max.apply(null, lines.map(function (L) { return L.r; })) + gap;
-      var lh = n > 1 ? (lines[n - 1].mid - lines[0].mid) / (n - 1) : parseFloat(getComputedStyle(p).fontSize) * 1.18;
-      lines.forEach(function (L, i) {
-        var ltr = (n - 1 - i) % 2 === 0, y = (L.mid + lh * 0.5 - sr.top).toFixed(1);
-        var a = ltr ? x0 : R, b = ltr ? R : x0;
-        if (i === n - 1 && fr) b = fr.left + fr.width / 2;
-        d += (i === 0 ? 'M' + (a - sr.left).toFixed(1) + ' ' + y : 'V' + y) + 'H' + (b - sr.left).toFixed(1);
-      });
-      if (d === geo) return; geo = d;
-      path.setAttribute('d', d); len = path.getTotalLength();
-      path.style.strokeDasharray = len; 
+      marks = marks.map(function (m) { return [m[0] / total, m[1] / total]; }); scrAt = marks.length ? marks[marks.length - 1][1] : 1;
     };
     var run = function () {
-      build(); if (!len) return;
+      build(); if (!total) return;
       var r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;
-      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.64) / 0.3), e = u * u * (3 - 2 * u);
-      path.style.strokeDashoffset = (len * (1 - e)).toFixed(1);
-      var pt = path.getPointAtLength(len * e); tip.setAttribute('x', (pt.x - 2.5).toFixed(1)); tip.setAttribute('y', (pt.y - 2.5).toFixed(1));
+      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.52) / 0.3), at = u * total, pt = null;
+      segs.forEach(function (sg) {
+        var k = cl((at - sg.a) / sg.L); sg.el.style.strokeDashoffset = (sg.L * (1 - k)).toFixed(1);
+        if (k > 0 && k < 1) pt = sg.el.getPointAtLength(sg.L * k);
+      });
+      if (pt) { tip.setAttribute('x', (pt.x - 2.5).toFixed(1)); tip.setAttribute('y', (pt.y - 2.5).toFixed(1)); }
+      tip.style.opacity = pt ? '1' : '0';
       svg.style.opacity = u > 0 ? '1' : '0';
+      marks.forEach(function (m, i) {
+        if (kws[i]) kws[i].classList.toggle('me-on', u >= m[0] && u < m[1] + 0.04);
+        caps[i].classList.toggle('on', u >= m[1] - 0.02);
+      });
+      scr.setAttribute('opacity', cl((u - scrAt + 0.01) / 0.04).toFixed(3));
     };
-    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', function () { geo = ''; run(); }); run();
+    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', function () { geo = ''; run(); });
+    if (D.fonts && D.fonts.ready) D.fonts.ready.then(function () { geo = ''; run(); });
+    run();
   }
 })();
