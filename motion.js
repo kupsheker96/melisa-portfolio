@@ -938,12 +938,16 @@
     // the card then rises into the blue, so the switch to the section is one colour field
     var blue = getComputedStyle(D.querySelector('#c-uiux .cc-in') || D.body).backgroundColor || 'rgb(43,53,255)';
     var A = [122, 130, 255], B = (/(\d+),\s*(\d+),\s*(\d+)/.exec(blue) || [0, 43, 53, 255]).slice(1, 4).map(Number), last = '';
+    var dot = null;
     var run = function () {
-      var r = mk.getBoundingClientRect(), vh = W.innerHeight, vw = W.innerWidth;
-      var cx = Math.max(0, Math.min(vw, r.left + r.width / 2)), cy = Math.max(0, Math.min(vh, r.top + r.height / 2));
+      // the square opens from the full stop at the end of the statement (the rule's dot if there is none)
+      if (!dot) { var scs = D.querySelectorAll('[data-inkroot] .stmt .sc'); dot = scs.length && /\.\s*$/.test(scs[scs.length - 1].textContent) ? scs[scs.length - 1] : mk; }
+      var r = dot.getBoundingClientRect(), vh = W.innerHeight, vw = W.innerWidth;
+      var cx = Math.max(0, Math.min(vw, r.left + r.width / 2)), cy = Math.max(0, Math.min(vh, dot === mk ? r.top + r.height / 2 : r.top + r.height * 0.74));
       var ct = cards.getBoundingClientRect().top;
       var q = cl((1.9 * vh - ct) / (0.9 * vh)), e = q * q * (3 - 2 * q);            // full exactly when the card reaches the screen
-      var far = Math.max(cx, vw - cx, cy, vh - cy) + 2, R = 3.5 + (far - 3.5) * Math.pow(e, 1.5);
+      var r0 = dot === mk ? 3.5 : Math.max(3, r.width * 0.32), far = Math.max(cx, vw - cx, cy, vh - cy) + 2, R = r0 + (far - r0) * Math.pow(e, 1.5);
+      if (dot !== mk) dot.style.opacity = q > 0 ? '0' : '';
       var t = cl(q / 0.18), c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * t); });
       var top = Math.max(0, cy - R), left = Math.max(0, cx - R), right = Math.max(0, vw - (cx + R)), bot = Math.max(0, vh - (cy + R));
       if (ct < vh) bot = Math.max(bot, vh - ct);                                         // above the rising card only
