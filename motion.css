@@ -134,12 +134,6 @@ html.hl-on .hw.lit{opacity:1}
 [data-inkroot] .vmark::after{content:none !important}
 html.dot-on [data-inkroot] .vmark{opacity:0}
 .me-dot{position:fixed;inset:0;z-index:7;pointer-events:none;clip-path:inset(50%);visibility:hidden}
-/* room between the statement and the cards for the box and the zoom */
-html.dot-on .cc{margin-top:170vh}
-.me-box{position:fixed;z-index:8;pointer-events:none;visibility:hidden;background:#d9f24a;color:#121316;will-change:transform,clip-path;overflow:hidden}
-.mb-in{position:absolute;inset:0;padding:calc(var(--gut,20px) * 1.2) var(--gut,20px);display:flex;justify-content:space-between;align-items:flex-end;gap:var(--gut,20px)}
-.mb-t{position:absolute;left:var(--gut,20px);top:calc(var(--gut,20px) * 1.2);margin:0;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:clamp(48px,8.6vw,168px);line-height:.86;letter-spacing:-.02em;text-transform:uppercase}
-.mb-ar{position:absolute;right:var(--gut,20px);bottom:calc(var(--gut,20px) * 1.2);height:56%;width:auto;aspect-ratio:100 / 150;overflow:visible}
 
 /* ---------- Home: the pixel band and its index ---------- */
 .pf{position:relative;z-index:1;margin-top:-48vh;padding:clamp(24px,3vw,48px) clamp(16px,4vw,56px) 0;color:#f4f3ef}

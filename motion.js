@@ -806,6 +806,17 @@
     if (sec) {
       var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
       var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
+      // the first time the band opens, the pixels say what the index is; then they fall back into the grid
+      var said = false, narrow = W.innerWidth < 760;
+      var line = narrow ? { lines: ['WHAT I\u2019VE BEEN', 'DOING SINCE', '2021'], arrow: 'down', x0: 0, c: FG } : { lines: ['WHAT I\u2019VE BEEN DOING', 'SINCE 2021'], arrow: 'down', x0: 0.16, c: FG };
+      if (api) new IntersectionObserver(function (es, ob) {
+        if (said || !es[0].isIntersecting) return; said = true; ob.disconnect();
+        api.setIdle(line);
+        var t0 = now(), gone = false;
+        var back = function () { if (gone) return; gone = true; api.setIdle(null); bd.removeEventListener('pointermove', moved); };
+        var moved = function () { if (now() - t0 > 2600) back(); };   // once it has been read, a move through the band clears it
+        bd.addEventListener('pointermove', moved, { passive: true }); setTimeout(back, 6500);
+      }, { threshold: 0.6 }).observe(bd);
       // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
       if (LIVE && !RM) {
         var zl = '';
@@ -918,64 +929,31 @@
     }, { passive: true });
   }
 
-  /* Home, between the statement and the cards. The dot on the vertical rule opens into a lime box on the grid that says
-     WHAT I'VE BEEN DOING / SINCE 2021, with a blue arrow. Scrolling on zooms into the arrow until its blue fills the
-     screen: that blue is the UI/UX card, which then rises into it. Every step is tied to the scroll and reverses. */
+  /* Home: the dot on the vertical rule grows as you scroll and becomes the UI/UX blue, opening onto the first card */
   function railDot() {
     var mk = D.querySelector('[data-inkroot] .vmark'), cards = D.getElementById('work'); if (!mk || !cards || !LIVE || RM) return;
+    var o = D.createElement('div'); o.className = 'me-dot'; o.setAttribute('aria-hidden', 'true'); D.body.appendChild(o);
     H.classList.add('dot-on');
-    var blueC = getComputedStyle(D.querySelector('#c-uiux .cc-in') || D.body).backgroundColor || 'rgb(43,53,255)';
-    var o = D.createElement('div'); o.className = 'me-dot'; o.setAttribute('aria-hidden', 'true'); o.style.background = blueC; D.body.appendChild(o);
-    var bx = D.createElement('div'); bx.className = 'me-box'; bx.setAttribute('aria-hidden', 'true');
-    bx.innerHTML = '<div class="mb-in"><p class="mb-t">WHAT I’VE BEEN DOING<br>SINCE 2021</p>'
-      + '<svg class="mb-ar" viewBox="0 0 100 150" preserveAspectRatio="xMidYMax meet"><path d="M50 0V138M8 96L50 138L92 96" fill="none" stroke="' + blueC + '" stroke-width="16" stroke-linecap="square"/></svg></div>';
-    D.body.appendChild(bx);
-    var tx = bx.querySelector('.mb-t'), ar = bx.querySelector('.mb-ar'), last = '', stw = D.querySelector('[data-inkroot] .stw');
-    var ease = function (t) { return t * t * (3 - 2 * t); };
+    // the dot turns into a square of the UI/UX blue (the card's own colour) that fills the screen before the card arrives;
+    // the card then rises into the blue, so the switch to the section is one colour field
+    var blue = getComputedStyle(D.querySelector('#c-uiux .cc-in') || D.body).backgroundColor || 'rgb(43,53,255)';
+    var A = [122, 130, 255], B = (/(\d+),\s*(\d+),\s*(\d+)/.exec(blue) || [0, 43, 53, 255]).slice(1, 4).map(Number), last = '';
     var run = function () {
-      var vh = W.innerHeight, vw = W.innerWidth, g = strips(), gut = Math.max(14, Math.min(24, vw * 0.016));
-      var ct = cards.getBoundingClientRect().top, u = ct / vh;
-      var r = mk.getBoundingClientRect(), cx = Math.max(0, Math.min(vw, r.left + r.width / 2)), cy = Math.max(0, Math.min(vh, r.top + r.height / 2));
-      // the box sits on the grid: from the margin line to the right frame, a band of the screen's height
-      var L = g.rule, R = vw - g.pad, T = Math.round(vh * 0.14), B = Math.round(vh * 0.86);
-      // the box opens once the statement has been read and has moved on; the zoom runs into the cards
-      var sb = stw ? stw.getBoundingClientRect().bottom : ct - 2 * vh;
-      var a = ease(cl((vh * 0.35 - sb) / (vh * 0.55))), c = cl((1.7 - u) / 0.7), z = ease(c);
-      var key = [Math.round(ct), vw, vh].join('|'); if (key === last) return; last = key;
-      if (a <= 0 || ct <= 0.5) { bx.style.visibility = 'hidden'; o.style.visibility = ct <= 0.5 || a <= 0 ? 'hidden' : 'visible'; if (a <= 0 || ct <= 0.5) return; }
-      bx.style.visibility = 'visible';
-      bx.style.left = L + 'px'; bx.style.top = T + 'px'; bx.style.width = (R - L) + 'px'; bx.style.height = (B - T) + 'px';
-      bx.style.setProperty('--gut', gut + 'px');
-      // grow: the box opens out of the dot
-      var il = (cx - L) * (1 - a), ir = (R - cx) * (1 - a), it = (cy - T) * (1 - a), ib = (B - cy) * (1 - a);
-      if (a < 1) { bx.style.clipPath = 'inset(' + Math.max(0, it).toFixed(1) + 'px ' + Math.max(0, ir).toFixed(1) + 'px ' + Math.max(0, ib).toFixed(1) + 'px ' + Math.max(0, il).toFixed(1) + 'px)'; }
-      else bx.style.clipPath = 'none';
-      var read = cl((a - 0.75) / 0.25);
-      tx.style.opacity = read.toFixed(3); tx.style.filter = 'blur(' + ((1 - read) * 10).toFixed(1) + 'px)';
-      ar.style.opacity = read.toFixed(3);
-      // zoom: scale the box around the arrow's stem; the blue of the stem then carries on to fill the screen
-      var ab = ar.getBoundingClientRect(), bb = bx.getBoundingClientRect();
-      var cur = bx.style.transform; bx.style.transform = 'none'; ab = ar.getBoundingClientRect(); bb = bx.getBoundingClientRect(); bx.style.transform = cur;
-      var sw = ab.width * 0.16, ox = ab.left + ab.width / 2, oy = ab.top + ab.height * 0.5, stTop = ab.top, stBot = ab.top + ab.height * 0.92;
-      var Zmax = Math.max(2 * Math.max(ox, vw - ox) / sw, 2 * Math.max(oy - 0, vh - oy) / Math.max(1, Math.min(oy - stTop, stBot - oy))) * 1.1;
-      var Z = Math.exp(Math.log(Zmax) * Math.pow(z, 1.6));
-      var s = Math.min(Z, 6);
-      bx.style.transformOrigin = (ox - bb.left) + 'px ' + (oy - bb.top) + 'px';
-      bx.style.transform = z > 0 ? 'scale(' + s.toFixed(4) + ')' : 'none';
-      bx.style.opacity = '1';
-      // the blue field: the stem scaled by Z, then (once the card is on screen) everything above the card
-      var bot = 0;
-      if (z > 0) {
-        var x0 = ox - sw * Z / 2, x1 = ox + sw * Z / 2, y0 = oy - (oy - stTop) * Z, y1 = oy + (stBot - oy) * Z;
-        if (ct < vh) bot = vh - ct;
-        o.style.visibility = 'visible';
-        o.style.clipPath = 'inset(' + Math.max(0, y0).toFixed(1) + 'px ' + Math.max(0, vw - x1).toFixed(1) + 'px ' + Math.max(bot, vh - y1).toFixed(1) + 'px ' + Math.max(0, x0).toFixed(1) + 'px)';
-        if (Z >= Zmax * 0.98) bx.style.visibility = 'hidden';
-      } else o.style.visibility = 'hidden';
-      if (ct < vh && z >= 1) { bx.style.visibility = 'hidden'; o.style.visibility = 'visible'; o.style.clipPath = 'inset(0px 0px ' + (vh - ct).toFixed(1) + 'px 0px)'; }
+      var r = mk.getBoundingClientRect(), vh = W.innerHeight, vw = W.innerWidth;
+      var cx = Math.max(0, Math.min(vw, r.left + r.width / 2)), cy = Math.max(0, Math.min(vh, r.top + r.height / 2));
+      var ct = cards.getBoundingClientRect().top;
+      var q = cl((1.9 * vh - ct) / (0.9 * vh)), e = q * q * (3 - 2 * q);            // full exactly when the card reaches the screen
+      var far = Math.max(cx, vw - cx, cy, vh - cy) + 2, R = 3.5 + (far - 3.5) * Math.pow(e, 1.5);
+      var t = cl(q / 0.18), c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * t); });
+      var top = Math.max(0, cy - R), left = Math.max(0, cx - R), right = Math.max(0, vw - (cx + R)), bot = Math.max(0, vh - (cy + R));
+      if (ct < vh) bot = Math.max(bot, vh - ct);                                         // above the rising card only
+      var hide = ct <= 0.5 || r.top > vh + 40 || (q <= 0 && (r.bottom < -40));
+      var key = [top, right, bot, left, c.join(), hide].map(function (x) { return typeof x === 'number' ? x.toFixed(1) : x; }).join('|'); if (key === last) return; last = key;
+      o.style.visibility = hide ? 'hidden' : 'visible';
+      o.style.background = 'rgb(' + c.join(',') + ')';
+      o.style.clipPath = 'inset(' + top.toFixed(1) + 'px ' + right.toFixed(1) + 'px ' + bot.toFixed(1) + 'px ' + left.toFixed(1) + 'px)';
     };
-    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', function () { last = ''; run(); }); run();
-    var t0 = now(); (function warm() { last = ''; run(); if (now() - t0 < 2500) requestAnimationFrame(warm); })();
+    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
+    var t0 = now(); (function warm() { run(); if (now() - t0 < 3000) requestAnimationFrame(warm); })();
   }
-
 })();
