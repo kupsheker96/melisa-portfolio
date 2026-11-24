@@ -188,107 +188,56 @@
     rendered(function () { fontsReady(function () { setTimeout(function () { ptReveal(el); }, 40); }, 700); });
   });
 
-  /* ---------- intro (every time Home is opened). Everything sits on the page grid: the column lines draw down, a
-     horizontal line runs across as the page loads, and a square pixel is stamped on each column line it passes, in
-     the four category colours. At 100 the pixels slide along the line into the square of "ME.", the letters ink in,
-     and the visitor chooses to enter with or without sound. Then the logo inks away and the columns lift. ---------- */
+  /* ---------- intro (Nov 24, redesigned to match the landing). The page waits behind the landing's own line screen:
+     the name, bigger, builds up out of the lines as the page loads, glimmering through the site's colours, with the
+     count in the bottom-left corner. At 100 the site opens with the music (or on the first scroll / click / key where
+     the browser wants a gesture first): the glimmer settles into the lavender, the big name sinks back into the lines
+     and the landing's name surfaces in its place. lineHero() draws all of it (see W.__meIntro). ---------- */
+  if (doIntro) {
+    H.classList.add('intro2'); H.classList.remove('intro');
+    W.__meIntro = { p: 0, phase: 'load', t0: 0, ready: false };
+  }
   if (doIntro) onBody(function () {
-    var g = strips(), vw = g.vw, vh = W.innerHeight, CS = ['#5d66ff', '#d9f24a', '#ff4fb0', '#f4f3ef'];
-    var gut = Math.round(Math.max(14, Math.min(24, vw * 0.016))), n = g.xs.length - 2, cw = n > 1 ? g.xs[2] - g.xs[1] : vw * 0.2;
-    var yL = Math.round(vh * 0.56);
-    // pixel columns: the last four column lines on wide screens, half columns on phones
-    var X = n >= 6 ? [g.xs[3], g.xs[4], g.xs[5], g.xs[6]] : n >= 4 ? [g.xs[1], g.xs[2], g.xs[3], g.xs[4]] : [g.xs[1], (g.xs[1] + g.xs[2]) / 2, g.xs[2], (g.xs[2] + vw - g.pad) / 2];
-    // logo size: "ME." spans two columns from the margin line
-    var mc = D.createElement('canvas').getContext('2d'); mc.font = '800 100px Archivo, sans-serif'; try { mc.fontStretch = 'condensed'; } catch (e) { }
-    var m100 = mc.measureText('ME'), wme = m100.width / 100;
-    var fs = Math.round(Math.min((2 * cw - gut) / (wme + 0.25), vh * 0.3, (vw - g.rule - gut - g.pad) / (wme + 0.25)));
-    var P = Math.round(fs * 0.2), lx = Math.round(g.rule + gut);
-    var sw = wipe(BG, FG, '', '', 'block');
-    var lns = sw.querySelectorAll('.me-ln');
-    for (var i = 0; i < lns.length; i++) { lns[i].style.transform = 'scaleY(0)'; anim(lns[i], [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 1000, delay: 80 + i * 60, easing: 'cubic-bezier(.65,0,.2,1)', fill: 'forwards' }); }
-    var el = D.createElement('div'); el.className = 'mi'; el.setAttribute('aria-hidden', 'true');
-    var px = X.map(function (x, k) { return '<i class="mi-d" style="--c:' + CS[k] + ';left:' + Math.round(x - P / 2) + 'px;top:' + (yL - P) + 'px;width:' + P + 'px;height:' + P + 'px"></i>'; }).join('');
-    el.innerHTML = '<svg class="mi-svg" width="0" height="0" aria-hidden="true"><filter id="mi-ink" x="-20%" y="-60%" width="140%" height="220%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="0" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation="0"/></filter>'
-      + '<filter id="mi-rough" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="2" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="1.6" xChannelSelector="R" yChannelSelector="G"/></filter></svg>'
-      + '<span class="mi-grain"></span>'
-      + '<span class="mi-h" style="left:' + g.pad + 'px;right:' + g.pad + 'px;top:' + yL + 'px"></span>'
-      + px
-      + '<span class="mi-me" style="left:' + lx + 'px;font-size:' + fs + 'px">ME</span>'
-      + '<span class="mi-tl" style="left:' + g.pad + 'px">[ Portfolio //2026 ]</span><span class="mi-tr" style="right:' + g.pad + 'px">Ankara</span>'
-      + '<span class="mi-bl" style="left:' + g.pad + 'px">Melisa Ergani<br><span>UI/UX &amp; Visual Designer</span></span>'
-      + '<span class="mi-n" style="right:' + g.pad + 'px">000</span>'
-      + '<div class="mi-ch" style="top:' + (yL + 22) + 'px;left:' + lx + 'px"><button type="button" class="mi-b mi-on">Scroll to enter <span aria-hidden="true">↓</span></button></div>';
+    var IN = W.__meIntro, t0 = now(), MIN = 2400, MAX = 7000, ready = false, chosen = false;
+    var el = D.createElement('div'); el.className = 'mi2'; el.setAttribute('role', 'status'); el.setAttribute('aria-label', 'Loading');
+    el.innerHTML = '<span class="mi2-n" aria-hidden="true">000</span><button type="button" class="mi2-go">Scroll to enter <span aria-hidden="true">↓</span></button>';
     D.body.appendChild(el);
-    // grain: a small noise tile, stepped like the site's own
-    try {
-      var nc = D.createElement('canvas'); nc.width = nc.height = 128; var nx = nc.getContext('2d'), id = nx.createImageData(128, 128);
-      for (var q = 0; q < id.data.length; q += 4) { var v = Math.random() * 255 | 0; id.data[q] = id.data[q + 1] = id.data[q + 2] = v; id.data[q + 3] = 255; }
-      nx.putImageData(id, 0, 0); el.querySelector('.mi-grain').style.backgroundImage = 'url(' + nc.toDataURL() + ')';
-    } catch (e) { }
-    // "ME" sits on the line: baseline = the horizontal rule
-    var me = el.querySelector('.mi-me');
-    var fa = m100.fontBoundingBoxAscent ? m100.fontBoundingBoxAscent / 100 * fs : fs * 0.9, fd = m100.fontBoundingBoxDescent ? m100.fontBoundingBoxDescent / 100 * fs : fs * 0.22;
-    me.style.top = Math.round(yL - ((fs - (fa + fd)) / 2 + fa)) + 'px';
-    var dotX = function () { return lx + me.getBoundingClientRect().width + Math.round(fs * 0.03); };
-    var ds = el.querySelectorAll('.mi-d'), hl = el.querySelector('.mi-h'), nEl = el.querySelector('.mi-n'), t0 = now(), ready = false, lit = 0;
+    var nEl = el.querySelector('.mi2-n'), go = el.querySelector('.mi2-go');
     rendered(function () { fontsReady(function () { ready = true; }, 2500); });
-    // the ink: displacement + blur run down to crisp (in) or up from crisp (out)
-    var fd2 = el.querySelector('#mi-ink feDisplacementMap'), fb = el.querySelector('#mi-ink feGaussianBlur');
-    var ink = function (from, to, ms, done) {
-      var s0 = now();
-      (function f() { var t = cl((now() - s0) / ms), e = from + (to - from) * (1 - Math.pow(1 - t, 3)); fd2.setAttribute('scale', (e * fs * 0.35).toFixed(2)); fb.setAttribute('stdDeviation', (e * fs * 0.05).toFixed(2)); if (t < 1) requestAnimationFrame(f); else if (done) done(); })();
-    };
-    var MIN = 1900, MAX = 6000, chosen = false;
     var leave = function (sound) {
       if (chosen) return; chosen = true;
       if (sound) { W.__meWantSound = true; if (W.__meMusicStart) W.__meMusicStart(); }
-      else if (W.__meMusicQuiet) W.__meMusicQuiet(); else W.__meWantQuiet = true;
-      el.classList.add('out'); me.style.filter = 'url(#mi-ink)'; ink(0, 1, 520);
-      H.classList.remove('intro');
-      var ws = waiters; waiters = []; doIntro = false; ws.forEach(function (f) { f(); });
-      setTimeout(function () { sw.classList.remove('block'); lift(sw); }, 260);
-      setTimeout(function () { el.remove(); }, 900);
+      else if (W.__meMusicQuiet) W.__meMusicQuiet();
+      IN.phase = 'leave'; IN.t0 = now();
+      el.classList.add('out');
+      ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.removeEventListener(ev, scrollIn, { passive: false }); });
+      setTimeout(function () { H.classList.remove('intro2'); var ws = waiters; waiters = []; doIntro = false; ws.forEach(function (f) { f(); }); }, 650);
+      setTimeout(function () { el.remove(); }, 1200);
     };
-    // the click that enters is the one the browser needs before it allows sound
-    el.addEventListener('click', function () { if (el.classList.contains('ask')) leave(true); });
-    el.addEventListener('keydown', function (e) { if (el.classList.contains('ask') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); leave(true); } });
-    // Nov 24: scrolling enters (no click needed). A scroll can't unlock sound in browsers, so the music then starts on the
-    // visitor's first click, tap or key; the dot field sleeps until it does.
     var scrollIn = function (e) {
-      if (!el.classList.contains('ask') && !el.classList.contains('me-in')) return;
+      if (!el.classList.contains('ask')) { if (e.cancelable) e.preventDefault(); return; }   // the page stays put while it loads
       if (e.type === 'keydown' && ['ArrowDown', 'PageDown', ' ', 'Spacebar', 'Enter', 'End'].indexOf(e.key) < 0) return;
       if (e.type === 'wheel' && e.deltaY <= 0) return;
       if (e.cancelable) e.preventDefault();
       leave(true);
-      ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.removeEventListener(ev, scrollIn, { passive: false }); });
     };
     ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.addEventListener(ev, scrollIn, { passive: false }); });
+    go.addEventListener('click', function () { leave(true); });
+    D.addEventListener('pointerdown', function (e) { if (el.classList.contains('ask') && !(e.target.closest && e.target.closest('.me-mu'))) leave(true); }, true);
     var finish = function () {
-      nEl.textContent = '100';
-      // the pixels slide along the line into the square of ME.; the letters ink in
-      var dx = dotX();
-      ds.forEach(function (d, k) {
-        var x0 = parseFloat(d.style.left);
-        anim(d, [{ transform: 'translateX(0)' }, { transform: 'translateX(' + (dx - x0) + 'px)' }], { duration: 640, delay: k * 50, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' });
-      });
-      setTimeout(function () { el.classList.add('fold'); }, 420);
-      me.style.filter = 'url(#mi-ink)'; ink(1, 0, 900, function () { me.style.filter = ''; });
-      el.classList.add('me-in');
-      // where the browser already allows sound, the site simply opens with the music; elsewhere one click enters with it
+      nEl.textContent = '100'; IN.p = 1;
       setTimeout(function () {
-        var ask = function () { el.classList.add('ask'); el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer'; try { el.querySelector('.mi-on').focus({ preventScroll: true }); } catch (e) { } };
+        var ask = function () { el.classList.add('ask'); };
         if (W.__meMusicTry) W.__meMusicTry(function (ok) { if (ok) leave(true); else ask(); }); else ask();
-      }, 900);
-      setTimeout(function () { leave(false); }, 14000);   // nobody clicked: open anyway; the music starts on their first click
+      }, 700);
+      setTimeout(function () { leave(false); }, 16000);   // nobody moved: open anyway; the music starts on their first click
     };
     (function tick() {
-      var t = now() - t0, p = Math.min(ready ? 1 : 0.94, t / MIN);
-      nEl.textContent = ('00' + Math.round(p * 100)).slice(-3);
-      hl.style.transform = 'scaleX(' + p.toFixed(4) + ')';
-      // a pixel is stamped when the line reaches its column
-      var xr = g.pad + p * (vw - 2 * g.pad);
-      while (lit < ds.length && xr >= X[lit]) ds[lit++].classList.add('in');
-      if ((ready && t >= MIN) || t >= MAX) { while (lit < ds.length) ds[lit++].classList.add('in'); hl.style.transform = 'scaleX(1)'; return setTimeout(finish, 240); }
+      var t = now() - t0, lin = Math.min(1, t / MIN), p = ready && IN.ready !== false ? lin : Math.min(lin, 0.9 + 0.1 * Math.min(1, t / MAX));
+      if (!W.__meIntroCanvas && t > 1500) p = Math.min(p, lin);   // no line screen (dot version): just count
+      var shown = Math.floor(p * 100);
+      nEl.textContent = (shown < 10 ? '00' : shown < 100 ? '0' : '') + shown; IN.p = p;
+      if ((p >= 1 && ready && (IN.ready || !W.__meIntroCanvas || t > MAX)) || t >= MAX) return finish();
       requestAnimationFrame(tick);
     })();
   });
@@ -969,7 +918,8 @@
     var x = cv.getContext('2d'); if (!x) return;
     var off = D.createElement('canvas'), oc = off.getContext('2d');
     var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, TOP = 56, P = 0, K = 2, G = 0, COL = '122,130,255', ph = null, cols = 0, colX = [], gc = 0, gr = 0;
-    var NM = null, ngr = 0, split = 0, I = null, ORD = null, gx0 = 0;
+    var NM = null, BM = null, ngr = 0, split = 0, I = null, ORD = null, gx0 = 0, IN = W.__meIntro || null, tr0 = now();
+    W.__meIntroCanvas = true;
     var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, t0 = now(), tm = 0, lastT = now(), lastStep = 0, avg = 0, prevB = 0, sh = [0, 0], LIT = 0;
     var stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts');
     var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
@@ -1004,10 +954,16 @@
       if (longest > room) { fs *= room / longest; font(fs); }
       var cap = fs * 0.72, lh = cap * lhk, top = hbH - (2 * lh - (lh - cap)) - G * 2;
       NM = cells(ngr, function () { font(fs); lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); }); });
+      // the intro's name: the same, bigger (as much of the screen as it can take), on the same baseline
+      var roomB = small ? W0 - x0 - pr - G * 2 : W0 - x0 - pr, fsB = hbH * 0.9 / (2 * 0.72 * lhk); font(fsB);
+      var lB = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (lB > roomB) fsB *= roomB / lB;
+      var capB = fsB * 0.72, lhB = capB * lhk, topB = hbH - (2 * lhB - (lhB - capB)) - G * 2;
+      BM = cells(ngr, function () { font(fsB); lines.forEach(function (l, i) { oc.fillText(l, x0, topB + capB + i * lhB); }); });
       split = Math.round((top + cap + (lh - cap) / 2) / G);
       I = new Float32Array(gc * gr);
       ORD = new Float32Array(gc * gr);
       for (var k = 0; k < ORD.length; k++) { var cx2 = k % gc, cy2 = Math.floor(k / gc); ORD[k] = 0.55 * hash(cx2 + 7, cy2 + 3) + 0.45 * (0.5 + 0.5 * Math.sin(cx2 * 0.17 + cy2 * 0.23)); }
+      if (IN) IN.ready = true;
     };
     // the statement's keywords: each one, as it lights, is lit from within the lines behind it
     var kws = [].slice.call(D.querySelectorAll('[data-inkroot] .stmt .kw')), KS = kws.map(function () { return { e: 0, fl: 0, lit: false }; });
@@ -1038,6 +994,7 @@
       }
       LIT *= 0.9;
       x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W0, H0);
+      if (IN && IN.phase !== 'done') return introFrame(t);
       // the black of the hero settles into the page colour
       var e0 = sm(p0);
       if (e0 < 1) { x.fillStyle = 'rgba(3,3,4,' + (1 - e0).toFixed(3) + ')'; x.fillRect(0, Math.max(0, hr.bottom - TOP > H0 ? 0 : 0), W0, H0); }
@@ -1102,6 +1059,41 @@
       }
       if (vis && !D.hidden && !still && (on > 0.001 || moved > 0.002 || KR.length || (W.__meMusicPlaying && W.__meMusicPlaying()))) raf = requestAnimationFrame(frame);
       else if (!still) setTimeout(kick, 400);   // asleep: look again for the music now and then
+    };
+    // the intro: the big name builds up out of the lines with the loading, glimmering through the site's colours; leaving,
+    // it sinks back into the lines while the landing's name surfaces and everything settles into the lavender
+    var PAL = [[122, 130, 255], [93, 102, 255], [217, 242, 74], [255, 79, 176], [244, 243, 239]];
+    var introFrame = function (t) {
+      var tr = (t - tr0) / 1000, p = IN.p || 0, tl = IN.phase === 'leave' ? cl((t - IN.t0) / 1600) : 0;
+      if (tl >= 1) { IN.phase = 'done'; W.__meIntro = null; IN = null; raf = requestAnimationFrame(frame); return; }
+      x.fillStyle = '#030304'; x.fillRect(0, 0, W0, H0);
+      for (var c = 0; c < cols; c++) {
+        var pul = 0.5 + 0.5 * Math.sin(tr * ph[c * 3 + 1] + ph[c * 3]);
+        x.fillStyle = 'rgba(' + COL + ',' + (0.22 + 0.2 * pul).toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1, H0);
+      }
+      var settle = sm(cl((tl - 0.35) / 0.6)), fr = Math.floor(tr * 9);
+      for (var gy = 0; gy < Math.min(gr, ngr); gy++) for (var gx = 0; gx < gc; gx++) {
+        var k = gy * gc + gx, od = ORD[k], mB = BM[gy * gc + gx], mN = NM[gy * gc + gx], tgt = 0, big = 0;
+        if (mB) { big = (od < p * 1.12 ? 1 : 0) * (1 - sm(cl((tl * 1.5 - od * 0.5) / 0.5))); }
+        var sml = mN ? sm(cl((tl * 1.5 - (1 - od) * 0.5 - 0.2) / 0.5)) : 0;
+        var gl = 0.5 + 0.5 * Math.sin(gx * 0.21 - tr * 2.2 + Math.sin(gy * 0.17 + tr * 0.8) * 1.8);
+        tgt = Math.max(big * (0.45 + 0.55 * gl), sml);
+        var dI = (tgt - I[k]) * (tgt > I[k] ? 0.35 : 0.2); I[k] += dI;
+        var v = I[k]; if (v < 0.04) continue;
+        // glimmer: a band of colour travels through the name; single pixels flare cream
+        var ci0 = Math.floor((((gx * 0.045 - gy * 0.03 + tr * 0.32 + hash(gx, gy) * 0.35) % 1) + 1) % 1 * 4), flare = hash(gx * 3 + fr, gy * 7 - fr) > 0.985;
+        var cc = flare ? PAL[4] : PAL[ci0], mix = Math.max(settle, sml > big ? 1 : 0);
+        var r = Math.round(cc[0] + (122 - cc[0]) * mix), g2 = Math.round(cc[1] + (130 - cc[1]) * mix), b = Math.round(cc[2] + (255 - cc[2]) * mix);
+        x.fillStyle = 'rgb(' + r + ',' + g2 + ',' + b + ')';
+        for (var j = 0; j < K; j++) {
+          var ci = gx * K + j; if (ci >= cols) break;
+          var hv = hash(ci, gy), n = 0.6 + 0.25 * Math.sin(tr * (1.6 + hv * 2.4) + hv * 9) + 0.15 * Math.sin(tr * 4.1 + ph[ci * 3]);
+          var e = v * n, wd = 1.2 + e * (P * 0.8 - 1.2); if (e < 0.08) continue;
+          x.globalAlpha = Math.min(1, 0.45 + e * 1.1); x.fillRect(colX[ci] - wd / 2, gy * G, wd, G + 0.5);
+        }
+      }
+      x.globalAlpha = 1;
+      raf = requestAnimationFrame(frame);
     };
     var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
     W.addEventListener('pointermove', function (e) { if (e.pointerType !== 'mouse') return; mx = e.clientX; my = e.clientY - TOP; }, { passive: true });
