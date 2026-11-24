@@ -608,14 +608,15 @@
     var off = st('localStorage', 'me-mu-off') === '1';
     var wrap = D.createElement('div'); wrap.className = 'me-mu';
     if (PAGE === 'home') H.classList.add('me-mu-top');   // on Home the player takes the first box of the top bar
-    wrap.innerHTML = '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2"></small></span></button>';
+    wrap.innerHTML = '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2"></small><span class="me-t3"></span></span></button>';
     D.body.appendChild(wrap);
-    var btn = wrap.querySelector('.me-mb'), t2 = wrap.querySelector('.me-t2');
+    var btn = wrap.querySelector('.me-mb'), t2 = wrap.querySelector('.me-t2'), t3 = wrap.querySelector('.me-t3');
     var A = new Audio(); A.src = SRC; A.preload = 'auto'; A.loop = true; A.volume = 0; A.setAttribute('playsinline', '');
     if (saved && saved.t) { try { A.currentTime = saved.t; } catch (e) { } A.addEventListener('loadedmetadata', function () { try { if (A.currentTime < 1) A.currentTime = saved.t; } catch (e) { } }, { once: true }); }
     var state = off ? 'pause' : 'wait', fade = null, fadeMs = saved && saved.t ? 1500 : 5000, armed = false;
     var label = function () {
       t2.textContent = ART + ' — ' + SONG + (state === 'play' ? '' : state === 'wait' ? ' · plays on your first click' : ' · paused');
+      t3.textContent = state === 'play' ? 'Says — ' + ART : state === 'wait' ? 'Click for sound' : 'Paused — Says';   // the one-line form in the top bar
       wrap.classList.toggle('play', state === 'play');
       btn.setAttribute('aria-pressed', state === 'play' ? 'true' : 'false');
       btn.setAttribute('aria-label', (state === 'play' ? 'Pause' : 'Play') + ' music: ' + ART + ', ' + SONG);

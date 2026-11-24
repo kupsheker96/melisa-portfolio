@@ -279,10 +279,10 @@ html.me-shell .me-lf{display:none}
 @media print{.me-lf{display:none}}
 /* Home (Nov 24): the top bar is no longer a band of its own; it floats, fixed, over the line screen as a row of
    outlined boxes on the grid, drawn in difference so it reads over every colour beneath it */
-html.me-home nav[aria-label="Main"]{position:fixed !important;left:0;right:0;top:0;background:transparent !important;border-bottom:0 !important;mix-blend-mode:difference;transform:none !important;pointer-events:none}
+html.me-home nav[aria-label="Main"]{position:fixed !important;left:0;right:0;top:0;background:transparent !important;border-bottom:0 !important;transform:none !important;pointer-events:none}
 html.me-home nav[aria-label="Main"] a{pointer-events:auto}
-html.me-home nav[aria-label="Main"] .nb{box-sizing:border-box;display:flex !important;align-items:center !important;height:40px;border:1px solid rgba(244,243,239,.55);color:#f4f3ef !important;text-decoration:none !important;transition:background .25s,color .25s,border-color .25s}
-html.me-home nav[aria-label="Main"] .nb:hover,html.me-home nav[aria-label="Main"] .nb:focus-visible{background:#f4f3ef;color:#121316 !important;border-color:#f4f3ef;outline:none}
+html.me-home nav[aria-label="Main"] .nb{mix-blend-mode:difference;box-sizing:border-box;display:flex !important;align-items:center !important;height:40px;border:1px solid rgba(244,243,239,.55);color:#f4f3ef !important;text-decoration:none !important;transition:background .25s,color .25s,border-color .25s}
+html.me-home nav[aria-label="Main"] .nb:hover,html.me-home nav[aria-label="Main"] .nb:focus-visible{mix-blend-mode:normal;background:#f4f3ef;color:#121316 !important;border-color:#f4f3ef;outline:none}
 html.me-home nav[aria-label="Main"] .nb[aria-current="page"] .nt{text-decoration:underline;text-underline-offset:6px}
 html.me-home nav[aria-label="Main"] .nt{display:inline-block;will-change:transform;white-space:nowrap}
 @media (max-width:639px){html.me-home nav[aria-label="Main"] .nb{height:32px;padding:0 10px}html.me-home nav[aria-label="Main"] .mainnav{gap:0 !important}html.me-home nav[aria-label="Main"] .mainnav .nb + .nb{margin-left:-1px}}
@@ -290,13 +290,18 @@ html.me-home .cc-in{padding-top:calc(clamp(24px,3.4vw,52px) + 52px) !important}
 /* Home (Nov 24): no ME. in the bar (Home is there); the music player takes its box, as a line box like the rest */
 html.me-home nav[aria-label="Main"] .logo{display:none !important}
 html.me-mu-top .me-mu{left:clamp(16px,4vw,56px);right:auto;top:8px;bottom:auto;width:calc((100vw - 2 * clamp(16px,4vw,56px)) * .16 + 1px);mix-blend-mode:difference;z-index:960}
-html.me-mu-top .me-mu .me-mb{box-sizing:border-box;width:100%;height:40px;padding:0 clamp(10px,1.2vw,16px);background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(244,243,239,.55);color:#f4f3ef}
+html.me-mu-top .me-mu:hover,html.me-mu-top .me-mu:focus-within{mix-blend-mode:normal}
+html.me-mu-top .me-mu .me-mb{box-sizing:border-box;width:100%;height:40px;padding:0 0 0 clamp(14px,1.6vw,24px);gap:10px;font-size:clamp(11px,1.1vw,12px);background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(244,243,239,.55);color:#f4f3ef}
 html.me-mu-top .me-mu .me-mb:hover{background:#f4f3ef;color:#121316;border-color:#f4f3ef}
 html.me-mu-top .me-mu .me-mb:hover .me-lbl small{color:#3a3d45}
-html.me-mu-top .me-lbl{min-width:0;overflow:hidden}
-html.me-mu-top .me-lbl > *{overflow:hidden;text-overflow:ellipsis}
+html.me-mu-top .me-lbl{min-width:0;overflow:hidden;flex:1}
+html.me-mu-top .me-t1,html.me-mu-top .me-t2{display:none}
+.me-t3{display:none}
+html.me-mu-top .me-t3{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px}
 @media (max-width:639px){html.me-mu-top .me-mu{width:auto;top:8px}html.me-mu-top .me-mu .me-mb{height:32px}html.me-mu-top .me-lbl{display:none}}
 /* Social page: the motion toggle is gone (Nov 24) */
 #smMotion{display:none !important}
 #c-social .cc-vis .cc-t:nth-child(4){display:none}   /* three posts and the arrow card, same size as the posts */
 #c-social .cc-vis > .cc-t,#c-social .cc-vis > .me-arw{flex:1 1 0;min-width:0;aspect-ratio:auto}
+/* the corner signatures (melisa / ergani) are gone (Nov 24) */
+.wm{display:none !important}
