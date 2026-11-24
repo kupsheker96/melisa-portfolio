@@ -309,6 +309,7 @@
       f.onload = function () {
         frameReady(f, function () {
           H.classList.add('me-shell');
+          try { H.classList.toggle('me-mu-top', f.contentDocument.documentElement.classList.contains('me-home')); } catch (e) { }
           var href = url; try { D.title = f.contentDocument.title; href = f.contentWindow.location.href; f.setAttribute('title', D.title); } catch (e) { }
           if (push) history.pushState({ me: 1 }, '', href);
           try { f.contentWindow.focus(); } catch (e) { }
@@ -606,6 +607,7 @@
     var saved = null; try { saved = JSON.parse(st('sessionStorage', 'me-mu') || 'null'); } catch (e) { }
     var off = st('localStorage', 'me-mu-off') === '1';
     var wrap = D.createElement('div'); wrap.className = 'me-mu';
+    if (PAGE === 'home') H.classList.add('me-mu-top');   // on Home the player takes the first box of the top bar
     wrap.innerHTML = '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2"></small></span></button>';
     D.body.appendChild(wrap);
     var btn = wrap.querySelector('.me-mb'), t2 = wrap.querySelector('.me-t2');

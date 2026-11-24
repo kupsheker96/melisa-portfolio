@@ -210,17 +210,17 @@ html.me-cl .cc-t:hover{transform:none}
 .cc-t img{will-change:transform}
 .cc-card.me-dz{pointer-events:none !important}
 .me-go{cursor:pointer}
-.me-arw{--sz:clamp(64px,8vw,136px);position:absolute;right:var(--cpad);top:29%;width:var(--sz);height:var(--sz);margin-top:calc(var(--sz) / -2);color:inherit;z-index:2;display:block;transform:translate3d(var(--ax,0px),var(--ay,0px),0) scale(var(--as,1));transform-origin:50% 50%}
-.me-arw svg{display:block;width:100%;height:100%;overflow:visible;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:square;stroke-linejoin:miter;transition:transform .4s cubic-bezier(.2,.7,.2,1),opacity .3s}
+.me-arw{position:relative;flex:0 1 auto;align-self:flex-end;height:min(78%,52vh);aspect-ratio:3/4;box-sizing:border-box;border:1px solid rgba(244,243,239,.5);color:#f4f3ef;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .3s,color .3s,border-color .3s}
+.me-arw svg{display:block;width:46%;height:auto;aspect-ratio:1;overflow:visible;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:square;stroke-linejoin:miter;transform:translate3d(var(--ax,0px),var(--ay,0px),0) scale(var(--as,1));transition:opacity .3s}
 .me-arw .a2{transition:transform .4s cubic-bezier(.2,.7,.2,1);transform-origin:76px 24px}
-.me-go:hover .me-arw svg{transform:translate(7%,-7%)}
-.me-go:hover .me-arw .a2{transform:scale(1.08)}
-.me-arw.pr svg{transform:translate(9%,-9%) scale(.9)}
-.me-arw.go svg{transform:translate(80%,-80%);opacity:0;transition:transform .34s cubic-bezier(.6,0,.4,1),opacity .28s .06s linear}
-.me-arw:focus-visible{outline:1px solid currentColor;outline-offset:8px}
+.me-arl{position:absolute;left:10px;bottom:9px;font:300 10.5px/1.2 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.02em;opacity:.7}
+.me-go:hover .me-arw,.me-arw:focus-visible{background:#f4f3ef;color:#000;border-color:#f4f3ef;outline:none}
+.me-go:hover .me-arw .a2{transform:scale(1.1)}
+.me-arw.pr{background:#f4f3ef;color:#000}
+.me-arw.go svg{transform:translate(60%,-60%);opacity:0;transition:transform .34s cubic-bezier(.6,0,.4,1),opacity .28s .06s linear}
 @media (hover:none){.me-arw svg{animation:me-nudge 3.2s cubic-bezier(.4,0,.2,1) infinite}}
-@keyframes me-nudge{0%,62%,100%{transform:none}74%{transform:translate(10%,-10%)}86%{transform:none}}
-@media (max-width:759px){.me-arw{--sz:56px}}
+@keyframes me-nudge{0%,62%,100%{translate:0 0}74%{translate:10% -10%}86%{translate:0 0}}
+@media (max-width:759px){.me-arw{height:100%;max-height:30vh}}
 @media (prefers-reduced-motion:reduce){.me-arw svg{animation:none;transition:none}}
 /* Home -> About bridge (Nov 24) */
 .me-br{position:relative;z-index:1;padding:clamp(72px,9vw,150px) clamp(16px,4vw,56px) 0;color:#f4f3ef}
@@ -287,3 +287,16 @@ html.me-home nav[aria-label="Main"] .nb[aria-current="page"] .nt{text-decoration
 html.me-home nav[aria-label="Main"] .nt{display:inline-block;will-change:transform;white-space:nowrap}
 @media (max-width:639px){html.me-home nav[aria-label="Main"] .nb{height:32px;padding:0 10px}html.me-home nav[aria-label="Main"] .mainnav{gap:0 !important}html.me-home nav[aria-label="Main"] .mainnav .nb + .nb{margin-left:-1px}}
 html.me-home .cc-in{padding-top:calc(clamp(24px,3.4vw,52px) + 52px) !important}
+/* Home (Nov 24): no ME. in the bar (Home is there); the music player takes its box, as a line box like the rest */
+html.me-home nav[aria-label="Main"] .logo{display:none !important}
+html.me-mu-top .me-mu{left:clamp(16px,4vw,56px);right:auto;top:8px;bottom:auto;width:calc((100vw - 2 * clamp(16px,4vw,56px)) * .16 + 1px);mix-blend-mode:difference;z-index:960}
+html.me-mu-top .me-mu .me-mb{box-sizing:border-box;width:100%;height:40px;padding:0 clamp(10px,1.2vw,16px);background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(244,243,239,.55);color:#f4f3ef}
+html.me-mu-top .me-mu .me-mb:hover{background:#f4f3ef;color:#121316;border-color:#f4f3ef}
+html.me-mu-top .me-mu .me-mb:hover .me-lbl small{color:#3a3d45}
+html.me-mu-top .me-lbl{min-width:0;overflow:hidden}
+html.me-mu-top .me-lbl > *{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:639px){html.me-mu-top .me-mu{width:auto;top:8px}html.me-mu-top .me-mu .me-mb{height:32px}html.me-mu-top .me-lbl{display:none}}
+/* Social page: the motion toggle is gone (Nov 24) */
+#smMotion{display:none !important}
+#c-social .cc-vis .cc-t:nth-child(4){display:none}   /* three posts and the arrow card, same size as the posts */
+#c-social .cc-vis > .cc-t,#c-social .cc-vis > .me-arw{flex:1 1 0;min-width:0;aspect-ratio:auto}
