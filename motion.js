@@ -1667,7 +1667,7 @@
         var L = el.getTotalLength(); el.style.strokeDasharray = L + ' ' + (L + 1); el.style.strokeDashoffset = L;
         segs.push({ el: el, a: total, L: L }); total += L;
       };
-      var main = [[x0, yb]];
+      var main = [[x0, -Math.max(0, sr.top)], [x0, yb]];   // (Nov 24) the pen comes down the margin rule, so the rule and the line are one
       SKETCH.forEach(function (o, i) {
         var cx = x0 + slot * (i + 0.5), L0 = cx - s / 2;
         var P = function (q) { return [L0 + q[0] * s / 100, yb - s + q[1] * s / 100]; };
