@@ -208,7 +208,7 @@
   if (doIntro) onBody(function () {
     var IN = W.__meIntro, t0 = now(), MIN = 2400, MAX = 7000, ready = false, chosen = false;
     var el = D.createElement('div'); el.className = 'mi2'; el.setAttribute('role', 'status'); el.setAttribute('aria-label', 'Loading');
-    el.innerHTML = '<span class="mi2-n" aria-hidden="true">000</span><button type="button" class="mi2-go">Scroll to enter <span aria-hidden="true">↓</span></button>';
+    el.innerHTML = '<span class="mi2-n" aria-hidden="true">000</span><button type="button" class="mi2-go">' + (FINE ? 'Click' : 'Tap') + ' anywhere to enter <span aria-hidden="true">↗</span></button>';
     D.body.appendChild(el);
     var nEl = el.querySelector('.mi2-n'), go = el.querySelector('.mi2-go');
     rendered(function () { fontsReady(function () { ready = true; }, 2500); });
@@ -232,7 +232,9 @@
     };
     ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.addEventListener(ev, scrollIn, { passive: false }); });
     go.addEventListener('click', function () { leave(true); });
-    D.addEventListener('pointerdown', function (e) { if (el.classList.contains('ask') && !(e.target.closest && e.target.closest('.me-mu'))) leave(true); }, true);
+    // a click / tap is what lets the browser play sound, so it enters and starts the music together (a scroll still
+    // enters, silently; the music then starts on the first click)
+    D.addEventListener('click', function (e) { if (el.classList.contains('ask') && !(e.target.closest && e.target.closest('.me-mu'))) leave(true); }, true);
     var finish = function () {
       nEl.textContent = '100'; IN.p = 1;
       setTimeout(function () {
