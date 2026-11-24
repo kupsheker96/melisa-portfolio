@@ -1311,6 +1311,19 @@
       as.forEach(function (a, i) { if (X[i + 1] != null) put(a, X[i], X[i + 1]); });
     };
     align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
+    // the bar takes the colours of what is under it: a card's own type colour over a card, cream over the dark
+    var ins = [].slice.call(D.querySelectorAll('.cc-card .cc-in')), ft = D.querySelector('footer.foot'), lastC = '', craf = 0;
+    var tone = function () {
+      craf = 0; var c = '#f4f3ef', bg = '#121316';
+      for (var i = ins.length - 1; i >= 0; i--) {
+        var r = ins[i].getBoundingClientRect(); if (r.top > 28 || r.bottom < 28 || parseFloat(ins[i].style.opacity || '1') < 0.5) continue;
+        var cs = getComputedStyle(ins[i]); c = cs.color; bg = cs.backgroundColor; break;
+      }
+      var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
+      if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
+      if (c + bg !== lastC) { lastC = c + bg; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); }
+    };
+    W.addEventListener('scroll', function () { if (!craf) craf = requestAnimationFrame(tone); }, { passive: true }); tone();
     if (!FINE || RM) return;
     var mx = -1e4, my = -1e4, raf = 0, st = items.map(function () { return { x: 0, y: 0 }; });
     var tick = function () {
