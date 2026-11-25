@@ -373,3 +373,5 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 @media (max-width:639px){.me-yrs-t{font-size:clamp(26px,8vw,40px)}}
 @media (prefers-reduced-motion:reduce){.me-yrs-s{transform:none}}
 
+.me-yrs-t .yw{display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .02em .14em;margin:0 -.02em -.14em}
+.me-yrs-t .yi{display:inline-block;will-change:transform}

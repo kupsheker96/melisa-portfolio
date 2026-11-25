@@ -1454,6 +1454,22 @@
     var loop = function () { clearTimeout(tmr); if (!vis || D.hidden) return; tmr = setTimeout(function () { step(); loop(); }, RM ? 2000 : 1100); };
     // the violet panel rises from the bottom over the statement once its drawings are done, and holds until the
     // UI/UX grey rises over it in turn
+    // the sentence arrives word by word, each word rising out of its own line as the panel settles (scroll-tied)
+    var tp = D.querySelector('.me-yrs-t'), ws = [];
+    if (tp && !RM) {
+      [].slice.call(tp.childNodes).forEach(function (nd) {
+        if (nd.nodeType === 3) {
+          var f = D.createDocumentFragment();
+          nd.textContent.split(/(\s+)/).forEach(function (part) {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { f.appendChild(D.createTextNode(' ')); return; }
+            var o = D.createElement('span'); o.className = 'yw'; var i2 = D.createElement('span'); i2.className = 'yi'; i2.textContent = part; o.appendChild(i2); f.appendChild(o);
+          });
+          tp.replaceChild(f, nd);
+        } else { var o = D.createElement('span'); o.className = 'yw'; var i2 = D.createElement('span'); i2.className = 'yi'; tp.replaceChild(o, nd); i2.appendChild(nd); o.appendChild(i2); }
+      });
+      ws = [].slice.call(tp.querySelectorAll('.yi'));
+    }
     var pan = D.querySelector('.me-yrs-s'), stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts'), cards = D.getElementById('work'), lastK = '';
     var place = function () {
       if (!pan || !stw || !sts) return;
@@ -1464,7 +1480,12 @@
       var k = (p <= 0 || gone) ? 'h' : e.toFixed(4); if (k === lastK) return; lastK = k;
       pan.style.visibility = k === 'h' ? 'hidden' : 'visible';
       pan.style.transform = 'translate3d(0,' + ((1 - e) * 100).toFixed(3) + '%,0)';
-      var nv = p > 0.6 && !gone; if (nv !== vis) { vis = nv; loop(); }
+      var q = cl((p - 0.55) / 0.45), n = ws.length;
+      ws.forEach(function (w, i) {
+        var k = cl(q * 2 - (i / Math.max(1, n - 1))); k = 1 - Math.pow(1 - k, 3);
+        w.style.transform = k >= 1 ? '' : 'translate3d(0,' + ((1 - k) * 115).toFixed(2) + '%,0)';
+      });
+      var nv = p >= 0.999 && !gone; if (nv !== vis) { vis = nv; if (!vis) { clearTimeout(tmr); var ww = v.parentNode; ww.classList.remove('in', 'out'); } loop(); }
     };
     W.addEventListener('scroll', place, { passive: true }); W.addEventListener('resize', function () { lastK = ''; place(); }); place();
     D.addEventListener('visibilitychange', loop);
