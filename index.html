@@ -290,14 +290,7 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
   <div aria-hidden="true" class="wm wmr" style="position:fixed;bottom:clamp(10px,1.45vw,28px);z-index:6;pointer-events:none;user-select:none;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;line-height:.74;letter-spacing:0;color:rgba(244,243,239,.075);white-space:nowrap"><span class="wmfade" style="display:block"><span class="wmi">ergani</span></span></div>
   <div class="content" style="position:relative;z-index:1">
   <div class="mainc" style="position:relative;z-index:2;background:#121316">
-  <nav aria-label="Main" style="position:sticky;top:0;z-index:5;background:#121316;border-bottom:1px solid #2c2e33">
-    <div style="padding:0 clamp(16px,4vw,56px);height:56px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px">
-      <div style="display:flex;align-items:center;gap:clamp(16px,3vw,48px);min-width:0">
-        <a href="index.html" class="logo" style="display:inline-flex;align-items:baseline;line-height:1"><span style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:22px;line-height:1;letter-spacing:-.02em">ME</span><span style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:75%;font-size:22px;line-height:1;color:#8e6bff">.</span></a>
-      </div>
-      <div class="mainnav" style="display:flex;gap:clamp(10px,2.2vw,28px);font-size:clamp(11px,1.1vw,12px)"><a href="index.html" aria-current="page" style="color:#f4f3ef;white-space:nowrap;text-decoration:underline;text-underline-offset:6px">Home</a><a href="#work" style="color:#f4f3ef;white-space:nowrap">Work</a><a href="about.html" style="color:#f4f3ef;white-space:nowrap"><sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">About / CV</sc-if><sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">About</sc-if></a></div>
-    </div>
-  </nav>
+  <nav aria-label="Main" class="me-nav"><a class="nb" href="#top" aria-current="page"><span class="nt">Home</span></a><a class="nb" href="#work"><span class="nt">Work</span></a><a class="nb" href="about.html"><span class="nt">About / CV</span></a></nav>
   <div class="dpwrap" style="position:relative">    <div aria-hidden="true" style="position:absolute;top:0;bottom:0;left:calc(clamp(16px,4vw,56px) + (100% - 2 * clamp(16px,4vw,56px)) * .16);width:1px;pointer-events:none">
       <span class="vl" style="position:absolute;inset:0;background:#3a3d45"></span>
       <span class="vlit" style="position:absolute;inset:0;background:#f4f3ef;opacity:.55"></span>
@@ -317,7 +310,7 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
         <div class="sts">
           <span data-r="fade" style="position:absolute;left:0;top:0;font-size:11px;color:#9a9ea6">[ About ]</span>
           <svg class="stsvg" aria-hidden="true" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none"><path class="stp" d="" fill="none" stroke="#f4f3ef" stroke-opacity=".5" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"></path><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect></svg>
-          <p class="stmt"><span class="sc" data-ink-hold>Industrial </span><span class="kw" data-ink data-ink-p="hero" data-k="0"><span class="sr">design</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">d</span><span class="ik">e</span><span class="ik">s</span><span class="ik">i</span><span class="ik">g</span><span class="ik">n</span></span></span><span class="sc" data-ink-hold> taught me how things are made, and </span><span class="kw" data-ink data-ink-p="hero" data-k="1"><span class="sr">psychology</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">p</span><span class="ik">s</span><span class="ik">y</span><span class="ik">c</span><span class="ik">h</span><span class="ik">o</span><span class="ik">l</span><span class="ik">o</span><span class="ik">g</span><span class="ik">y</span></span></span><span class="sc" data-ink-hold> why people use them. I start with </span><span class="kw" data-ink data-ink-p="hero" data-k="2"><span class="sr">research</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">r</span><span class="ik">e</span><span class="ik">s</span><span class="ik">e</span><span class="ik">a</span><span class="ik">r</span><span class="ik">c</span><span class="ik">h</span></span></span><span class="sc" data-ink-hold>, and keep designing until it feels </span><span class="kw" data-ink data-ink-p="hero" data-k="3"><span class="sr">intuitive</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">i</span><span class="ik">n</span><span class="ik">t</span><span class="ik">u</span><span class="ik">i</span><span class="ik">t</span><span class="ik">i</span><span class="ik">v</span><span class="ik">e</span></span></span><span class="sc" data-ink-hold>.</span></p>
+          <p class="stmt"><span class="sc" data-ink-hold>Industrial </span><span class="kw" data-ink-off data-ink-p="hero" data-k="0"><span class="sr">design</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">d</span><span class="ik">e</span><span class="ik">s</span><span class="ik">i</span><span class="ik">g</span><span class="ik">n</span></span></span><span class="sc" data-ink-hold> taught me how things are made, and </span><span class="kw" data-ink-off data-ink-p="hero" data-k="1"><span class="sr">psychology</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">p</span><span class="ik">s</span><span class="ik">y</span><span class="ik">c</span><span class="ik">h</span><span class="ik">o</span><span class="ik">l</span><span class="ik">o</span><span class="ik">g</span><span class="ik">y</span></span></span><span class="sc" data-ink-hold> why people use them. I start with </span><span class="kw" data-ink-off data-ink-p="hero" data-k="2"><span class="sr">research</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">r</span><span class="ik">e</span><span class="ik">s</span><span class="ik">e</span><span class="ik">a</span><span class="ik">r</span><span class="ik">c</span><span class="ik">h</span></span></span><span class="sc" data-ink-hold>, and keep designing until it feels </span><span class="kw" data-ink-off data-ink-p="hero" data-k="3"><span class="sr">intuitive</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">i</span><span class="ik">n</span><span class="ik">t</span><span class="ik">u</span><span class="ik">i</span><span class="ik">t</span><span class="ik">i</span><span class="ik">v</span><span class="ik">e</span></span></span><span class="sc" data-ink-hold>.</span></p>
         </div>
       </div>
       <p data-r="up" style="--d:.15s;margin:calc(clamp(72px,9vw,150px) * -.55) 0 0;max-width:52ch;font-size:12px;line-height:1.7;color:#c9ccd1">I studied Industrial Design at TED University, with Psychology as a secondary field.</p>
@@ -363,10 +356,10 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
 </article><div class="cc-tail" aria-hidden="true" style="height:110vh"></div></section>
   <section id="index" class="pf" aria-label="Index" data-ink-skip>
     <div class="pf-hd"><span>[ Index ]</span></div>
-    <div class="pf-band"><canvas aria-hidden="true"></canvas></div>
+    
     <div class="pf-ls">
       <div class="pf-col pf-w"><h3>[ Work ]</h3><ul><li><a class="pf-i" href="#c-uiux" data-w="UI/UX" data-c="#dfdfdb" style="--c:#dfdfdb"><i aria-hidden="true"></i><span><span class="k">01</span>&nbsp;&nbsp;UI/UX</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="#c-product" data-w="PRODUCT" data-c="#5d66ff" style="--c:#5d66ff"><i aria-hidden="true"></i><span><span class="k">02</span>&nbsp;&nbsp;Product</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="#c-branding" data-w="BRANDING" data-c="#ff4fb0" style="--c:#ff4fb0"><i aria-hidden="true"></i><span><span class="k">03</span>&nbsp;&nbsp;Branding</span><span aria-hidden="true">↗</span></a></li><li><a class="pf-i" href="social.html" data-w="SOCIAL MEDIA" data-c="#f4f3ef" style="--c:#f4f3ef"><i aria-hidden="true"></i><span><span class="k">04</span>&nbsp;&nbsp;Social Media</span><span aria-hidden="true">↗</span></a></li></ul></div>
-      <div class="pf-col pf-h"><h3>[ How I work ]</h3><ul><li><button type="button" class="pf-i" data-w="RESEARCH"><i aria-hidden="true"></i><span>Research</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="PSYCHOLOGY"><i aria-hidden="true"></i><span>Psychology</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="INTERVIEWS"><i aria-hidden="true"></i><span>Interviews</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="PROTOTYPING"><i aria-hidden="true"></i><span>Prototyping</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="SKETCHING"><i aria-hidden="true"></i><span>Sketching</span><span aria-hidden="true">+</span></button></li><li><button type="button" class="pf-i" data-w="3D MODELING"><i aria-hidden="true"></i><span>3D modeling</span><span aria-hidden="true">+</span></button></li></ul></div>
+      <div class="pf-col pf-h"><h3>[ How I work ]</h3><ul><li><span class="pf-i pf-s"><i aria-hidden="true"></i><span>Research</span><span></span></span></li><li><span class="pf-i pf-s"><i aria-hidden="true"></i><span>Psychology</span><span></span></span></li><li><span class="pf-i pf-s"><i aria-hidden="true"></i><span>Interviews</span><span></span></span></li><li><span class="pf-i pf-s"><i aria-hidden="true"></i><span>Prototyping</span><span></span></span></li><li><span class="pf-i pf-s"><i aria-hidden="true"></i><span>Sketching</span><span></span></span></li><li><span class="pf-i pf-s"><i aria-hidden="true"></i><span>3D modeling</span><span></span></span></li></ul></div>
     </div>
   </section>
   <section id="me-about" class="me-br" aria-label="About" data-ink-skip>
@@ -380,28 +373,17 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
   <div aria-hidden="true" style="height:clamp(120px,14vw,240px)"></div>
   </div>
   <div id="contact" aria-hidden="true" style="height:0"></div>
-  <footer class="foot" data-ink-hold aria-label="Contact" style="position:sticky;bottom:0;z-index:1;background:#8e6bff;color:#121316;overflow:hidden;display:flex;flex-direction:column;min-height:min(100vh,1080px);box-sizing:border-box">
-    <div class="fstate" style="position:relative;flex:1 1 auto;padding:20px clamp(16px,4vw,56px) 0;display:flex;flex-direction:column">
-      <span aria-hidden="true" class="fline" style="position:absolute;top:0;bottom:0;left:calc(clamp(16px,4vw,56px) + (100% - 2 * clamp(16px,4vw,56px)) * .16);width:1px;background:rgba(18,19,22,.18)"></span>
-      <div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:rgba(18,19,22,.7)">
-        <span>[ Contact ]</span><a href="#top" class="ul" style="color:#121316;padding-bottom:3px">Back to top ↑</a>
-      </div>
-      <div class="fgrid" style="display:grid;grid-template-columns:16% minmax(0,1fr);column-gap:clamp(14px,1.6vw,24px);row-gap:clamp(40px,5vw,88px);margin-top:clamp(72px,10vw,190px);align-items:end">
-        <div class="fclock" style="font-size:11px;line-height:1.5;color:rgba(18,19,22,.72);padding-bottom:.9em">Based in Ankara<br><span style="font-variant-numeric:tabular-nums">{{ clock }}</span> <span class="dot" style="color:#121316">●</span> TR</div>
-        <div class="fmail" style="min-width:0;padding-left:clamp(14px,1.6vw,24px);display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px">
-          <a href="mailto:melisaergani@gmail.com" class="ul" style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:clamp(36px,6vw,112px);line-height:1;letter-spacing:-.01em;color:#121316;padding-bottom:.06em;overflow-wrap:anywhere">melisaergani@gmail.com</a>
-          <button type="button" class="cpy" data-copy="melisaergani@gmail.com" aria-label="Copy email address" style="font:inherit;font-size:11px;color:#121316;background:transparent;border:1px solid rgba(18,19,22,.5);border-radius:99px;padding:6px 12px;cursor:pointer;margin-bottom:.8em"></button>
-        </div>
-        <span aria-hidden="true"></span>
-        <nav aria-label="Elsewhere" class="fch" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(14px,1.6vw,24px);padding-left:clamp(14px,1.6vw,24px)"><a class="crow" href="https://linkedin.com/in/melisa-ergani" target="_blank" rel="noopener noreferrer" style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid rgba(18,19,22,.22);border-bottom:1px solid rgba(18,19,22,.22);color:#121316"><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span class="roll" style="font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(26px,2.6vw,40px);line-height:1;letter-spacing:-.01em;text-transform:uppercase"><span>LinkedIn</span><span aria-hidden="true" style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;text-transform:none;letter-spacing:0">LinkedIn</span></span><span style="font-size:11px;color:rgba(18,19,22,.72);word-break:break-all">linkedin.com/in/melisa-ergani</span></span><span class="ca" aria-hidden="true" style="font-size:18px">↗</span></a><a class="crow" href="https://www.behance.net/melisaergani" target="_blank" rel="noopener noreferrer" style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid rgba(18,19,22,.22);border-bottom:1px solid rgba(18,19,22,.22);color:#121316"><span style="display:flex;flex-direction:column;gap:6px;min-width:0"><span class="roll" style="font-family:'Archivo',sans-serif;font-weight:700;font-stretch:75%;font-size:clamp(26px,2.6vw,40px);line-height:1;letter-spacing:-.01em;text-transform:uppercase"><span>Behance</span><span aria-hidden="true" style="font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;text-transform:none;letter-spacing:0">Behance</span></span><span style="font-size:11px;color:rgba(18,19,22,.72);word-break:break-all">behance.net/melisaergani</span></span><span class="ca" aria-hidden="true" style="font-size:18px">↗</span></a></nav>
-      </div>
-      <div class="wmark" aria-label="Melisa Ergani" role="img" style="margin-top:auto;padding-top:clamp(32px,3.6vw,72px);box-sizing:content-box;height:11.8vw;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-start;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;font-size:16.1vw;line-height:.8;letter-spacing:-.005em;color:#121316;white-space:nowrap">
-        <span aria-hidden="true" class="wmw"><span class="wml-l" style="--i:5">M</span><span class="wml-l" style="--i:4">E</span><span class="wml-l" style="--i:3">L</span><span class="wml-l" style="--i:2">I</span><span class="wml-l" style="--i:1">S</span><span class="wml-l" style="--i:0">A</span></span><span aria-hidden="true" class="wmw"><span class="wml-r" style="--i:0">E</span><span class="wml-r" style="--i:1">R</span><span class="wml-r" style="--i:2">G</span><span class="wml-r" style="--i:3">A</span><span class="wml-r" style="--i:4">N</span><span class="wml-r" style="--i:5">I</span></span>
-      </div>
+  <footer id="contact" class="me-ft" aria-label="Contact">
+    <div class="mf-row"><span>[ Contact ]</span><a href="#top" class="mf-top">Back to top ↑</a></div>
+    <div class="mf-main">
+      <a class="mf-mail" href="mailto:melisaergani@gmail.com">melisaergani@gmail.com</a>
+      <dl class="mf-l">
+        <div><dt>LinkedIn</dt><dd><a href="https://linkedin.com/in/melisa-ergani" target="_blank" rel="noopener noreferrer">linkedin.com/in/melisa-ergani</a></dd></div>
+        <div><dt>Behance</dt><dd><a href="https://www.behance.net/melisaergani" target="_blank" rel="noopener noreferrer">behance.net/melisaergani</a></dd></div>
+        <div><dt>Cell</dt><dd><a href="tel:+905369593036">+90 536 959 30 36</a></dd></div>
+      </dl>
     </div>
-    <div style="position:relative;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px clamp(16px,4vw,56px) 18px;border-top:1px solid rgba(18,19,22,.35);font-size:11px;color:#121316">
-      <span>Melisa Ergani</span><span>Design Portfolio</span><span>//2026</span>
-    </div>
+    <div class="mf-b"><span>Melisa Ergani</span><span>UI/UX &amp; Visual Designer — Ankara</span><span>//2026</span></div>
   </footer>
   </div>
 </div>
@@ -510,7 +492,7 @@ class Component extends DCLogic {
     const html = document.documentElement;
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // reduced motion, or the canvas overview frame (very tall viewport): everything is simply shown, crisp
-    if (reduce || window.innerHeight >= 1500) { html.classList.add('ink-armed', 'ink-off'); document.querySelectorAll('[data-ink]').forEach((el) => el.setAttribute('data-ink-done', '')); return; }
+    if (true) { html.classList.add('ink-armed', 'ink-off'); document.querySelectorAll('[data-ink]').forEach((el) => el.setAttribute('data-ink-done', '')); return; }
     const NS = 'http://www.w3.org/2000/svg';
     let host = document.getElementById('ink-defs');
     if (!host) { host = document.createElementNS(NS, 'svg'); host.id = 'ink-defs'; host.setAttribute('aria-hidden', 'true'); host.setAttribute('focusable', 'false'); host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none'; document.body.appendChild(host); }
@@ -959,7 +941,7 @@ class Component extends DCLogic {
     this.stp = st.querySelector('.stp'); this.stn = Array.from(st.querySelectorAll('.stn'));
     this.stLast = -1;
   }
-  scrubStmt(cl) {
+  scrubStmt(cl) { return;
     const w = document.querySelector('.stw'), st = document.querySelector('.sts');
     if (!w || !st || !this.kws) return;
     const r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;

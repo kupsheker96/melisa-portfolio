@@ -113,22 +113,19 @@
   }
   // the label smudges in (ink -> crisp) or out (crisp -> ink)
   function inkLabel(el, inn, ms, delay) {
-    var lb = el.querySelector('.me-wl'), kk = el.querySelector('.me-wk'); if (!lb || !lb.textContent) { if (kk) kk.style.opacity = inn ? '.62' : '0'; return; }
-    var f = D.getElementById('me-pti'), dm = f && f.querySelector('feDisplacementMap'), bl = f && f.querySelector('feGaussianBlur'), fs = parseFloat(getComputedStyle(lb).fontSize) || 80;
-    var s0 = now() + (delay || 0);
-    lb.style.filter = 'url(#me-pti)';
+    var lb = el.querySelector('.me-wl'), kk = el.querySelector('.me-wk'), s0 = now() + (delay || 0);
     (function k() {
-      var t = cl((now() - s0) / ms), e = inn ? 1 - Math.pow(1 - t, 3) : t * t, a = inn ? 1 - e : e;   // a: how smudged
-      if (dm) dm.setAttribute('scale', (a * fs * 0.5).toFixed(2));
-      if (bl) bl.setAttribute('stdDeviation', (a * fs * 0.06).toFixed(2));
-      lb.style.opacity = (1 - a).toFixed(3); if (kk) kk.style.opacity = ((1 - a) * 0.62).toFixed(3);
-      if (t < 1 && el.isConnected) requestAnimationFrame(k); else if (t >= 1 && !a) lb.style.filter = '';
+      var t = cl((now() - s0) / ms), a = inn ? t : 1 - t;
+      if (lb) lb.style.opacity = a.toFixed(3); if (kk) kk.style.opacity = (a * 0.62).toFixed(3);
+      if (t < 1 && el.isConnected) requestAnimationFrame(k);
     })();
   }
   function ptMake(c, fg, label, kicker, ox, oy, full) {
-    inkFilter();
+    c = '#8e6bff'; fg = '#121316';   // (Nov 25) every page change is the same violet lines, whatever the destination
+    // (Nov 25) the same measured lines as the landing: they thicken until they close into the destination's colour,
+    // spreading out from where you clicked; on the new page they thin away from the same point
     var g = strips(), vw = g.vw, vh = W.innerHeight, el = D.createElement('div'), cw = (g.xs[2] - g.xs[1]) || vw / 4;
-    var S = cw / Math.max(2, Math.round(cw / (vw < 640 ? 30 : 46)));   // whole dots per grid column, so the dots sit on the grid
+    var P = cw / Math.max(6, Math.round(cw / (vw < 640 ? 7 : 10) / 2) * 2);
     el.className = 'me-pt block'; el.setAttribute('aria-hidden', 'true');
     el.style.setProperty('--c', c); el.style.setProperty('--fg', fg);
     el.innerHTML = '<canvas></canvas><span class="me-wl" style="left:' + (g.rule + Math.max(20, Math.min(44, vw * 0.026))) + 'px"></span><span class="me-wk" style="left:' + g.pad + 'px"></span>';
@@ -136,21 +133,15 @@
     var cv = el.querySelector('canvas'), dpr = Math.min(2, W.devicePixelRatio || 1), x = cv.getContext('2d');
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + 'px'; cv.style.height = vh + 'px';
     x.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ox = (ox == null ? 0.5 : ox) * vw; oy = (oy == null ? 0.5 : oy) * vh;
-    var x0 = (g.rule % S) - S, nx = Math.ceil((vw - x0) / S) + 1, ny = Math.ceil(vh / S) + 1, y0 = (vh / 2) % S - S;
-    var md = Math.max(Math.hypot(ox, oy), Math.hypot(vw - ox, oy), Math.hypot(ox, vh - oy), Math.hypot(vw - ox, vh - oy)) || 1, C = [];
-    for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
-      var cx = x0 + (i + 0.5) * S, cy = y0 + (j + 0.5) * S;
-      C.push(cx, cy, Math.hypot(cx - ox, cy - oy) / md * 0.78 + hash(i, j) * 0.22);
-    }
-    // p 0..1; grow: dots appear (cover), else they shrink away (reveal)
+    ox = (ox == null ? 0.5 : ox) * vw;
+    var x0 = (g.rule % P) - P, C = [], md = Math.max(ox, vw - ox) || 1;
+    for (var i = 0, cx = x0; cx < vw + P; cx += P, i++) C.push(cx, Math.abs(cx - ox) / md * 0.8 + hash(i, 3) * 0.2);
     el._draw = function (p, grow) {
       x.clearRect(0, 0, vw, vh); x.fillStyle = c;
-      for (var k = 0; k < C.length; k += 3) {
-        var t = sm(cl((p - C[k + 2] * 0.6) / 0.4)), s = grow ? t : 1 - t;
-        if (s <= 0.01) continue;
-        var w = s >= 0.999 ? S + 1 : s * S;
-        x.fillRect(C[k] - w / 2, C[k + 1] - w / 2, w, w);
+      for (var k = 0; k < C.length; k += 2) {
+        var t = sm(cl((p - C[k + 1] * 0.55) / 0.45)), s = grow ? t : 1 - t;
+        var w = 1 + s * P; if (s >= 0.999) w = P + 1.5; else if (!grow && s <= 0.001) continue;
+        x.fillRect(C[k] - w / 2, 0, w, vh);
       }
     };
     if (full) { el._draw(1, true); var lb = el.querySelector('.me-wl'), kk = el.querySelector('.me-wk'); lb.style.opacity = '1'; kk.style.opacity = '.62'; }
@@ -206,7 +197,7 @@
     W.__meIntro = { p: 0, phase: 'load', t0: 0, ready: false };
   }
   if (doIntro) onBody(function () {
-    var IN = W.__meIntro, t0 = now(), MIN = 2400, MAX = 7000, ready = false, chosen = false;
+    var IN = W.__meIntro, t0 = now(), MIN = 1700, MAX = 7000, ready = false, chosen = false;
     var el = D.createElement('div'); el.className = 'mi2'; el.setAttribute('role', 'status'); el.setAttribute('aria-label', 'Loading');
     el.innerHTML = '<span class="mi2-n" aria-hidden="true">000</span><button type="button" class="mi2-go">' + (FINE ? 'Click' : 'Tap') + ' anywhere to enter <span aria-hidden="true">↗</span></button>';
     D.body.appendChild(el);
@@ -376,7 +367,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); underline(); cards(); bridge(); gridVars();
     if (!EMB && !SHELLED) music();
   }
 
@@ -471,7 +462,7 @@
             s.cs[c].style.setProperty('--f', (f * f * (3 - 2 * f)).toFixed(3)); s.cs[c].style.setProperty('--e', (e * e * (3 - 2 * e)).toFixed(3));
           }
           if (s.lx >= 0) s.v = x - s.lx; s.lx = x;
-          if (!s.lean) { s.lean = true; (function lean() {   // the run leans with scroll speed and straightens when you stop
+          if (false) { s.lean = true; (function lean() {   // the run leans with scroll speed and straightens when you stop
             s.sk += (Math.max(-5, Math.min(5, -s.v * 0.12)) - s.sk) * 0.14; s.v *= 0.8;
             s.tr.style.transform = 'translate3d(' + (-s.lx).toFixed(1) + 'px,0,0) skewX(' + s.sk.toFixed(3) + 'deg)';
             if (Math.abs(s.sk) > 0.01 || Math.abs(s.v) > 0.05) requestAnimationFrame(lean); else { s.sk = 0; s.tr.style.transform = 'translate3d(' + (-s.lx).toFixed(1) + 'px,0,0)'; s.lean = false; }
@@ -567,7 +558,7 @@
     var saved = null; try { saved = JSON.parse(st('sessionStorage', 'me-mu') || 'null'); } catch (e) { }
     var off = st('localStorage', 'me-mu-off') === '1';
     var wrap = D.createElement('div'); wrap.className = 'me-mu';
-    if (PAGE === 'home') H.classList.add('me-mu-top');   // on Home the player takes the first box of the top bar
+    H.classList.add('me-mu-top');   // the player takes the first box of the top bar, on every page
     wrap.innerHTML = '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2"></small><span class="me-t3"></span></span></button>';
     D.body.appendChild(wrap);
     var btn = wrap.querySelector('.me-mb'), t2 = wrap.querySelector('.me-t2'), t3 = wrap.querySelector('.me-t3');
@@ -984,7 +975,7 @@
       if (IN) IN.ready = true;
     };
     // the statement's keywords: each one, as it lights, is lit from within the lines behind it
-    var kws = [].slice.call(D.querySelectorAll('[data-inkroot] .stmt .kw')), KS = kws.map(function () { return { e: 0, fl: 0, lit: false }; });
+    var kws = [], KS = kws.map(function () { return { e: 0, fl: 0, lit: false }; });
     var frame = function () {
       raf = 0; if (!W0 || !NM) return;
       // where the page is: the hero leaving (p0) and the statement's own progress (ta, as the sentence assembles)
@@ -1171,24 +1162,7 @@
     // cards that have faded out (the last one sinks away over the index) stop catching the pointer
     var ccs = Array.prototype.map.call(D.querySelectorAll('.cc-card'), function (c) { return [c, c.querySelector('.cc-in')]; });
     if (ccs.length) { var pe = function () { ccs.forEach(function (x) { var o = x[1] ? parseFloat(x[1].style.opacity || '1') : 1; x[0].style.pointerEvents = o < 0.15 ? 'none' : ''; }); }; var mo = new MutationObserver(pe); ccs.forEach(function (x) { if (x[1]) mo.observe(x[1], { attributes: true, attributeFilter: ['style'] }); }); pe(); }
-    if (sec) {
-      var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
-      var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
-      // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
-      if (LIVE && !RM) {
-        var zl = '';
-        var zoom = function () {
-          var vh = W.innerHeight, r = sec.getBoundingClientRect(), b = bd.getBoundingClientRect();
-          var p = cl((vh - r.top) / (vh * 0.85)), e = 1 - Math.pow(1 - p, 3);
-          var q = cl((vh * 0.3 - (r.top + bd.offsetTop + bd.offsetHeight)) / (vh * 0.6)), f = q * q;
-          var s = (0.5 + 0.5 * e) * (1 + 0.35 * f), o = Math.min(0.45 + 0.55 * e, 1 - 0.85 * f);
-          var key = s.toFixed(3) + o.toFixed(3); if (key === zl) return; zl = key;
-          bd.style.transform = 'scale(' + s.toFixed(4) + ')'; bd.style.opacity = o.toFixed(3);
-          if (ls) { ls.style.opacity = cl(p * 1.6 - 0.6).toFixed(3); ls.style.transform = 'translateY(' + ((1 - cl(p * 1.6 - 0.6)) * 40).toFixed(1) + 'px)'; }
-        };
-        W.addEventListener('scroll', zoom, { passive: true }); W.addEventListener('resize', zoom); zoom();
-      }
-    }
+    // (Nov 25) the index is a still list: no dot band
     // Home landing (Nov 24): the index's own dot field, full screen, the name standing out of it in relief, big and
     // left-aligned on the margin line; it listens to the music (see pixelField's music option)
     var hb = D.querySelector('.me-pfb');
@@ -1196,17 +1170,6 @@
       var hg = strips(), hx = W.innerWidth < 640 ? hg.pad : hg.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
       if (!/[?&]hero=dots/.test(location.search)) lineHero(hb, hx, hg.pad);
       else pixelField(hb, [], { fg: FG, dim: 'rgba(244,243,239,.24)', grid: true, idle: { w: 'MELISA ERGANI', lines: ['MELISA', 'ERGANI'], px: hx, pr: hg.pad, lh: 1.12, bottom: true, c: FG }, relief: true, music: true, origin: [hx, hb.offsetHeight * 0.55], hit: D.getElementById('top'), big: 1.5 });
-    }
-    // Home footer: the name in pixels, ink on lavender; its contact links reshape it
-    var wm = D.querySelector('footer .wmark');
-    if (wm) {
-      var ft = wm.closest('footer');
-      var its = [];
-      var mail = ft.querySelector('.fmail a'); if (mail) { mail.setAttribute('data-w', 'EMAIL'); its.push(mail); }
-      Array.prototype.forEach.call(ft.querySelectorAll('a.crow'), function (a) { var t = /linkedin/i.test(a.href) ? 'LINKEDIN' : /behance/i.test(a.href) ? 'BEHANCE' : ''; if (t) { a.setAttribute('data-w', t); its.push(a); } });
-      Array.prototype.forEach.call(ft.querySelectorAll('a'), function (a) { if (/back to top/i.test(a.textContent)) { a.setAttribute('data-w', 'BACK TO TOP'); a.setAttribute('data-arrow', 'up'); its.push(a); } });
-      wm.classList.add('pf-on');
-      pixelField(wm, its, { fg: '#121316', dim: 'rgba(18,19,22,.22)', grid: false, idle: 'MELISA ERGANI', split: true, capFill: true, fit: 1, hit: ft, pitch: 260, dot: 0.34, big: 1.55 });
     }
   }
 
@@ -1269,6 +1232,7 @@
   function topbar() {
     var nav = Array.prototype.filter.call(D.querySelectorAll('nav[aria-label="Main"]'), function (x) { return !x.closest('x-dc'); })[0]; if (!nav) return;
     // everything in the bar starts a gutter after a grid line: the page label after the margin line, the links on the last columns
+    if (nav.classList.contains('me-nav')) return navBoxes(nav);
     var row = nav.firstElementChild, left = row && row.children[0], links = nav.querySelector('.mainnav');
     var lab = left && left.children[1], btn = left && left.querySelector('button');
     var align = function () {
@@ -1283,7 +1247,7 @@
       var X = n >= 6 ? [g.xs[4], g.xs[5], g.xs[6]] : [g.xs[3], (g.xs[3] + g.xs[4]) / 2, g.xs[4]];
       Array.prototype.forEach.call(as, function (a, i) { if (X[i] != null) put(a, X[i] + gut); });
     };
-    if (PAGE === 'home') return navBoxes(nav, links);
+    return navBoxes(nav);
     align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
     var cards = D.getElementById('work'), last = W.scrollY, hid = false;
     var set = function (h) { if (h !== hid) { hid = h; H.classList.toggle('nav-hide', h); } };
@@ -1297,8 +1261,8 @@
 
   /* Home top bar (Nov 24): outlined boxes, one per grid column, floating over the line screen; each label leans
      toward the cursor as it comes near, like the type in the screen behind it */
-  function navBoxes(nav, links) {
-    var logo = nav.querySelector('.logo'), as = links ? [].slice.call(links.querySelectorAll('a')) : [], items = (logo ? [logo] : []).concat(as);
+  function navBoxes(nav) {
+    var logo = null, as = [].slice.call(nav.querySelectorAll('a.nb')), items = as;
     items.forEach(function (a) {
       if (a.querySelector('.nt')) return;
       a.classList.add('nb'); var t = D.createElement('span'); t.className = 'nt';
@@ -1314,19 +1278,21 @@
     };
     align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
     // the bar takes the colours of what is under it: a card's own type colour over a card, cream over the dark
-    var ins = [].slice.call(D.querySelectorAll('.cc-card .cc-in')), ft = D.querySelector('footer.foot'), lastC = '', craf = 0;
+    var ins = [].slice.call(D.querySelectorAll('.cc-card .cc-in')), ft = D.querySelector('footer.me-ft'), lastC = '', craf = 0;
+    var hero = D.getElementById('top');
     var tone = function () {
-      craf = 0; var c = '#f4f3ef', bg = '#121316';
+      craf = 0; var c = '#f4f3ef', bg = '#121316', fill = 1;
+      if (hero && PAGE === 'home' && hero.getBoundingClientRect().bottom > 56) fill = 0;
       for (var i = ins.length - 1; i >= 0; i--) {
         var r = ins[i].getBoundingClientRect(); if (r.top > 28 || r.bottom < 28 || parseFloat(ins[i].style.opacity || '1') < 0.5) continue;
-        var cs = getComputedStyle(ins[i]); c = cs.color; bg = cs.backgroundColor; break;
+        var cs = getComputedStyle(ins[i]); c = cs.color; bg = cs.backgroundColor; fill = 0; break;
       }
       var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
       if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
-      if (c + bg !== lastC) { lastC = c + bg; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); }
+      if (c + bg + fill !== lastC) { lastC = c + bg + fill; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); H.classList.toggle('nav-fill', !!fill); }
     };
     W.addEventListener('scroll', function () { if (!craf) craf = requestAnimationFrame(tone); }, { passive: true }); tone();
-    if (!FINE || RM) return;
+    return;
     var mx = -1e4, my = -1e4, raf = 0, st = items.map(function () { return { x: 0, y: 0 }; });
     var tick = function () {
       raf = 0; var busy = false;
@@ -1505,7 +1471,7 @@
         inn.classList.add('me-go');
         W.addEventListener('pageshow', function () { arw.classList.remove('go', 'pr'); });
       }
-      if (!FINE) return;
+      return;   // (Nov 25) one behaviour for every card: the reveal and a small lift on hover
       H.classList.add('me-cl');
       // headings: letters widen where the cursor is
       var h2 = card.querySelector('.cc-h'), Ls = [];
@@ -1582,6 +1548,14 @@
   }
 
   /* Home -> About bridge: the sentence lights word by word as it comes up */
+  function gridVars() {
+    var set = function () {
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || 200, P = cw / Math.max(6, Math.round(cw / (W.innerWidth < 640 ? 7 : 10) / 2) * 2);
+      H.style.setProperty('--lp', P.toFixed(3) + 'px'); H.style.setProperty('--lx', (g.rule % P).toFixed(2) + 'px');
+    };
+    set(); W.addEventListener('resize', set);
+  }
+
   function bridge() {
     var t = D.querySelector('.br-t'); if (!t || !LIVE || RM) return;
     H.classList.add('br-on');
@@ -1704,7 +1678,7 @@
     var run = function () {
       build(); if (!total) return;
       var r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;
-      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.52) / 0.3), at = u * total, pt = null;
+      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.1) / 0.62), at = u * total, pt = null;
       segs.forEach(function (sg) {
         var k = cl((at - sg.a) / sg.L); sg.el.style.strokeDashoffset = (sg.L * (1 - k)).toFixed(1);
         if (k > 0 && k < 1) pt = sg.el.getPointAtLength(sg.L * k);
