@@ -819,9 +819,9 @@
         var w1 = oc.measureText(parts[0]).width, w2 = oc.measureText(parts[1]).width;
         if (w1 + w2 > W0 * 0.97) { fs *= W0 * 0.97 / (w1 + w2); font(fs); cap = fs * 0.72; base = (H0 + cap) / 2; w1 = oc.measureText(parts[0]).width; w2 = oc.measureText(parts[1]).width; }
         oc.fillText(parts[0], 0, base); oc.fillText(parts[1], W0 - w2, base);
-      } else oc.fillText(sp.w, 0, base);
+      } else { var cx0 = o.center ? Math.max(0, (W0 - (tw + gap + aw)) / 2) : 0; oc.fillText(sp.w, cx0, base); }
       if (ar) {
-        var ax = W0 - aw * 0.95, ay = base - cap, lw = fs * 0.11;
+        var ax = o.center ? Math.max(0, (W0 - (tw + gap + aw)) / 2) + tw + gap : W0 - aw * 0.95, ay = base - cap, lw = fs * 0.11;
         oc.strokeStyle = '#fff'; oc.lineWidth = lw; oc.lineCap = 'square'; oc.beginPath();
         if (ar === 'up') { var mx2 = ax + aw / 2; oc.moveTo(mx2, ay + cap - lw); oc.lineTo(mx2, ay + lw); oc.moveTo(ax + lw, ay + aw * 0.42); oc.lineTo(mx2, ay + lw); oc.lineTo(ax + aw - lw, ay + aw * 0.42); }
         else { oc.moveTo(ax + lw, ay + cap - lw); oc.lineTo(ax + aw - lw, ay + lw); oc.moveTo(ax + aw * 0.28, ay + lw); oc.lineTo(ax + aw - lw, ay + lw); oc.lineTo(ax + aw - lw, ay + cap * 0.72); }
@@ -1299,19 +1299,23 @@
     var ccs = Array.prototype.map.call(D.querySelectorAll('.cc-card'), function (c) { return [c, c.querySelector('.cc-in')]; });
     if (ccs.length) { var pe = function () { ccs.forEach(function (x) { var o = x[1] ? parseFloat(x[1].style.opacity || '1') : 1; x[0].style.pointerEvents = o < 0.15 ? 'none' : ''; }); }; var mo = new MutationObserver(pe); ccs.forEach(function (x) { if (x[1]) mo.observe(x[1], { attributes: true, attributeFilter: ['style'] }); }); pe(); }
     if (sec) {
-      var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
-      var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
+      // (Nov 25) the dot band lives in the About bridge now: it spells ABOUT / CV, dissolves into the playground under the
+      // cursor and spells it again when the cursor leaves; the index lists still reshape it
+      var bd = D.querySelector('.br-pf .pf-band') || sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
+      var IDL = { w: 'ABOUT / CV', arrow: true, c: FG };
+      var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true, center: true, idle: IDL });
+      if (api && FINE) { bd.addEventListener('pointerenter', function () { api.setIdle(null); }); bd.addEventListener('pointerleave', function () { api.setIdle(IDL); }); }
       // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
       if (LIVE && !RM) {
         var zl = '';
         var zoom = function () {
-          var vh = W.innerHeight, r = sec.getBoundingClientRect(), b = bd.getBoundingClientRect();
+          var vh = W.innerHeight, r = (bd.closest('.br-pf') ? bd : sec).getBoundingClientRect(), b = bd.getBoundingClientRect();
           var p = cl((vh - r.top) / (vh * 0.85)), e = 1 - Math.pow(1 - p, 3);
           var q = cl((vh * 0.3 - (r.top + bd.offsetTop + bd.offsetHeight)) / (vh * 0.6)), f = q * q;
           var s = (0.5 + 0.5 * e) * (1 + 0.35 * f), o = Math.min(0.45 + 0.55 * e, 1 - 0.85 * f);
           var key = s.toFixed(3) + o.toFixed(3); if (key === zl) return; zl = key;
           bd.style.transform = 'scale(' + s.toFixed(4) + ')'; bd.style.opacity = o.toFixed(3);
-          if (ls) { ls.style.opacity = cl(p * 1.6 - 0.6).toFixed(3); ls.style.transform = 'translateY(' + ((1 - cl(p * 1.6 - 0.6)) * 40).toFixed(1) + 'px)'; }
+          if (ls && !bd.closest('.br-pf')) { ls.style.opacity = cl(p * 1.6 - 0.6).toFixed(3); ls.style.transform = 'translateY(' + ((1 - cl(p * 1.6 - 0.6)) * 40).toFixed(1) + 'px)'; }
         };
         W.addEventListener('scroll', zoom, { passive: true }); W.addEventListener('resize', zoom); zoom();
       }
