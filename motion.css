@@ -335,3 +335,20 @@ html.me-pz.me-pz-l nav[aria-label="Main"] .nb:not(:hover):not(:focus-visible),ht
 /* no vertical grid lines (Nov 25): the column lines and the margin rule are gone, the grid stays in the layout */
 .atmos-grid .ag-l,.atmos-grid .ag-hl{display:none !important}
 .vl,.vlit,.vmark,.fline{display:none !important}
+/* card photos dissolve into square pixels at the screen edges (Nov 25) */
+.cc-t .me-dust{position:absolute;display:none;pointer-events:none;image-rendering:pixelated}
+.cc-t.me-dusting .me-dust{display:block}
+.cc-t.me-dusting img{opacity:0}
+.cc-t.me-dusting{background:transparent !important}
+.me-kc{align-items:center;text-align:center}
+/* top bar hover (Nov 25): a square drops in before the label, the label scrambles and settles; no fill */
+nav[aria-label="Main"] a.me-scr .nt,nav[aria-label="Main"] a.me-scr:not(.nb){position:relative}
+nav[aria-label="Main"] a.me-scr{transition:padding-left .25s cubic-bezier(.2,.7,.2,1)}
+nav[aria-label="Main"] a.me-scr .nt::before,nav[aria-label="Main"] a.me-scr:not(.nb)::before{content:"";position:absolute;left:-14px;top:50%;width:7px;height:7px;margin-top:-3.5px;background:currentColor;transform:scale(0);transition:transform .2s cubic-bezier(.2,.7,.2,1)}
+nav[aria-label="Main"] a.me-scr:not(.nb){display:inline-block}
+nav[aria-label="Main"] a.me-scr .nt{display:inline-block;transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+nav[aria-label="Main"] a.me-scr:hover .nt,nav[aria-label="Main"] a.me-scr:focus-visible .nt{transform:translateX(14px)}
+nav[aria-label="Main"] a.me-scr:hover .nt::before,nav[aria-label="Main"] a.me-scr:focus-visible .nt::before,nav[aria-label="Main"] a.me-scr:not(.nb):hover::before{transform:scale(1)}
+html.me-home nav[aria-label="Main"] .nb:hover,html.me-home nav[aria-label="Main"] .nb:focus-visible{background:transparent !important;color:var(--navc,#f4f3ef) !important;border-color:color-mix(in srgb,var(--navc,#f4f3ef) 55%,transparent)}
+html.me-pz.me-pz-l nav[aria-label="Main"] .nb:hover{background:#dfdfdb !important}
+nav[aria-label="Main"] a.me-scr .nt,.me-mb .me-lbl{font-variant-numeric:tabular-nums}

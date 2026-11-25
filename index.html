@@ -77,7 +77,7 @@ html.m [data-r="stag"]:not([data-in]) > *{opacity:0;transform:translateX(-32px)}
 /* about quote: words light up as it is read */
 .stw{position:relative;height:calc(min(76vh,740px) + min(520vh,4600px))}
 .sts{position:sticky;top:calc(56px + min(8vh,72px));height:min(76vh,740px)}
-.stmt{position:absolute;left:0;bottom:0;margin:0;max-width:min(100%,1120px);font-family:'Archivo',sans-serif;font-weight:380;font-size:clamp(23px,3.4vw,60px);line-height:1.18;letter-spacing:-.02em;color:#e6e5e0;text-wrap:pretty}
+.stmt{position:absolute;left:0;right:0;bottom:0;margin:0 auto;text-align:center;max-width:min(100%,1120px);font-family:'Archivo',sans-serif;font-weight:380;font-size:clamp(23px,3.4vw,60px);line-height:1.18;letter-spacing:-.02em;color:#e6e5e0;text-wrap:pretty}
 .stmt .kw{display:inline-block;transform-origin:0 0;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:1.04em;line-height:1;letter-spacing:0;color:#f4f3ef;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;backface-visibility:hidden}
 .stmt .sc{transition:opacity .2s linear}
 /* Disciplines: four moments threaded on the vertical rule */
@@ -312,15 +312,15 @@ html.m .gmlist{overflow:visible;transform:translateX(var(--gmx,0px));will-change
         <div class="me-hm"><span class="fade" style="animation-delay:1.3s">//2026</span><span class="fade" style="animation-delay:1.6s">Scroll <span class="bob">↓</span></span><span class="fade" style="animation-delay:1.6s;text-align:right">UI/UX &amp; Visual Designer — Based in Ankara, <span class="me-clock">--:--</span></span></div>
       </div>
     </header>
-    <section aria-label="About" style="margin-left:16%;padding:clamp(220px,30vw,520px) 0 clamp(140px,16vw,280px) clamp(20px,2.6vw,44px);display:flex;flex-direction:column;gap:clamp(72px,9vw,150px)">
+    <section aria-label="About" style="margin-left:0;padding:clamp(220px,30vw,520px) 0 clamp(140px,16vw,280px) 0;display:flex;flex-direction:column;gap:clamp(72px,9vw,150px)">
       <div class="stw">
         <div class="sts">
-          <span data-r="fade" style="position:absolute;left:0;top:0;font-size:11px;color:#9a9ea6">[ About ]</span>
+          <span data-r="fade" style="position:absolute;left:0;right:0;top:0;text-align:center;font-size:11px;color:#9a9ea6">[ About ]</span>
           <svg class="stsvg" aria-hidden="true" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none"><path class="stp" d="" fill="none" stroke="#f4f3ef" stroke-opacity=".5" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"></path><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect><rect class="stn" x="0" y="0" width="0" height="0" fill="#8e6bff"></rect></svg>
           <p class="stmt"><span class="sc" data-ink-hold>Industrial </span><span class="kw" data-ink data-ink-p="hero" data-k="0"><span class="sr">design</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">d</span><span class="ik">e</span><span class="ik">s</span><span class="ik">i</span><span class="ik">g</span><span class="ik">n</span></span></span><span class="sc" data-ink-hold> taught me how things are made, and </span><span class="kw" data-ink data-ink-p="hero" data-k="1"><span class="sr">psychology</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">p</span><span class="ik">s</span><span class="ik">y</span><span class="ik">c</span><span class="ik">h</span><span class="ik">o</span><span class="ik">l</span><span class="ik">o</span><span class="ik">g</span><span class="ik">y</span></span></span><span class="sc" data-ink-hold> why people use them. I start with </span><span class="kw" data-ink data-ink-p="hero" data-k="2"><span class="sr">research</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">r</span><span class="ik">e</span><span class="ik">s</span><span class="ik">e</span><span class="ik">a</span><span class="ik">r</span><span class="ik">c</span><span class="ik">h</span></span></span><span class="sc" data-ink-hold>, and keep designing until it feels </span><span class="kw" data-ink data-ink-p="hero" data-k="3"><span class="sr">intuitive</span><span aria-hidden="true" style="display:inline-block;white-space:nowrap"><span class="ik">i</span><span class="ik">n</span><span class="ik">t</span><span class="ik">u</span><span class="ik">i</span><span class="ik">t</span><span class="ik">i</span><span class="ik">v</span><span class="ik">e</span></span></span><span class="sc" data-ink-hold>.</span></p>
         </div>
       </div>
-      <p data-r="up" style="--d:.15s;margin:calc(clamp(72px,9vw,150px) * -.55) 0 0;max-width:52ch;font-size:12px;line-height:1.7;color:#c9ccd1">I studied Industrial Design at TED University, with Psychology as a secondary field.</p>
+      <p data-r="up" style="--d:.15s;margin:calc(clamp(72px,9vw,150px) * -.55) auto 0;text-align:center;max-width:52ch;font-size:12px;line-height:1.7;color:#c9ccd1">I studied Industrial Design at TED University, with Psychology as a secondary field.</p>
     </section>
   </div>
   </div>
@@ -953,8 +953,7 @@ class Component extends DCLogic {
       const fx = r.left - sr.left, fy = r.top - sr.top, dx = tx - fx, dy = ty - fy, L = Math.hypot(dx, dy) || 1;
       return { el, fx, fy, w: r.width, h: r.height, dx, dy, S, nx: -dy / L * d.c, ny: dx / L * d.c, t0: d.t0, d: d.d };
     });
-    const vl = document.querySelector('.vl');
-    this.lineX = vl ? vl.getBoundingClientRect().left - sr.left : -24;
+    this.stH = sr.height + 80;   // (Nov 25) the trace comes up from below the sentence
     this.scs = Array.from(st.querySelectorAll('.sc'));
     this.stp = st.querySelector('.stp'); this.stn = Array.from(st.querySelectorAll('.stn'));
     this.stLast = -1;
@@ -987,8 +986,8 @@ class Component extends DCLogic {
     const nodes = boxes.map((b) => [b.x + 2, b.y + b.k.h * b.sc * 0.98 + 8]);
     // one continuous geometric trace (like a circuit line): it drops straight down the vertical rule, turns
     // square into the first idea, then runs horizontally and cuts across at 45 degrees from idea to idea
-    const lx = this.lineX, n0 = nodes[0];
-    const pts = [[lx, n0[1] - Math.min(150, Math.abs(n0[0] - lx) + 60)], [lx, n0[1]], n0];
+    const n0 = nodes[0];
+    const pts = [[n0[0], this.stH], [n0[0], n0[1] + 1], n0];
     const at = [];
     const link = (a, c) => {
       const dx = c[0] - a[0], dy = c[1] - a[1], ax = Math.abs(dx), ay = Math.abs(dy);

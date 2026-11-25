@@ -374,7 +374,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge(); setTimeout(navScramble, 0);
     if (!EMB && !SHELLED) music();
   }
 
@@ -977,6 +977,7 @@
     };
     var frame = function () {
       raf = 0; if (!Hm) return;
+      if (W0 !== (H.clientWidth || W.innerWidth) || H0 !== W.innerHeight) build();   // never draw at a stale size
       var t = now(), hr = hb.getBoundingClientRect(), hh = (hb.closest('.me-hero') || hb).offsetHeight;
       var p0 = cl(-((hb.closest('.me-hero') || hb).getBoundingClientRect().top) / (hh * 0.85)), e = sm(p0);
       var gone = stw ? stw.getBoundingClientRect().bottom < 0 : p0 >= 1;
@@ -1424,6 +1425,31 @@
 
   /* Home top bar (Nov 24): outlined boxes, one per grid column, floating over the line screen; each label leans
      toward the cursor as it comes near, like the type in the screen behind it */
+  /* top bar (Nov 25, after her reference): on hover a small square drops in before the label and the label scrambles
+     through random characters, settling left to right. Runs only for the hovered label, ~0.45s. */
+  function navScramble() {
+    if (RM) return;
+    var CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%&/=?<>{}()#$*+-';
+    var els = [].slice.call(D.querySelectorAll('nav[aria-label="Main"] a'));
+    els.forEach(function (a) {
+      var host = a.querySelector('.nt') || a, txt = null, node = null, raf = 0;
+      if (host.children.length) return;   // plain text labels only
+      a.classList.add('me-scr');
+      var run = function () {
+        if (txt === null) txt = host.textContent;
+        cancelAnimationFrame(raf); var t0 = now(), n = txt.length, D0 = 420;
+        (function f() {
+          var p = (now() - t0) / D0, k = Math.floor(p * (n + 2)), out = '';
+          for (var i = 0; i < n; i++) { var c = txt[i]; out += (i < k - 1 || c === ' ' || c === '/') ? c : CH[(Math.random() * CH.length) | 0]; }
+          host.textContent = p >= 1 ? txt : out;
+          if (p < 1) raf = requestAnimationFrame(f);
+        })();
+      };
+      var hov = a.closest('a, button') || a;
+      hov.addEventListener('mouseenter', run); hov.addEventListener('focus', run);
+    });
+  }
+
   function navBoxes(nav, links) {
     var logo = nav.querySelector('.logo'), as = links ? [].slice.call(links.querySelectorAll('a')) : [], items = (logo ? [logo] : []).concat(as);
     items.forEach(function (a) {
@@ -1478,7 +1504,7 @@
   function cards() {
     var cs = [].slice.call(D.querySelectorAll('.cc-card')), sec = D.querySelector('.cc');
     if (!cs.length || !sec || !LIVE || RM) return;
-    pixReveal();
+    dustImgs();   // (Nov 25) replaces the pixel reveal
     cardLife(cs);
   }
 
@@ -1492,6 +1518,78 @@
     var k = fit === 'contain' ? Math.min(w / nw, h / nh) : Math.max(w / nw, h / nh), dw = nw * k, dh = nh * k;
     return [(w - dw) * px, (h - dh) * py, dw, dh];
   }
+  /* card photos (Nov 25, after her reference): where a photo crosses the edge of the screen it breaks into square
+     pixels, dense near the photo and scattering toward the edge, so photos rise into view out of a dither of their own
+     colours and dissolve the same way. Scroll-tied, so it runs backwards. A photo only gets the canvas while it is
+     touching an edge band; the rest of the time it is the plain image. */
+  function dustImgs() {
+    if (!LIVE || RM) return;
+    var ims = [].slice.call(D.querySelectorAll('.cc-vis .cc-t img')); if (!ims.length) return;
+    var dpr = Math.min(2, W.devicePixelRatio || 1), items = [], raf = 0;
+    ims.forEach(function (im, n) {
+      var t = im.closest('.cc-t'); if (!t || t.classList.contains('sl')) return;
+      var cv = D.createElement('canvas'), x = cv.getContext('2d'); cv.className = 'me-dust'; cv.setAttribute('aria-hidden', 'true'); t.appendChild(cv);
+      var it = { im: im, t: t, cv: cv, x: x, cache: null, w: 0, h: 0, B: 5, on: false, inView: false, key: '', seed: n * 7.13 };
+      var cs0 = getComputedStyle(im); it.fit = cs0.objectFit; it.pos = cs0.objectPosition;
+      it.size = function () {
+        var w = im.offsetWidth, h = im.offsetHeight; if (!w || !h) return false;
+        if (w === it.w && h === it.h && it.cache) return true;
+        it.w = w; it.h = h; it.B = W.innerWidth < 640 ? 4 : 5;
+        cv.style.left = im.offsetLeft + 'px'; cv.style.top = im.offsetTop + 'px'; cv.style.width = w + 'px'; cv.style.height = h + 'px';
+        cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+        if (!im.complete || !im.naturalWidth) return false;
+        var c = D.createElement('canvas'); c.width = cv.width; c.height = cv.height;
+        var r = fitRect(im.naturalWidth, im.naturalHeight, c.width, c.height, it.fit, it.pos);
+        try { c.getContext('2d').drawImage(im, r[0], r[1], r[2], r[3]); it.cache = c; } catch (e) { it.cache = null; }
+        // one random threshold per pixel block, fixed, so the dither holds still while it moves
+        var nx = Math.ceil(w / it.B), ny = Math.ceil(h / it.B), th = new Float32Array(nx * ny);
+        for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) th[j * nx + i] = hash(i + it.seed, j);
+        it.nx = nx; it.ny = ny; it.th = th; it.key = '';
+        return !!it.cache;
+      };
+      if (!im.complete) im.addEventListener('load', function () { it.w = 0; kick(); }, { once: true });
+      items.push(it);
+    });
+    if (!items.length) return;
+    var io = 'IntersectionObserver' in W ? new IntersectionObserver(function (es) {
+      es.forEach(function (e) { var it = e.target._dust; if (it) it.inView = e.isIntersecting; });
+      kick();
+    }, { rootMargin: '40px 0px' }) : null;
+    items.forEach(function (it) { it.t._dust = it; if (io) io.observe(it.t); else it.inView = true; });
+    var off = function (it) { if (it.on) { it.on = false; it.t.classList.remove('me-dusting'); it.key = ''; } };
+    var frame = function () {
+      raf = 0;
+      var vh = W.innerHeight, bandB = vh * 0.28, bandT = Math.min(160, vh * 0.16), topY = 56;   // the top band starts under the bar
+      items.forEach(function (it) {
+        if (!it.inView) return off(it);
+        var r = it.im.getBoundingClientRect();
+        if (!r.height || (r.bottom < vh - bandB && r.top > topY + bandT) || r.bottom < 0 || r.top > vh) return off(it);
+        if (!it.size()) return off(it);
+        var k = r.height / it.h, B = it.B, nx = it.nx, ny = it.ny, th = it.th;
+        var key = Math.round(r.top) + '|' + vh; if (key === it.key && it.on) return; it.key = key;
+        var x = it.x; x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-over';
+        x.clearRect(0, 0, it.cv.width, it.cv.height); x.drawImage(it.cache, 0, 0);
+        // erase the blocks whose threshold is above how far in from the edge they are
+        x.setTransform(dpr, 0, 0, dpr, 0, 0); x.globalCompositeOperation = 'destination-out'; x.beginPath();
+        var any = false;
+        for (var j = 0; j < ny; j++) {
+          var sy = r.top + (j + 0.5) * B * k;
+          var f = Math.min((vh - sy) / bandB, (sy - topY) / bandT);
+          if (f >= 1) continue;
+          f = f <= 0 ? 0 : f * f * (3 - 2 * f);
+          for (var i = 0; i < nx; i++) if (th[j * nx + i] >= f) { x.rect(i * B, j * B, B, B); any = true; }
+        }
+        x.fill();
+        if (!it.on) { it.on = true; it.t.classList.add('me-dusting'); }
+        if (!any) off(it);
+      });
+    };
+    var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
+    W.addEventListener('scroll', kick, { passive: true });
+    W.addEventListener('resize', function () { items.forEach(function (it) { it.w = 0; }); kick(); });
+    kick();
+  }
+
   function pixReveal() {
     var ims = [].slice.call(D.querySelectorAll('.cc-vis .cc-t img')); if (!ims.length) return;
     var DUR = 1150, dpr = Math.min(2, W.devicePixelRatio || 1), sc = D.createElement('canvas'), sx = sc.getContext('2d');
@@ -1800,7 +1898,8 @@
     var segs = [], total = 0, geo = '', marks = [], scrAt = 1;
     var build = function () {
       var sr = st.getBoundingClientRect(), pr = p.getBoundingClientRect(); if (!sr.width) return;
-      var vl = D.querySelector('[data-inkroot] .vl'), x0 = (vl ? vl.getBoundingClientRect().left : sr.left) - sr.left, R = sr.width;
+      // (Nov 25) the sentence is centred: the four drawings share its width, and the pen comes up from the bottom of the screen
+      var x0 = pr.left - sr.left, R = pr.right - sr.left;
       var below = sr.height - (pr.bottom - sr.top), slot = (R - x0) / 4, small = W.innerWidth < 640;
       var s = Math.max(40, Math.min(small ? 64 : 132, slot * 0.62, below - (small ? 70 : 96)));
       var top = (pr.bottom - sr.top) + Math.max(20, (below - s - (small ? 46 : 60)) / 2), yb = top + s;
@@ -1813,7 +1912,7 @@
         var L = el.getTotalLength(); el.style.strokeDasharray = L + ' ' + (L + 1); el.style.strokeDashoffset = L;
         segs.push({ el: el, a: total, L: L }); total += L;
       };
-      var main = [[x0, -Math.max(0, sr.top)], [x0, yb]];   // (Nov 24) the pen comes down the margin rule, so the rule and the line are one
+      var main = [[x0, W.innerHeight - (parseFloat(getComputedStyle(st).top) || 0) + 4], [x0, yb]];   // up from the bottom edge
       SKETCH.forEach(function (o, i) {
         var cx = x0 + slot * (i + 0.5), L0 = cx - s / 2;
         var P = function (q) { return [L0 + q[0] * s / 100, yb - s + q[1] * s / 100]; };
@@ -1825,7 +1924,7 @@
         add(main); main = [ex];
         o.p.slice(1).forEach(function (pl, j) { add(hand(pl, i * 3.1 + j + 1).map(P)); });
         marks.push([a0, total]);
-        caps[i].style.left = L0.toFixed(1) + 'px'; caps[i].style.top = (yb + 12).toFixed(1) + 'px'; caps[i].style.width = Math.max(40, slot - 8).toFixed(0) + 'px';
+        caps[i].style.left = (cx - slot / 2 + 4).toFixed(1) + 'px'; caps[i].style.top = (yb + 12).toFixed(1) + 'px'; caps[i].style.width = Math.max(40, slot - 8).toFixed(0) + 'px';
         if (o.screen) { var q0 = P([o.screen[0], o.screen[1]]); scr.setAttribute('x', q0[0].toFixed(1)); scr.setAttribute('y', q0[1].toFixed(1)); scr.setAttribute('width', (o.screen[2] * s / 100).toFixed(1)); scr.setAttribute('height', (o.screen[3] * s / 100).toFixed(1)); }
       });
       marks = marks.map(function (m) { return [m[0] / total, m[1] / total]; }); scrAt = marks.length ? marks[marks.length - 1][1] : 1;
