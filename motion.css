@@ -356,3 +356,8 @@ html.me-mu-top .me-mu .me-mb:hover{background:transparent;color:var(--navc,#f4f3
 html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 /* (Nov 25) the statement sits in the middle of the screen, both ways */
 [data-inkroot] .sts{top:calc((100svh - min(76vh,740px)) / 2)}
+/* discipline headings: the top bar's hover (Nov 25) */
+.cc-h.me-scr-h{position:relative;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.cc-h.me-scr-h::before{content:"";position:absolute;left:0;top:50%;width:.16em;height:.16em;margin-top:-.08em;background:currentColor;transform:scale(0);transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+.cc-h.me-scr-h:hover{transform:translateX(.3em)}
+.cc-h.me-scr-h:hover::before{transform:translateX(-.3em) scale(1)}

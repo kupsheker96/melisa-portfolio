@@ -1741,6 +1741,19 @@
         h2.innerHTML = txt.split('').map(function (ch) { return ch === ' ' ? ' ' : '<span class="cc-l" aria-hidden="true">' + ch.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join('');
         Ls = [].slice.call(h2.querySelectorAll('.cc-l'));
       }
+      // (Nov 25) the top bar's hover: a square drops in before the heading and its letters scramble and settle
+      if (h2 && Ls.length && !RM) {
+        var CHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&?', orig = Ls.map(function (l) { return l.textContent; }), sraf = 0;
+        h2.classList.add('me-scr-h');
+        h2.addEventListener('mouseenter', function () {
+          cancelAnimationFrame(sraf); var t0 = now(), n = Ls.length;
+          (function f() {
+            var p = (now() - t0) / 480, k = Math.floor(p * (n + 2));
+            Ls.forEach(function (l, i) { l.textContent = (p >= 1 || i < k - 1 || orig[i] === '/') ? orig[i] : CHS[(Math.random() * CHS.length) | 0]; });
+            if (p < 1) sraf = requestAnimationFrame(f);
+          })();
+        });
+      }
       var st0 = { x: 0, y: 0, a: 0, px: -1e4, py: -1e4 }, cur = { x: 0, y: 0, a: 0 }, box = null, lx = [], tb = [], hov = -1, run = false, lens = { x: 0.5, y: 0.5 };
       var measure = function () {
         box = inn.getBoundingClientRect();
@@ -1772,7 +1785,7 @@
           t.style.transform = tf;
         });
         // the heading's letters widen near the cursor
-        if (Ls.length) for (var i = 0; i < Ls.length; i++) {
+        if (false) for (var i = 0; i < Ls.length; i++) {   // (Nov 25) widening off: the heading has the top bar's hover instead
           var dx = (lx[i] - st0.px) / 170, w = 62 + 26 * a * Math.exp(-dx * dx);
           var pw = Ls[i]._w || 62; w = pw + (w - pw) * 0.22; Ls[i]._w = w;
           Ls[i].style.fontStretch = w.toFixed(1) + '%';
