@@ -1585,7 +1585,9 @@
       var lw = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (lw > room) { fs *= room / lw; font(fs); }
       var cap = fs * 0.72, lh = cap * lhk, top = yBot - (lines.length * lh - (lh - cap));
       oc.clearRect(0, 0, off.width, off.height); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
-      lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
+      // the ink's left edge lands exactly on x0 (a pixel column edge), whatever the letter's side bearing
+      var bl = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).actualBoundingBoxLeft || 0; }));
+      lines.forEach(function (l, i) { oc.fillText(l, x0 + bl, top + cap + i * lh); });
       var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height, M = new Uint8Array(gc * gr);
       for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
         var px0 = gx0 - G + gx * G, py0 = gy * G, hit = 0, n = 0;
@@ -1602,7 +1604,11 @@
       colX = []; for (var cx = gx0 + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); cols = colX.length; gc = Math.ceil(cols / K); gr = Math.ceil(H0 / G);
       ph = new Float32Array(cols * 3); for (var i = 0; i < cols; i++) { ph[i * 3] = hash(i, 1) * 6.283; ph[i * 3 + 1] = 0.6 + hash(i, 2) * 1.8; ph[i * 3 + 2] = hash(i, 3); }
       off.width = Math.ceil(W0); off.height = Math.ceil(H0);
-      x0 = small ? g.pad : g.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016)); room = W0 - x0 - g.pad;
+      // the footer's text column: the first pixel column at or after one gutter past the margin rule; the address and the
+      // contacts take the same inset, so the name, the address and the labels share one left edge
+      var gut = Math.max(14, Math.min(24, W.innerWidth * 0.016)), a0 = small ? g.pad : g.rule + gut;
+      x0 = (gx0 - G) + Math.ceil((a0 - (gx0 - G)) / G) * G + 0.5; room = W0 - x0 - g.pad;
+      ft.style.setProperty('--ftx', (x0 - (small ? g.pad : g.rule)).toFixed(1) + 'px');
       // the name stands on the last full grid row above the bottom bar, and rises as high as the stage allows
       yTop = stg ? stg.offsetTop + G : H0 * 0.5; yBot = stg ? Math.floor((stg.offsetTop + stg.offsetHeight) / G) * G - G : H0 - G;   // the name stands one row above the page's end
       masks = {}; I = new Float32Array(gc * gr); PT = new Float32Array(gc * gr); ORD = new Float32Array(gc * gr);

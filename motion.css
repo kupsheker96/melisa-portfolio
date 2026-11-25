@@ -416,3 +416,6 @@ html.on-cards .atmos-grid{opacity:0}
 nav.me-nav,.me-mu{transition:opacity .3s ease,visibility .3s}
 html.in-foot nav.me-nav,html.in-foot .me-mu{opacity:0;visibility:hidden;pointer-events:none}
 .me-ft{padding-top:clamp(20px,2.2vw,32px) !important}
+.me-ft .mf-mail{margin-left:var(--ftx,clamp(14px,1.6vw,24px)) !important;box-shadow:none !important}
+.me-ft .mf-l > div{padding-left:var(--ftx,clamp(14px,1.6vw,24px)) !important}
+@media (max-width:639px){.me-ft .mf-mail{margin-left:var(--ftx,0px) !important}.me-ft .mf-l > div{padding-left:var(--ftx,0px) !important}}
