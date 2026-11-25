@@ -384,5 +384,8 @@ a.nx > span:first-child{text-transform:uppercase;letter-spacing:-.015em !importa
 .me-ft .mf-row span,.me-ft .mf-row a,.me-ft .mf-mail,.me-ft .mf-l > div,.me-ft .mf-b{background:#030304}
 .me-ft .mf-mail{box-shadow:0 0 0 .12em #030304}
 .me-ft .mf-b{margin-top:auto}
-.mf-stage{flex:1 1 auto;min-height:clamp(240px,46vh,560px)}
+.mf-stage{flex:1 1 auto;min-height:clamp(260px,52vh,640px);cursor:crosshair;touch-action:pan-y}
+.me-ft .mf-main{padding-bottom:clamp(16px,2vw,32px)}
+.mf-hint{color:#9a9ea6}
 .me-ft .mf-b{margin-top:0}
+@media (max-width:639px){.mf-hint{display:none}}
