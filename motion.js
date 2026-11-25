@@ -367,7 +367,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); underline(); cards(); bridge(); gridVars();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); underline(); cards(); bridge(); gridVars(); footLines();
     if (!EMB && !SHELLED) music();
   }
 
@@ -975,7 +975,7 @@
       if (IN) IN.ready = true;
     };
     // the statement's keywords: each one, as it lights, is lit from within the lines behind it
-    var kws = [], KS = kws.map(function () { return { e: 0, fl: 0, lit: false }; });
+    var kws = [].slice.call(D.querySelectorAll('[data-inkroot] .stmt .kw')), KS = kws.map(function () { return { e: 0, fl: 0, lit: false }; });
     var frame = function () {
       raf = 0; if (!W0 || !NM) return;
       // where the page is: the hero leaving (p0) and the statement's own progress (ta, as the sentence assembles)
@@ -1556,6 +1556,81 @@
     set(); W.addEventListener('resize', set);
   }
 
+  /* footer (Nov 25): the landing again. The same violet line screen fills the page; MELISA ERGANI rises out of it at
+     the foot, pixel by pixel as the footer arrives; with the music the lines keep time; the cursor pushes pixels aside. */
+  function footLines() {
+    var ft = D.querySelector('footer.me-ft'); if (!ft) return;
+    var cv = D.createElement('canvas'); cv.className = 'mf-cv'; cv.setAttribute('aria-hidden', 'true'); ft.insertBefore(cv, ft.firstChild); ft.classList.add('mf-on');
+    var x = cv.getContext('2d'); if (!x) return;
+    var off = D.createElement('canvas'), oc = off.getContext('2d'), COL = '142,107,255';
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, K = 2, G = 0, gx0 = 0, colX = [], cols = 0, gc = 0, gr = 0, M = null, ORD = null, I = null, ph = null;
+    var vis = false, raf = 0, mx = -1e4, my = -1e4, t0 = now(), tm = 0, lastT = now(), still = !LIVE || RM;
+    var build = function () {
+      W0 = ft.clientWidth; H0 = ft.offsetHeight; if (!W0 || !H0) return;
+      cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4, small = W.innerWidth < 640;
+      P = cw / Math.max(K * 3, Math.round(cw / (small ? 7 : 10) / K) * K); G = P * K; gx0 = g.rule % G;
+      colX = []; for (var cx = gx0 + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); cols = colX.length; gc = Math.ceil(cols / K); gr = Math.ceil(H0 / G);
+      ph = new Float32Array(cols * 3); for (var i = 0; i < cols; i++) { ph[i * 3] = hash(i, 1) * 6.283; ph[i * 3 + 1] = 0.6 + hash(i, 2) * 1.8; ph[i * 3 + 2] = hash(i, 3); }
+      off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
+      var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+      var x0 = small ? g.pad : g.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
+      var bar = ft.querySelector('.mf-b'), main = ft.querySelector('.mf-main');
+      var bottom = H0 - (bar ? bar.offsetHeight : 50) - G * 2, topLim = main ? main.offsetTop + main.offsetHeight + G * 2 : H0 * 0.5;
+      var lines = ['MELISA', 'ERGANI'], lhk = 1.2, room = small ? W0 - x0 - g.pad - G * 3 : Math.min(W0 * 0.68 - x0, W0 - x0 - g.pad);
+      var fs = Math.max(20, (bottom - topLim)) / (2 * 0.72 * lhk); font(fs);
+      var lw = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (lw > room) { fs *= room / lw; font(fs); }
+      var cap = fs * 0.72, lh = cap * lhk, top = bottom - (2 * lh - (lh - cap));
+      oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic'; lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
+      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height;
+      M = new Uint8Array(gc * gr); I = new Float32Array(gc * gr); ORD = new Float32Array(gc * gr);
+      for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
+        var px0 = gx0 - G + gx * G, py0 = gy * G, hit = 0, n = 0;
+        for (var sy = 0.2; sy < 1; sy += 0.2) for (var sx = 0.2; sx < 1; sx += 0.2) { var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * G); n++; if (px >= 0 && px < ow && py < oh && d[(py * ow + px) * 4 + 3] > 120) hit++; }
+        var k = gy * gc + gx; M[k] = hit / n > 0.4 ? 1 : 0; ORD[k] = 0.55 * hash(gx + 7, gy + 3) + 0.45 * (0.5 + 0.5 * Math.sin(gx * 0.17 + gy * 0.23));
+      }
+    };
+    var frame = function () {
+      raf = 0; if (!W0 || !M) return;
+      var t = now(), L = LV() || { b: 0, on: 0 }, on = still ? 0 : (L.on || 0);
+      tm += Math.min(0.05, (t - lastT) / 1000) * on; lastT = t; var tt = tm;
+      var r = ft.getBoundingClientRect(), vh = W.innerHeight, arrive = still ? 1 : cl((vh - r.top) / (vh * 0.8));   // the name builds as the footer comes up
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W0, H0);
+      var spec = L.spec, hz = L.hz || 43;
+      for (var c = 0; c < cols; c++) {
+        var lv = 0; if (spec && on > 0.01) { var fq = 40 * Math.pow(300, (c % 97) / 97); lv = spec[Math.min(spec.length - 1, Math.round(fq / hz))] / 255; lv *= lv; }
+        var pul = 0.5 + on * 0.5 * Math.sin(tt * ph[c * 3 + 1] + ph[c * 3]);
+        x.fillStyle = 'rgba(' + COL + ',' + (0.26 + 0.2 * pul + on * lv * 0.4).toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1 + on * lv * 1.2, H0);
+      }
+      var R = Math.max(110, Math.min(200, W0 * 0.12)) / G, mgx = (mx - gx0 + G) / G, mgy = my / G, moved = 0;
+      for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
+        var k = gy * gc + gx, sx = gx, sy = gy, push = 0;
+        var ddx = (gx + 0.5 - mgx) / R, ddy = (gy + 0.5 - mgy) / R, dd = Math.sqrt(ddx * ddx + ddy * ddy);
+        if (dd < 1 && !still) { push = 1 - dd; var st2 = push * 2.4; sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2 * 1.6); }
+        var m = (sx >= 0 && sx < gc && sy >= 0 && sy < gr) ? M[sy * gc + sx] : 0;
+        var field = 1 + on * (-0.5 + 0.5 * Math.sin(gx * 0.23 - tt * 2.5 + Math.sin(gy * 0.19 + tt * 0.5) * 1.6));
+        var tgt = m && ORD[sy * gc + sx] < arrive * 1.25 ? Math.min(1, field + push * 0.8) : 0;
+        var dI = (tgt - I[k]) * (tgt > I[k] ? 0.3 : 0.18); I[k] += dI; if (Math.abs(dI) > moved) moved = Math.abs(dI);
+        var v = I[k]; if (v < 0.04) continue;
+        for (var j = 0; j < K; j++) {
+          var ci = gx * K + j; if (ci >= cols) break;
+          var hv = hash(ci, gy), n = 0.55 + 0.25 * Math.sin(tt * (1.3 + ph[ci * 3 + 1] * 1.7) + ph[ci * 3] + gy * 0.9) + 0.2 * Math.sin(tt * (3.1 + hv * 4) + hv * 9);
+          n = 0.82 + on * (n - 0.82);
+          var e = v * Math.max(0.3, n), wd = 1.2 + e * (P * 0.8 - 1.2); if (e < 0.08) continue;
+          x.fillStyle = 'rgba(' + COL + ',' + Math.min(1, 0.5 + e * 1.1).toFixed(3) + ')'; x.fillRect(colX[ci] - wd / 2, gy * G, wd, G + 0.5);
+        }
+      }
+      if (vis && !D.hidden && !still) raf = requestAnimationFrame(frame);
+    };
+    var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
+    ft.addEventListener('pointermove', function (e) { if (e.pointerType !== 'mouse') return; var r = ft.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; }, { passive: true });
+    ft.addEventListener('pointerleave', function () { mx = my = -1e4; });
+    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; lastT = now(); kick(); }).observe(ft); else vis = true;
+    var start = function () { build(); kick(); };
+    try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 200); });
+  }
+
   function bridge() {
     var t = D.querySelector('.br-t'); if (!t || !LIVE || RM) return;
     H.classList.add('br-on');
@@ -1678,7 +1753,7 @@
     var run = function () {
       build(); if (!total) return;
       var r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;
-      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.1) / 0.62), at = u * total, pt = null;
+      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.52) / 0.3), at = u * total, pt = null;
       segs.forEach(function (sg) {
         var k = cl((at - sg.a) / sg.L); sg.el.style.strokeDashoffset = (sg.L * (1 - k)).toFixed(1);
         if (k > 0 && k < 1) pt = sg.el.getPointAtLength(sg.L * k);

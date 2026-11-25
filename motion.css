@@ -338,11 +338,13 @@ nav.me-nav .nb[aria-current="page"] .nt{text-decoration:underline;text-underline
 .atmos-grain,.atmos-grid .ag-ch{display:none !important}
 /* ink retires: anything that used to ink in is simply there */
 [data-ink-off],[data-ink-off] .ik{opacity:1 !important;filter:none !important;transform:none !important;visibility:visible !important}
-/* Home: the statement is set, still; the drawings below it carry the scroll */
-.stw{height:calc(min(76vh,740px) + min(150vh,1400px)) !important}
-.stsvg,.stn{display:none !important}
-[data-inkroot] .stmt .kw,[data-inkroot] .stmt .sc{opacity:1 !important;transform:none !important;filter:none !important}
 .vmark,.me-dot{display:none !important}
+/* Home cards (Nov 25, later): the dark page ruled with the landing's lines, each in its category's colour; the colour
+   also marks the number, the top edge and the list squares */
+.cc .cc-in{background-image:linear-gradient(180deg,rgba(14,15,18,.9) 0,rgba(14,15,18,.6) 40%,rgba(14,15,18,.1) 100%),repeating-linear-gradient(90deg,color-mix(in srgb,var(--k) 50%,transparent) 0 1px,transparent 1px var(--lp,10px));background-position:0 0,var(--lx,0px) 0;border-top:1px solid var(--k);box-shadow:0 -24px 60px rgba(0,0,0,.45)}
+.cc .cc-n{color:var(--k)}
+.cc .cc-ls a:hover b,.cc .cc-ls a:focus-visible b{color:var(--k)}
+.cc .cc-ls a > span:first-child{color:var(--k) !important;opacity:1}
 /* Home cards: the number is set like its heading; one behaviour, a small lift */
 .cc-n{font-family:'Archivo',sans-serif !important;font-weight:800 !important;font-stretch:62% !important;letter-spacing:-.015em}
 .cc .cc-t{transition:transform .35s cubic-bezier(.2,.7,.2,1)}
@@ -354,7 +356,7 @@ nav.me-nav .nb[aria-current="page"] .nt{text-decoration:underline;text-underline
 .pf-s:hover{padding-left:0;color:#9a9ea6}
 .pf-s:hover i{opacity:.35}
 /* footer, every page: the measured lines return under the address */
-.me-ft{position:relative;z-index:1;display:flex;flex-direction:column;min-height:min(78vh,760px);box-sizing:border-box;padding:76px clamp(16px,4vw,56px) 0;background-color:#0b0c0e;background-image:repeating-linear-gradient(90deg,rgba(142,107,255,.34) 0 1px,transparent 1px var(--lp,10px));background-position:var(--lx,0px) 0;color:#f4f3ef;font:300 12px/1.5 'JetBrains Mono',ui-monospace,monospace;overflow:hidden}
+.me-ft{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;min-height:100svh;box-sizing:border-box;padding:76px clamp(16px,4vw,56px) 0;background-color:#030304;background-image:repeating-linear-gradient(90deg,rgba(142,107,255,.34) 0 1px,transparent 1px var(--lp,10px));background-position:var(--lx,0px) 0;color:#f4f3ef;font:300 12px/1.5 'JetBrains Mono',ui-monospace,monospace;overflow:hidden}
 .me-ft a{color:#f4f3ef;text-decoration:none}
 .mf-row{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6}
 .mf-row span,.mf-row a{background:#0b0c0e;padding:2px 0}
@@ -374,3 +376,11 @@ nav.me-nav .nb[aria-current="page"] .nt{text-decoration:underline;text-underline
 .cb .cb-t{font-family:'Archivo',sans-serif !important;font-weight:800 !important;font-stretch:62% !important;text-transform:uppercase;letter-spacing:-.01em}
 @media (max-width:639px){.cc-n{font-size:clamp(30px,9vw,44px) !important}.cc-h{font-size:clamp(40px,12vw,64px) !important}}
 a.nx > span:first-child{text-transform:uppercase;letter-spacing:-.015em !important}
+/* footer = the landing again: the line screen fills it, the name rises out of the lines at its foot */
+.me-ft.mf-on{background-image:none}
+.mf-cv{position:absolute;left:0;top:0;display:block;pointer-events:none;z-index:0}
+.me-ft > *:not(.mf-cv){position:relative;z-index:1}
+.me-ft .mf-main{flex:0 0 auto;justify-content:flex-start;padding-top:clamp(32px,5vw,80px)}
+.me-ft .mf-row span,.me-ft .mf-row a,.me-ft .mf-mail,.me-ft .mf-l > div,.me-ft .mf-b{background:#030304}
+.me-ft .mf-mail{box-shadow:0 0 0 .12em #030304}
+.me-ft .mf-b{margin-top:auto}
