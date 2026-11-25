@@ -1575,8 +1575,8 @@
       off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height);
       var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
       var x0 = small ? g.pad : g.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
-      var bar = ft.querySelector('.mf-b'), main = ft.querySelector('.mf-main');
-      var bottom = H0 - (bar ? bar.offsetHeight : 50) - G * 2, topLim = main ? main.offsetTop + main.offsetHeight + G * 2 : H0 * 0.5;
+      var stg = ft.querySelector('.mf-stage');
+      var bottom = stg ? stg.offsetTop + stg.offsetHeight - G * 2 : H0 - 60, topLim = stg ? stg.offsetTop + G * 2 : H0 * 0.5;
       var lines = ['MELISA', 'ERGANI'], lhk = 1.2, room = small ? W0 - x0 - g.pad - G * 3 : Math.min(W0 * 0.68 - x0, W0 - x0 - g.pad);
       var fs = Math.max(20, (bottom - topLim)) / (2 * 0.72 * lhk); font(fs);
       var lw = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (lw > room) { fs *= room / lw; font(fs); }
