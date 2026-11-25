@@ -354,3 +354,5 @@ html.me-pz.me-pz-l nav[aria-label="Main"] .nb:hover{background:#dfdfdb !importan
 nav[aria-label="Main"] a.me-scr .nt,.me-mb .me-lbl{font-variant-numeric:tabular-nums}
 html.me-mu-top .me-mu .me-mb:hover{background:transparent;color:var(--navc,#f4f3ef);border-color:color-mix(in srgb,var(--navc,#f4f3ef) 55%,transparent)}
 html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
+/* (Nov 25) the statement sits in the middle of the screen, both ways */
+[data-inkroot] .sts{top:calc((100svh - min(76vh,740px)) / 2)}

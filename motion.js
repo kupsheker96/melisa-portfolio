@@ -1838,10 +1838,8 @@
       var cx = Math.max(0, Math.min(vw, r.left + r.width / 2)), cy = Math.max(0, Math.min(vh, dot === mk ? r.top + r.height / 2 : r.top + r.height * 0.74));
       var ct = cards.getBoundingClientRect().top;
       var q = cl((1.9 * vh - ct) / (0.9 * vh)), e = q * q * (3 - 2 * q);            // full exactly when the card reaches the screen
-      var r0 = dot === mk ? 3.5 : Math.max(3, r.width * 0.32), far = Math.max(cx, vw - cx, cy, vh - cy) + 2, R = r0 + (far - r0) * Math.pow(e, 1.5);
-      if (dot !== mk) dot.style.opacity = q > 0 ? '0' : '';
-      var t = cl(q / 0.18), c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * t); });
-      var top = Math.max(0, cy - R), left = Math.max(0, cx - R), right = Math.max(0, vw - (cx + R)), bot = Math.max(0, vh - (cy + R));
+      // (Nov 25) no longer opens from the full stop: the card's colour rises from the bottom edge, full width
+      var c = B, top = vh * (1 - e), left = 0, right = 0, bot = 0;
       // above the rising card only, but reaching 80px into its empty top margin (same colour): scrolling moves the card
       // before this can follow, and without the overlap the page showed through the seam as a dark line
       if (ct < vh) bot = Math.max(bot, vh - ct - Math.min(80, Math.max(0, vh - ct)));
