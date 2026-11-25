@@ -374,7 +374,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge(); setTimeout(navScramble, 0);
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge(); setTimeout(navScramble, 0); roles();
     if (!EMB && !SHELLED) music();
   }
 
@@ -1425,6 +1425,28 @@
 
   /* Home top bar (Nov 24): outlined boxes, one per grid column, floating over the line screen; each label leans
      toward the cursor as it comes near, like the type in the screen behind it */
+  /* Home (Nov 25): "Here is what I have been doing ... as a ___ designer." The role keeps changing in the pixel face,
+     each change scrambling through random letters like the top bar. Runs only while the line is on screen. */
+  function roles() {
+    var v = D.querySelector('.me-yrs-v'); if (!v) return;
+    var R = ['UI/UX', 'Product', 'Visual', 'Brand', 'Industrial', 'Graphic', 'Social Media'], i = 0, vis = false, tmr = 0, raf = 0;
+    var CHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#%&?';
+    var swap = function (to) {
+      if (RM) { v.textContent = to; return; }
+      var from = v.textContent, n = Math.max(from.length, to.length), t0 = now();
+      cancelAnimationFrame(raf);
+      (function f() {
+        var p = Math.min(1, (now() - t0) / 520), k = Math.floor(p * (n + 2)), len = Math.round(from.length + (to.length - from.length) * Math.min(1, p * 1.6)), out = '';
+        for (var j = 0; j < len; j++) { var c = to[j]; out += (j < k - 1 && c !== undefined) || c === ' ' || c === '/' ? (c || '') : CHS[(Math.random() * CHS.length) | 0]; }
+        v.textContent = p >= 1 ? to : out;
+        if (p < 1) raf = requestAnimationFrame(f);
+      })();
+    };
+    var loop = function () { clearTimeout(tmr); if (!vis || D.hidden) return; tmr = setTimeout(function () { i = (i + 1) % R.length; swap(R[i]); loop(); }, RM ? 2600 : 1700); };
+    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; loop(); }).observe(v); else { vis = true; loop(); }
+    D.addEventListener('visibilitychange', loop);
+  }
+
   /* top bar (Nov 25, after her reference): on hover a small square drops in before the label and the label scrambles
      through random characters, settling left to right. Runs only for the hovered label, ~0.45s. */
   function navScramble() {
