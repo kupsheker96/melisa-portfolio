@@ -386,3 +386,11 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 /* (Nov 25) the UI/UX card itself rises over the violet panel; no separate grey wipe in front of it */
 .cc{z-index:7 !important}
 .me-dot{display:none !important}
+/* (Nov 25) the About bridge, centred like the statement */
+.me-br .pf-hd{text-align:center;justify-content:center}
+.br-g{display:flex !important;flex-direction:column;align-items:center;text-align:center}
+.br-g > *{padding-left:0 !important}
+.br-t{max-width:min(100%,24em);text-align:center;text-wrap:balance}
+.br-f{width:min(100%,760px);text-align:left}
+.br-f li{align-items:center;text-align:center}
+.br-a{align-self:center !important;justify-self:auto !important;margin-top:clamp(8px,1.5vw,24px)}
