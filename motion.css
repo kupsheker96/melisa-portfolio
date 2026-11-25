@@ -373,5 +373,10 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 @media (max-width:639px){.me-yrs-t{font-size:clamp(26px,8vw,40px)}}
 @media (prefers-reduced-motion:reduce){.me-yrs-s{transform:none}}
 
-.me-yrs-t .yw{display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .02em .14em;margin:0 -.02em -.14em}
-.me-yrs-t .yi{display:inline-block;will-change:transform}
+.me-yrs-t .yw{display:inline-block;white-space:nowrap}
+.me-yrs-t .yc{opacity:0;transition:opacity 0s linear}
+.me-yrs-t.on .yc{opacity:1}
+.me-yrs-t:not(.on) .yc{transition-delay:0s !important}
+.me-yrs-t .me-yrs-w{opacity:0;transition:opacity .01s linear 0s}
+.me-yrs-t.on .me-yrs-w{opacity:1;transition-delay:.6s}
+@media (prefers-reduced-motion:reduce){.me-yrs-t .yc,.me-yrs-t .me-yrs-w{opacity:1}}
