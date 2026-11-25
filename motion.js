@@ -921,6 +921,132 @@
      back into plain lines, pixel by pixel, while the black settles into the page colour, so the lines become the
      background of the statement. Then each keyword of the statement surfaces from the same lines (cells thicken in an
      uneven order, lit by the same light) and sinks back as the sentence moves on. (?hero=dots: the dot version.) */
+  /* landing, pressed version (Nov 25): the Index's square dots as a grey halftone surface, the name pressed into it.
+     MELISA top left, ERGANI bottom right. Inside the letters the dots sink away; the wall turned away from the light
+     keeps the black, the wall facing it is bare. The light comes from the cursor's direction (on touch, the scroll
+     turns it); with the music the surface moves in waves, each column with its own band of the spectrum, the bass
+     deepens the press and every beat nudges the light. Scrolling on, the black rises from the bottom and closes the
+     screen into the dark of the statement. The intro counts over the plain surface and the name presses in as the
+     site opens. The loop only runs while something moves it. (?hero=lines: the line screen, ?hero=dots: the dot field.) */
+  function pressedHero(hb) {
+    var host = hb.closest('.mainc') || D.body;
+    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'me-lf'; host.insertBefore(cv, host.firstChild);
+    var x = cv.getContext('2d'); if (!x) return;
+    var off = D.createElement('canvas'), oc = off.getContext('2d');
+    var IN = W.__meIntro || null; W.__meIntroCanvas = true; H.classList.add('me-pz', 'me-pz-l');
+    var GREY = '#dfdfdb', INK = '#121316', DARK = '#121316';
+    var dpr = Math.min(1.5, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 10, cols = 0, rows = 0, nr = 0, ox = 0, small = false;
+    var Hm = null, GX = null, GY = null, out = [];
+    var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, lastMove = -1e4, lastScroll = -1e4, tm = 0, lastT = now();
+    var ang = -2.36, avg = 0, prevB = 0, lastBeat = 0, beat = 0, press = IN ? 0 : 1, pressT0 = 0;
+    var stw = D.querySelector('[data-inkroot] .stw');
+    var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+    // a line of type fitted into a box, read back on the dot grid
+    var mask = function (M, word, bx, by, bw, bh, bottom) {
+      oc.clearRect(0, 0, off.width, off.height); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+      var fs = bh / 0.72; font(fs); var w = oc.measureText(word).width; if (w > bw) { fs *= bw / w; font(fs); }
+      var cap = fs * 0.72; oc.fillText(word, bx, bottom ? by + bh : by + cap);
+      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height;
+      for (var r = 0; r < nr; r++) for (var c = 0; c < cols; c++) {
+        var px = Math.round(ox + c * P), py = Math.round(P / 2 + r * P); if (px < 0 || px >= ow || py >= oh) continue;
+        var a = d[(py * ow + px) * 4 + 3] / 255; if (a > M[r * cols + c]) M[r * cols + c] = a;
+      }
+    };
+    var blur = function (M, n) {
+      var a = M.slice(), b = new Float32Array(M.length), r, c, d, s, q;
+      for (var k = 0; k < n; k++) {
+        for (r = 0; r < nr; r++) for (c = 0; c < cols; c++) { s = 0; q = 0; for (d = -1; d <= 1; d++) if (c + d >= 0 && c + d < cols) { s += a[r * cols + c + d]; q++; } b[r * cols + c] = s / q; }
+        for (r = 0; r < nr; r++) for (c = 0; c < cols; c++) { s = 0; q = 0; for (d = -1; d <= 1; d++) if (r + d >= 0 && r + d < nr) { s += b[(r + d) * cols + c]; q++; } a[r * cols + c] = s / q; }
+      }
+      return a;
+    };
+    var build = function () {
+      W0 = H.clientWidth || W.innerWidth; H0 = W.innerHeight; var hbH = hb.closest('.me-hero') ? hb.closest('.me-hero').offsetHeight : hb.offsetHeight;
+      if (!W0 || !H0 || !hbH) return;
+      cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4; small = W0 < 640;
+      P = cw / Math.max(3, Math.round(cw / (small ? 6 : 10)));   // a whole number of dots per grid column: the dots sit on the site's grid
+      ox = g.rule % P; cols = Math.ceil(W0 / P) + 1; rows = Math.ceil(H0 / P) + 1; nr = Math.ceil(hbH / P) + 1;
+      off.width = Math.ceil(W0); off.height = Math.ceil(hbH);
+      var M = new Float32Array(cols * nr), pad = g.pad;
+      if (small) { mask(M, 'MELISA', pad, hbH * 0.11, W0 * 0.86 - pad, hbH * 0.27); mask(M, 'ERGANI', W0 * 0.14, hbH * 0.45, W0 * 0.86 - pad, hbH * 0.27); }
+      else { mask(M, 'MELISA', pad, hbH * 0.1, W0 * 0.56, hbH * 0.3); mask(M, 'ERGANI', W0 * 0.42, hbH * 0.5, W0 * 0.58 - pad, hbH * 0.3, true); }
+      Hm = blur(M, 1); GX = new Float32Array(Hm.length); GY = new Float32Array(Hm.length);
+      for (var r = 1; r < nr - 1; r++) for (var c = 1; c < cols - 1; c++) { var i = r * cols + c; GX[i] = Hm[i - 1] - Hm[i + 1]; GY[i] = Hm[i - cols] - Hm[i + cols]; }
+      if (IN) IN.ready = true;
+    };
+    var frame = function () {
+      raf = 0; if (!Hm) return;
+      var t = now(), hr = hb.getBoundingClientRect(), hh = (hb.closest('.me-hero') || hb).offsetHeight;
+      var p0 = cl(-((hb.closest('.me-hero') || hb).getBoundingClientRect().top) / (hh * 0.85)), e = sm(p0);
+      var gone = stw ? stw.getBoundingClientRect().bottom < 0 : p0 >= 1;
+      cv.style.visibility = gone ? 'hidden' : '';
+      H.classList.toggle('me-pz-l', p0 < 0.6);
+      if (gone) return;
+      var L = LV() || { b: 0, m: 0, h: 0, on: 0 }, on = still ? 0 : (L.on || 0);
+      tm += Math.min(0.05, (t - lastT) / 1000) * (on + (IN ? 0.35 : 0)); lastT = t;   // the waves' clock runs with the music
+      var b = L.b || 0, flux = b - prevB; prevB = b; avg += (b - avg) * 0.04;
+      if (on > 0.3 && (flux > 0.09 || b > avg * 1.3) && b > 0.45 && t - lastBeat > 260) { lastBeat = t; beat = 1; }
+      beat *= 0.9;
+      // the intro: the name presses in as the site opens
+      if (IN) {
+        if (IN.phase === 'leave') { if (!pressT0) pressT0 = IN.t0 || t; press = sm(cl((t - pressT0) / 1600)); if (press >= 1) { IN.phase = 'done'; W.__meIntro = null; IN = null; } }
+        else press = 0;
+      }
+      // the light: toward the cursor, or turned by the scroll; the music drifts it and the beats nudge it
+      var sy = W.scrollY || 0;
+      var tgt = mx > -1e3 ? Math.atan2(my - H0 / 2, mx - W0 / 2) : -2.36 + sy * 0.0025 + tm * 0.6;
+      tgt += beat * 0.5;
+      var dA = Math.atan2(Math.sin(tgt - ang), Math.cos(tgt - ang)); ang += still ? dA : dA * 0.12;
+      var lx = Math.cos(ang) * 0.707, ly = Math.sin(ang) * 0.707, depth = (1 + on * b * 1.2) * press;
+      var ph = sy * 0.004 + tm * 1.4, spec = L.spec, hz = L.hz || 43, sh = Math.round(-hr.top * 0.4 / P);   // the name drifts up a little slower than the page
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.fillStyle = GREY; x.fillRect(0, 0, W0, H0);
+      out.length = 0;
+      var fill = P + 0.6, pmin = 0.7, n = spec ? spec.length : 0;
+      for (var c = 0; c < cols; c++) {
+        var a = 0.25;
+        if (n && on > 0.01) { var v = spec[Math.min(n - 1, Math.max(1, Math.round(40 * Math.pow(300, c / cols) / hz)))] / 255; a = 0.25 + v * v * on * 0.9; }
+        var px = ox + c * P;
+        for (var r = 0; r < rows; r++) {
+          var py = P / 2 + r * P, nrow = r + sh, i = nrow >= 0 && nrow < nr ? nrow * cols + c : -1;
+          var h = i >= 0 ? Hm[i] * press : 0;
+          var s = P * (0.4 + Math.sin(c * 0.11 + r * 0.05 - ph * 2) * Math.cos(r * 0.09 - c * 0.03 + ph) * a * 0.36 * (1 - h));
+          if (h > 0.003) {
+            s *= 1 - Math.min(1, h * 1.7);   // pressed in: the dots sink out of sight
+            var wall = (GX[i] * lx + GY[i] * ly) * depth, hr0 = Hm[i];
+            // only the rim of each letter carries the wall, so the strokes stay open
+            if (wall > 0.02 && hr0 > 0.08 && hr0 < 0.8) s = Math.max(s, P * Math.min(0.98, 0.5 + wall * 2.6)); else if (wall < -0.02) s *= Math.max(0, 1 + wall * 6);
+          }
+          if (e > 0) { var tr = sm(cl(e * 1.5 - (1 - py / H0) * 0.5)); s += (fill - s) * tr; }   // the black rises from the bottom
+          if (s < pmin) continue;
+          if (s > fill) s = fill;
+          out.push(px - s / 2, py - s / 2, s);
+        }
+      }
+      x.fillStyle = INK; x.beginPath();
+      for (var k = 0; k < out.length; k += 3) x.rect(out[k], out[k + 1], out[k + 2], out[k + 2]);
+      x.fill();
+      if (e > 0.98) { x.fillStyle = DARK; x.fillRect(0, 0, W0, H0); }
+      var busy = on > 0.01 || IN || t - lastScroll < 450 || t - lastMove < 700 || Math.abs(dA) > 0.003;
+      if (busy && vis && !D.hidden && !still) raf = requestAnimationFrame(frame);
+    };
+    var kick = function () { if (!raf && vis) raf = requestAnimationFrame(frame); };
+    W.__mePzKick = kick;
+    W.addEventListener('scroll', function () { lastScroll = now(); kick(); }, { passive: true });
+    var hit = D.getElementById('top') || hb;
+    if (FINE) {
+      hit.addEventListener('pointermove', function (e) { mx = e.clientX; my = e.clientY; lastMove = now(); kick(); }, { passive: true });
+      hit.addEventListener('pointerleave', function () { mx = my = -1e4; lastMove = now(); kick(); });
+    }
+    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting || !!IN; kick(); }).observe(hit);
+    D.addEventListener('visibilitychange', kick);
+    // the music wakes the loop (it sleeps while nothing moves)
+    setInterval(function () { var L = LV(); if (L && L.on > 0.01 && !raf) kick(); }, 400);
+    var start = function () { build(); kick(); };
+    try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 150); });
+  }
+
   function lineHero(hb, x0, pr) {
     var host = hb.closest('.mainc') || D.body;
     var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'me-lf'; host.insertBefore(cv, host.firstChild);
@@ -1192,7 +1318,8 @@
     var hb = D.querySelector('.me-pfb');
     if (hb) {
       var hg = strips(), hx = W.innerWidth < 640 ? hg.pad : hg.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
-      if (!/[?&]hero=dots/.test(location.search)) lineHero(hb, hx, hg.pad);
+      if (/[?&]hero=lines/.test(location.search)) lineHero(hb, hx, hg.pad);
+      else if (!/[?&]hero=dots/.test(location.search)) pressedHero(hb);
       else pixelField(hb, [], { fg: FG, dim: 'rgba(244,243,239,.24)', grid: true, idle: { w: 'MELISA ERGANI', lines: ['MELISA', 'ERGANI'], px: hx, pr: hg.pad, lh: 1.12, bottom: true, c: FG }, relief: true, music: true, origin: [hx, hb.offsetHeight * 0.55], hit: D.getElementById('top'), big: 1.5 });
     }
     // Home footer: the name in pixels, ink on lavender; its contact links reshape it
@@ -1321,6 +1448,8 @@
       }
       var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
       if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
+      // the pressed landing is grey: ink on it until the black has risen over it
+      if (H.classList.contains('me-pz')) { var tp = D.getElementById('top'); if (tp) { var trr = tp.getBoundingClientRect(); if (trr.bottom > 28 && -trr.top / (trr.height * 0.85) < 0.6) { c = '#121316'; bg = '#dfdfdb'; } } }
       if (c + bg !== lastC) { lastC = c + bg; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); }
     };
     W.addEventListener('scroll', function () { if (!craf) craf = requestAnimationFrame(tone); }, { passive: true }); tone();
