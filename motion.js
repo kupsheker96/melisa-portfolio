@@ -1289,6 +1289,7 @@
       }
       var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
       if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
+      if (ft) H.classList.toggle('in-foot', ft.getBoundingClientRect().top < 64);   // the footer has no top bar: it is the landing again
       H.classList.toggle('on-cards', !fill && PAGE === 'home' && !(hero && hero.getBoundingClientRect().bottom > 56));
       if (c + bg + fill !== lastC) { lastC = c + bg + fill; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); H.classList.toggle('nav-fill', !!fill); }
     };

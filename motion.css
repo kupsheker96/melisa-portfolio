@@ -413,3 +413,6 @@ a.nx > span:first-child{text-transform:uppercase;letter-spacing:-.015em !importa
 .atmos-grid{transition:opacity .3s}
 html.on-cards .atmos-grid{opacity:0}
 .cc .cc-in > .cc-hcv{position:absolute;left:0;z-index:2}
+nav.me-nav,.me-mu{transition:opacity .3s ease,visibility .3s}
+html.in-foot nav.me-nav,html.in-foot .me-mu{opacity:0;visibility:hidden;pointer-events:none}
+.me-ft{padding-top:clamp(20px,2.2vw,32px) !important}
