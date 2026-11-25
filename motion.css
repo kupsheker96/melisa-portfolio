@@ -332,3 +332,6 @@ html.me-pz .mi2-go{border-bottom-color:rgba(18,19,22,.4)}
 html.me-pz.intro2 .mainc{background:#dfdfdb !important}
 html.me-pz.me-pz-l nav[aria-label="Main"] .nb:not(:hover):not(:focus-visible),html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:not(:hover){background:#dfdfdb}
 
+/* no vertical grid lines (Nov 25): the column lines and the margin rule are gone, the grid stays in the layout */
+.atmos-grid .ag-l,.atmos-grid .ag-hl{display:none !important}
+.vl,.vlit,.vmark,.fline{display:none !important}
