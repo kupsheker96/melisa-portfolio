@@ -963,7 +963,9 @@ class Component extends DCLogic {
     const w = document.querySelector('.stw'), st = document.querySelector('.sts');
     if (!w || !st || !this.kws) return;
     const r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;
-    this.stT = window.innerHeight >= 1500 ? 1 : cl(cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)) / 0.495);
+    const f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight));
+    // (Nov 25) the thread reaches the keywords, they hold while the drawings are made below them, then the sentence assembles
+    this.stT = window.innerHeight >= 1500 ? 1 : (f < 0.19 ? f / 0.19 * 0.38 : f < 0.42 ? 0.38 : 0.38 + cl((f - 0.42) / 0.36) * 0.62);
     if (this.stC === undefined || this.stLast < 0) { this.stC = this.stT; this.renderStmt(this.stC, cl); this.stLast = this.stC; return; }
     // the scene eases toward the scroll position instead of jumping with each wheel step
     if (!this.stRaf) {

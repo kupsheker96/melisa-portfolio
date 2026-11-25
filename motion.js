@@ -2052,17 +2052,17 @@
     var run = function () {
       build(); if (!total) return;
       var r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;
-      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.52) / 0.3), at = u * total, pt = null;
+      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.19) / 0.17), at = u * total, pt = null, fo = 1 - cl((f - 0.37) / 0.05);   // (Nov 25) drawn with the floating keywords, gone before the sentence
       segs.forEach(function (sg) {
         var k = cl((at - sg.a) / sg.L); sg.el.style.strokeDashoffset = (sg.L * (1 - k)).toFixed(1);
         if (k > 0 && k < 1) pt = sg.el.getPointAtLength(sg.L * k);
       });
       if (pt) { tip.setAttribute('x', (pt.x - 2.5).toFixed(1)); tip.setAttribute('y', (pt.y - 2.5).toFixed(1)); }
       tip.style.opacity = pt ? '1' : '0';
-      svg.style.opacity = u > 0 ? '1' : '0';
+      svg.style.opacity = u > 0 ? fo.toFixed(3) : '0';
       marks.forEach(function (m, i) {
-        if (kws[i]) kws[i].classList.toggle('me-on', u >= m[0] && u < m[1] + 0.04);
-        caps[i].classList.toggle('on', u >= m[1] - 0.02);
+        if (kws[i]) kws[i].classList.toggle('me-on', u >= m[0] && u < m[1] + 0.04 && fo > 0.5);
+        caps[i].classList.toggle('on', u >= m[1] - 0.02 && fo > 0.5);
       });
       scr.setAttribute('opacity', cl((u - scrAt + 0.01) / 0.04).toFixed(3));
     };
