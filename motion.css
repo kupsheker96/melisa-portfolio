@@ -330,7 +330,8 @@ html.me-home footer.foot .fstate{padding-top:72px !important}
    ===================================================================================================================== */
 /* shell: the same outlined boxes on every page; fixed over the landing on Home, sticky elsewhere */
 nav.me-nav{display:flex;justify-content:flex-end;align-items:center;gap:0;height:56px;padding:0 clamp(16px,4vw,56px);box-sizing:border-box;margin:0}
-html:not(.me-home) nav.me-nav{position:sticky !important;z-index:950}
+nav.me-nav{z-index:950 !important}
+html:not(.me-home) nav.me-nav{position:sticky !important}
 nav.me-nav .nb + .nb{margin-left:-1px}
 html.nav-fill nav.me-nav .nb:not(:hover):not(:focus-visible),html.nav-fill.me-mu-top .me-mu .me-mb:not(:hover){background:rgba(18,19,22,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 nav.me-nav .nb[aria-current="page"] .nt{text-decoration:underline;text-underline-offset:6px}
