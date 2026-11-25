@@ -1494,7 +1494,7 @@
       });
       if (busy) raf = requestAnimationFrame(tick);
     };
-    W.addEventListener('pointermove', function (e) { if (e.clientY > 140) { if (mx < -1e3) return; mx = my = -1e4; } else { mx = e.clientX; my = e.clientY; } if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+    // (Nov 25) the labels no longer lean toward the cursor: the only hover in the bar is the square + scramble
   }
 
   /* Home: the dot on the vertical rule grows as you scroll and becomes the UI/UX blue, opening onto the first card */
