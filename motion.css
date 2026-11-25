@@ -367,3 +367,7 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 .me-yrs-t{margin:0;max-width:22ch;text-align:center;font-family:'Archivo',sans-serif;font-weight:380;font-size:clamp(30px,4.6vw,84px);line-height:1.12;letter-spacing:-.02em;color:#e6e5e0;text-wrap:balance}
 .me-yrs-w{display:inline-block;white-space:nowrap;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:1.06em;letter-spacing:0;color:#f4f3ef;background:linear-gradient(#8e6bff,#8e6bff) 0 100%/100% 2px no-repeat;padding-bottom:.04em}
 @media (max-width:639px){.me-yrs{height:230svh}.me-yrs-t{font-size:clamp(26px,8vw,40px)}}
+.me-yrs-w{position:relative;isolation:isolate}
+.me-yrs-w::before{content:"";position:absolute;left:-.08em;right:-.08em;top:.02em;bottom:-.02em;background:#8e6bff;z-index:-1;transform:scaleX(0);transform-origin:0 50%;transition:transform .22s cubic-bezier(.6,0,.2,1)}
+.me-yrs-w.in::before{transform:scaleX(1)}
+.me-yrs-w.out::before{transform-origin:100% 50%}

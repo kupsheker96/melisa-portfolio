@@ -1436,13 +1436,22 @@
       var from = v.textContent, n = Math.max(from.length, to.length), t0 = now();
       cancelAnimationFrame(raf);
       (function f() {
-        var p = Math.min(1, (now() - t0) / 520), k = Math.floor(p * (n + 2)), len = Math.round(from.length + (to.length - from.length) * Math.min(1, p * 1.6)), out = '';
+        var p = Math.min(1, (now() - t0) / 320), k = Math.floor(p * (n + 2)), len = Math.round(from.length + (to.length - from.length) * Math.min(1, p * 1.6)), out = '';
         for (var j = 0; j < len; j++) { var c = to[j]; out += (j < k - 1 && c !== undefined) || c === ' ' || c === '/' ? (c || '') : CHS[(Math.random() * CHS.length) | 0]; }
         v.textContent = p >= 1 ? to : out;
         if (p < 1) raf = requestAnimationFrame(f);
       })();
     };
-    var loop = function () { clearTimeout(tmr); if (!vis || D.hidden) return; tmr = setTimeout(function () { i = (i + 1) % R.length; swap(R[i]); loop(); }, RM ? 2600 : 1700); };
+    // each change: a violet block wipes in behind the word, the word scrambles into the next role, the block wipes off
+    var w = v.parentNode;
+    var step = function () {
+      i = (i + 1) % R.length;
+      if (RM) { v.textContent = R[i]; return; }
+      w.classList.remove('out'); w.classList.add('in');
+      setTimeout(function () { swap(R[i]); }, 160);
+      setTimeout(function () { w.classList.add('out'); w.classList.remove('in'); }, 520);
+    };
+    var loop = function () { clearTimeout(tmr); if (!vis || D.hidden) return; tmr = setTimeout(function () { step(); loop(); }, RM ? 2000 : 1100); };
     if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; loop(); }).observe(v); else { vis = true; loop(); }
     D.addEventListener('visibilitychange', loop);
   }
