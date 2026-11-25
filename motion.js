@@ -1289,6 +1289,7 @@
       }
       var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
       if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
+      H.classList.toggle('on-cards', !fill && PAGE === 'home' && !(hero && hero.getBoundingClientRect().bottom > 56));
       if (c + bg + fill !== lastC) { lastC = c + bg + fill; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); H.classList.toggle('nav-fill', !!fill); }
     };
     W.addEventListener('scroll', function () { if (!craf) craf = requestAnimationFrame(tone); }, { passive: true }); tone();
@@ -1316,6 +1317,7 @@
     var cs = [].slice.call(D.querySelectorAll('.cc-card')), sec = D.querySelector('.cc');
     if (!cs.length || !sec || !LIVE || RM) return;
     pixReveal();
+    cardHeads();
     if (FINE) cs.forEach(function (c) {   // the lines follow the cursor
       var inn = c.querySelector('.cc-in'); if (!inn) return;
       inn.addEventListener('pointermove', function (e) { var r = inn.getBoundingClientRect(); inn.style.setProperty('--mx', (e.clientX - r.left).toFixed(0) + 'px'); inn.style.setProperty('--my', (e.clientY - r.top).toFixed(0) + 'px'); inn.classList.add('me-hot'); }, { passive: true });
@@ -1671,6 +1673,87 @@
     var start = function () { build(); kick(); };
     try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
     var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 200); });
+  }
+
+  /* card headings (Nov 25): each category name is written by the card's own lines, on the page grid, like the name
+     on the landing and in the footer. It builds pixel by pixel as the card arrives; the cursor pushes pixels aside;
+     with the music the lines keep time. The real heading stays in the page for reading and search. */
+  function cardHeads() {
+    var hs = [].slice.call(D.querySelectorAll('.cc-card .cc-h')); if (!hs.length) return;
+    var off = D.createElement('canvas'), oc = off.getContext('2d', { willReadFrequently: true });
+    var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+    var still = !LIVE || RM, items = hs.map(function (h) {
+      var inn = h.closest('.cc-in'), cv = D.createElement('canvas'); cv.className = 'cc-hcv'; cv.setAttribute('aria-hidden', 'true'); inn.appendChild(cv); h.classList.add('cc-hl');
+      var it = { h: h, inn: inn, cv: cv, x: cv.getContext('2d'), mx: -1e4, my: -1e4, vis: false, t0: 0, raf: 0 };
+      inn.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); it.mx = e.clientX - r.left; it.my = e.clientY - r.top; go(it); }, { passive: true });
+      inn.addEventListener('pointerleave', function () { it.mx = it.my = -1e4; go(it); });
+      return it;
+    });
+    var build = function (it) {
+      // offsets, not screen rects: the cards are scaled while they recede, the layout underneath is not
+      var h = it.h, inn = it.inn, ho = 0, hl = 0, e = h; while (e && e !== inn) { ho += e.offsetTop; hl += e.offsetLeft; e = e.offsetParent; }
+      if (e !== inn) { ho = h.offsetTop; hl = h.offsetLeft; }
+      var ir = { width: inn.offsetWidth }, hr = { top: ho, bottom: ho + h.offsetHeight, left: hl, height: h.offsetHeight }; ir.top = 0; ir.left = 0;
+      if (!ir.width || !hr.height) return;
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || 200, small = W.innerWidth < 640, K = 1;
+      // one line per pixel here (the headings are smaller than the landing's name), on the same line grid
+      var P = cw / Math.max(6, Math.round(cw / (small ? 7 : 10) / 2) * 2);
+      var fs0 = parseFloat(getComputedStyle(it.h).fontSize) || 80; P = P / Math.max(1, Math.ceil(P / (fs0 * 0.72 / 10)));   // at least ~10 rows of pixels to a letter: split the line pitch evenly
+      var G = P, gx0 = g.rule % P;
+      var top = Math.floor((hr.top - ir.top) / G) * G, H0 = Math.ceil((hr.bottom - ir.top + G) / G) * G - top, W0 = ir.width;
+      var dpr = Math.min(2, W.devicePixelRatio || 1);
+      it.cv.style.top = top + 'px'; it.cv.style.width = W0 + 'px'; it.cv.style.height = H0 + 'px'; it.cv.width = Math.round(W0 * dpr); it.cv.height = Math.round(H0 * dpr);
+      it.x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var cs = getComputedStyle(h), fs = parseFloat(cs.fontSize);
+      off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height); font(fs); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+      // the same text, the same place: its baseline sits where the heading's does
+      var base = (hr.top - ir.top - top) + fs * 0.86 * 0.86;
+      var txt = h.textContent; if (cs.textTransform === 'uppercase') txt = txt.toUpperCase();
+      oc.fillText(txt, hr.left - ir.left, base);
+      var colX = [], gc, gr = Math.ceil(H0 / G); for (var cx = gx0 + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); gc = Math.ceil(colX.length / K);
+      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height, M = new Uint8Array(gc * gr), ORD = new Float32Array(gc * gr);
+      for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
+        var px0 = gx0 - G + gx * G, py0 = gy * G, hit = 0, n = 0;
+        for (var sy = 0.2; sy < 1; sy += 0.2) for (var sx = 0.2; sx < 1; sx += 0.2) { var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * G); n++; if (px >= 0 && px < ow && py < oh && d[(py * ow + px) * 4 + 3] > 120) hit++; }
+        var k = gy * gc + gx; M[k] = hit / n > 0.36 ? 1 : 0; ORD[k] = 0.55 * hash(gx + 7, gy + 3) + 0.45 * (0.5 + 0.5 * Math.sin(gx * 0.17 + gy * 0.23));
+      }
+      var col = getComputedStyle(inn).getPropertyValue('--k').trim() || '#f4f3ef';
+      it.g = { P: P, G: G, K: K, gc: gc, gr: gr, colX: colX, M: M, ORD: ORD, I: new Float32Array(gc * gr), W0: W0, H0: H0, col: col };
+      go(it);
+    };
+    var draw = function (it) {
+      it.raf = 0; var g = it.g; if (!g) return;
+      var t = now(), L = LV() || { on: 0 }, on = still ? 0 : (L.on || 0), tt = t / 1000, x = it.x;
+      var rv = still ? 2 : cl((t - it.t0) / 900) * 1.3;
+      x.clearRect(0, 0, g.W0, g.H0); x.fillStyle = g.col;
+      var R = 4.2, mgx = (it.mx - (g.colX[0] - g.P / 2)) / g.G, mgy = it.my / g.G, busy = false;
+      for (var gy = 0; gy < g.gr; gy++) for (var gx = 0; gx < g.gc; gx++) {
+        var k = gy * g.gc + gx, sx = gx, sy = gy, push = 0;
+        var ddx = (gx + 0.5 - mgx) / R, ddy = (gy + 0.5 - mgy) / R, dd = Math.sqrt(ddx * ddx + ddy * ddy);
+        if (dd < 1 && !still) { push = 1 - dd; var s2 = push * 2.2; sx -= Math.round(ddx / (dd || 1) * s2); sy -= Math.round(ddy / (dd || 1) * s2); }
+        var q = sx >= 0 && sx < g.gc && sy >= 0 && sy < g.gr ? sy * g.gc + sx : -1;
+        var tgt = q >= 0 && g.M[q] && g.ORD[q] < rv ? 1 : 0;
+        var dI = (tgt - g.I[k]) * (tgt > g.I[k] ? 0.35 : 0.2); g.I[k] += dI; if (Math.abs(dI) > 0.003) busy = true;
+        var v = g.I[k]; if (v < 0.04) continue;
+        for (var j = 0; j < g.K; j++) {
+          var ci = gx * g.K + j; if (ci >= g.colX.length) break;
+          var hv = hash(ci, gy), n = 0.82 + on * (0.25 * Math.sin(tt * (2 + hv * 3) + hv * 9));
+          var wd = 1.2 + v * n * (g.P * 0.82 - 1.2);
+          x.globalAlpha = Math.min(1, 0.5 + v * 0.6); x.fillRect(g.colX[ci] - wd / 2, gy * g.G, wd, g.G + 0.5);
+        }
+      }
+      x.globalAlpha = 1;
+      if (it.vis && (busy || on > 0.01 || rv < 1.3)) it.raf = requestAnimationFrame(function () { draw(it); });
+    };
+    var go = function (it) { if (!it.raf && it.vis) it.raf = requestAnimationFrame(function () { draw(it); }); };
+    if ('IntersectionObserver' in W) {
+      var io = new IntersectionObserver(function (es) { es.forEach(function (e) { var it = items.filter(function (i) { return i.inn === e.target; })[0]; if (!it) return; it.vis = e.isIntersecting; if (it.vis && !it.t0) it.t0 = now(); go(it); }); }, { threshold: 0.2 });
+      items.forEach(function (it) { io.observe(it.inn); });
+    } else items.forEach(function (it) { it.vis = true; it.t0 = 1; });
+    var all = function () { items.forEach(build); };
+    try { D.fonts.load('800 80px Archivo').then(all, all); } catch (e) { all(); }
+    setTimeout(all, 1500);
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(all, 200); });
   }
 
   function bridge() {

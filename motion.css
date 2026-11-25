@@ -406,3 +406,10 @@ a.nx > span:first-child{text-transform:uppercase;letter-spacing:-.015em !importa
 .cc .cc-in > *{position:relative;z-index:1}
 .cc .cc-tx{text-shadow:0 0 12px #0e0f12,0 0 4px #0e0f12}
 @media (hover:none),(prefers-reduced-motion:reduce){.cc .cc-in::before{display:none}}
+/* card headings are written by the lines; the type itself stays for reading, invisible */
+.cc-h.cc-hl{color:transparent !important;text-shadow:none !important}
+.cc-hcv{position:absolute;left:0;z-index:1;pointer-events:none;display:block}
+/* over the cards the page's grid lines step back: the card's own lines are the grid there */
+.atmos-grid{transition:opacity .3s}
+html.on-cards .atmos-grid{opacity:0}
+.cc .cc-in > .cc-hcv{position:absolute;left:0;z-index:2}
