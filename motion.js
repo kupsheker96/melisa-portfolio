@@ -1482,7 +1482,7 @@
       var vh = W.innerHeight, r = stw.getBoundingClientRect(), top = parseFloat(getComputedStyle(sts).top) || 0;
       var span = Math.max(1, stw.offsetHeight - sts.offsetHeight), at = (top - r.top) - 0.86 * span;
       var p = RM ? (at > 0 ? 1 : 0) : cl(at / (vh * 0.85)), e = p * p * (3 - 2 * p);
-      var gone = cards && cards.getBoundingClientRect().top < vh;   // by then the grey covers everything above the card
+      var gone = cards && cards.getBoundingClientRect().top <= 0;   // the card has covered the panel
       var k = (p <= 0 || gone) ? 'h' : e.toFixed(4); if (k === lastK) return; lastK = k;
       pan.style.visibility = k === 'h' ? 'hidden' : 'visible';
       pan.style.transform = 'translate3d(0,' + ((1 - e) * 100).toFixed(3) + '%,0)';
