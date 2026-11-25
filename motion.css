@@ -399,3 +399,4 @@ a.nx > span:first-child{text-transform:uppercase;letter-spacing:-.015em !importa
 @media (max-width:1099px){.me-ft .mf-l{grid-template-columns:repeat(4,minmax(0,1fr))}.me-ft .mf-l > div:nth-child(3){border-left:0}}
 @media (max-width:639px){.me-ft .mf-l{grid-template-columns:1fr}.me-ft .mf-l > div{grid-column:auto;border-left:0 !important;padding-left:0}.me-ft .mf-mail{margin-left:0}}
 .me-ft .mf-row{display:grid;grid-template-columns:16% minmax(0,1fr) auto;align-items:start}.me-ft .mf-hint{justify-self:start;margin-left:clamp(14px,1.6vw,24px)}@media (max-width:639px){.me-ft .mf-row{grid-template-columns:1fr auto}}
+.me-ft .mf-row{display:flex !important;justify-content:space-between}
