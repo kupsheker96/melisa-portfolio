@@ -1596,7 +1596,7 @@
       off.width = Math.ceil(W0); off.height = Math.ceil(H0);
       x0 = small ? g.pad : g.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016)); room = W0 - x0 - g.pad;
       // the name stands on the last full grid row above the bottom bar, and rises as high as the stage allows
-      yTop = stg ? stg.offsetTop + G : H0 * 0.5; yBot = stg ? Math.floor((stg.offsetTop + stg.offsetHeight) / G) * G : H0 - 60;
+      yTop = stg ? stg.offsetTop + G : H0 * 0.5; yBot = stg ? Math.floor((stg.offsetTop + stg.offsetHeight) / G) * G - G : H0 - G;   // the name stands one row above the page's end
       masks = {}; I = new Float32Array(gc * gr); PT = new Float32Array(gc * gr); ORD = new Float32Array(gc * gr);
       for (var k = 0; k < ORD.length; k++) { var a = k % gc, b = Math.floor(k / gc); ORD[k] = 0.55 * hash(a + 7, b + 3) + 0.45 * (0.5 + 0.5 * Math.sin(a * 0.17 + b * 0.23)); }
       tw = now();
@@ -1646,7 +1646,7 @@
       for (var a = -1; a <= 1; a++) for (var b = -1; b <= 1; b++) { var X = gx + a, Y = gy + b; if (X >= 0 && X < gc && Y >= 0 && Y < gr && (a === 0 || b === 0)) PT[Y * gc + X] = 1; }
       kick();
     };
-    var onField = function (e) { return !(e.target.closest && e.target.closest('a,button,dl,.mf-mail,.mf-row,.mf-b')); };
+    var onField = function (e) { return !(e.target.closest && e.target.closest('a,button,dl,.mf-mail,.mf-row')); };
     ft.addEventListener('pointerdown', function (e) { if (!PT || !onField(e)) return; down = true; paint(e); });
     W.addEventListener('pointerup', function () { down = false; });
     ft.addEventListener('pointermove', function (e) {
