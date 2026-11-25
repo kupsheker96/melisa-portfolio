@@ -1452,7 +1452,21 @@
       setTimeout(function () { w.classList.add('out'); w.classList.remove('in'); }, 520);
     };
     var loop = function () { clearTimeout(tmr); if (!vis || D.hidden) return; tmr = setTimeout(function () { step(); loop(); }, RM ? 2000 : 1100); };
-    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; loop(); }).observe(v); else { vis = true; loop(); }
+    // the violet panel rises from the bottom over the statement once its drawings are done, and holds until the
+    // UI/UX grey rises over it in turn
+    var pan = D.querySelector('.me-yrs-s'), stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts'), cards = D.getElementById('work'), lastK = '';
+    var place = function () {
+      if (!pan || !stw || !sts) return;
+      var vh = W.innerHeight, r = stw.getBoundingClientRect(), top = parseFloat(getComputedStyle(sts).top) || 0;
+      var span = Math.max(1, stw.offsetHeight - sts.offsetHeight), at = (top - r.top) - 0.86 * span;
+      var p = RM ? (at > 0 ? 1 : 0) : cl(at / (vh * 0.85)), e = p * p * (3 - 2 * p);
+      var gone = cards && cards.getBoundingClientRect().top < vh;   // by then the grey covers everything above the card
+      var k = (p <= 0 || gone) ? 'h' : e.toFixed(4); if (k === lastK) return; lastK = k;
+      pan.style.visibility = k === 'h' ? 'hidden' : 'visible';
+      pan.style.transform = 'translate3d(0,' + ((1 - e) * 100).toFixed(3) + '%,0)';
+      var nv = p > 0.6 && !gone; if (nv !== vis) { vis = nv; loop(); }
+    };
+    W.addEventListener('scroll', place, { passive: true }); W.addEventListener('resize', function () { lastK = ''; place(); }); place();
     D.addEventListener('visibilitychange', loop);
   }
 
@@ -1507,6 +1521,8 @@
       }
       var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
       if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
+      // the violet roles panel: ink on violet, like the footer
+      var yp = D.querySelector('.me-yrs-s'); if (yp && yp.style.visibility === 'visible' && yp.getBoundingClientRect().top <= 28) { c = '#121316'; bg = '#8e6bff'; }
       // the pressed landing is grey: ink on it until the black has risen over it
       if (H.classList.contains('me-pz')) { var tp = D.getElementById('top'); if (tp) { var trr = tp.getBoundingClientRect(); if (trr.bottom > 28 && -trr.top / (trr.height * 0.85) < 0.6) { c = '#121316'; bg = '#dfdfdb'; } } }
       if (c + bg !== lastC) { lastC = c + bg; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); }
