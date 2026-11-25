@@ -1316,6 +1316,11 @@
     var cs = [].slice.call(D.querySelectorAll('.cc-card')), sec = D.querySelector('.cc');
     if (!cs.length || !sec || !LIVE || RM) return;
     pixReveal();
+    if (FINE) cs.forEach(function (c) {   // the lines follow the cursor
+      var inn = c.querySelector('.cc-in'); if (!inn) return;
+      inn.addEventListener('pointermove', function (e) { var r = inn.getBoundingClientRect(); inn.style.setProperty('--mx', (e.clientX - r.left).toFixed(0) + 'px'); inn.style.setProperty('--my', (e.clientY - r.top).toFixed(0) + 'px'); inn.classList.add('me-hot'); }, { passive: true });
+      inn.addEventListener('pointerleave', function () { inn.classList.remove('me-hot'); });
+    });
     cardLife(cs);
   }
 
