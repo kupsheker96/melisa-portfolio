@@ -1576,6 +1576,7 @@
     if (!cs.length || !sec || !LIVE || RM) return;
     dustImgs();   // (Nov 25) replaces the pixel reveal
     cardLife(cs);
+    headIn(cs);
   }
 
   /* card images resolve from pixels (Nov 24, time-based): a tiny inline preview is shown in big blocks straight away;
@@ -1592,6 +1593,44 @@
      pixels, dense near the photo and scattering toward the edge, so photos rise into view out of a dither of their own
      colours and dissolve the same way. Scroll-tied, so it runs backwards. A photo only gets the canvas while it is
      touching an edge band; the rest of the time it is the plain image. */
+  /* discipline headings come in with their hover (Nov 25): hidden until the heading reaches the screen, then the square
+     drops in and the letters appear left to right, each scrambling before it settles. Replays if you scroll back up. */
+  function headIn(cs) {
+    if (RM) return;
+    var CHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&?';
+    var hs = cs.map(function (card) {
+      var h2 = card.querySelector('.cc-h'); if (!h2) return null;
+      if (!h2.querySelector('.cc-l')) {
+        var txt = h2.textContent; h2.setAttribute('aria-label', txt);
+        h2.innerHTML = txt.split('').map(function (ch) { return ch === ' ' ? ' ' : '<span class="cc-l" aria-hidden="true">' + ch.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join('');
+      }
+      var Ls = [].slice.call(h2.querySelectorAll('.cc-l'));
+      h2.classList.add('me-scr-h', 'me-hid');
+      return { h2: h2, Ls: Ls, orig: Ls.map(function (l) { return l.textContent; }), on: false, raf: 0 };
+    }).filter(Boolean);
+    var play = function (o) {
+      var h2 = o.h2, n = o.Ls.length, t0 = now(); cancelAnimationFrame(o.raf);
+      h2.classList.remove('me-hid'); h2.classList.add('me-hrun');
+      (function f() {
+        var p = (now() - t0) / 620, k = p * (n + 3);
+        o.Ls.forEach(function (l, i) {
+          l.style.visibility = k > i ? '' : 'hidden';
+          l.textContent = (p >= 1 || k > i + 3 || o.orig[i] === '/') ? o.orig[i] : CHS[(Math.random() * CHS.length) | 0];
+        });
+        if (p < 1) o.raf = requestAnimationFrame(f); else setTimeout(function () { h2.classList.remove('me-hrun'); }, 260);
+      })();
+    };
+    var hide = function (o) { cancelAnimationFrame(o.raf); o.Ls.forEach(function (l, i) { l.textContent = o.orig[i]; l.style.visibility = ''; }); o.h2.classList.remove('me-hrun'); o.h2.classList.add('me-hid'); };
+    var run = function () {
+      var vh = W.innerHeight;
+      hs.forEach(function (o) {
+        var r = o.h2.getBoundingClientRect(), inn = r.top < vh * 0.72 && r.bottom > 0;
+        if (inn && !o.on) { o.on = true; play(o); } else if (!inn && r.top > vh && o.on) { o.on = false; hide(o); }
+      });
+    };
+    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
+  }
+
   function dustImgs() {
     if (!LIVE || RM) return;
     var ims = [].slice.call(D.querySelectorAll('.cc-vis .cc-t img')); if (!ims.length) return;

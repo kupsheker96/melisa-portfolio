@@ -380,3 +380,6 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 .me-yrs-t .me-yrs-w{opacity:0;transition:opacity .01s linear 0s}
 .me-yrs-t.on .me-yrs-w{opacity:1;transition-delay:.6s}
 @media (prefers-reduced-motion:reduce){.me-yrs-t .yc,.me-yrs-t .me-yrs-w{opacity:1}}
+.cc-h.me-hid .cc-l{visibility:hidden}
+.cc-h.me-hrun{transform:translateX(.3em)}
+.cc-h.me-hrun::before{transform:translateX(-.3em) scale(1)}
