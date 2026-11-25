@@ -1032,17 +1032,19 @@
     };
     var kick = function () { if (!raf && vis) raf = requestAnimationFrame(frame); };
     W.__mePzKick = kick;
-    W.addEventListener('scroll', function () { lastScroll = now(); kick(); }, { passive: true });
+    // the canvas sits above the footer's opening: hide it as soon as the statement has gone by, whatever the loop is doing
+    var gone = function () { return stw ? stw.getBoundingClientRect().bottom < 0 : hb.getBoundingClientRect().bottom < 0; };
+    var onScroll = function () { lastScroll = now(); var g = gone(); cv.style.visibility = g ? 'hidden' : ''; vis = !g; if (!g) kick(); };
+    W.addEventListener('scroll', onScroll, { passive: true });
     var hit = D.getElementById('top') || hb;
     if (FINE) {
       hit.addEventListener('pointermove', function (e) { mx = e.clientX; my = e.clientY; lastMove = now(); kick(); }, { passive: true });
       hit.addEventListener('pointerleave', function () { mx = my = -1e4; lastMove = now(); kick(); });
     }
-    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting || !!IN; kick(); }).observe(hit);
     D.addEventListener('visibilitychange', kick);
     // the music wakes the loop (it sleeps while nothing moves)
     setInterval(function () { var L = LV(); if (L && L.on > 0.01 && !raf) kick(); }, 400);
-    var start = function () { build(); kick(); };
+    var start = function () { build(); onScroll(); kick(); };
     try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
     var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 150); });
   }
