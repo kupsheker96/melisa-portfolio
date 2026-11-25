@@ -113,22 +113,19 @@
   }
   // the label smudges in (ink -> crisp) or out (crisp -> ink)
   function inkLabel(el, inn, ms, delay) {
-    var lb = el.querySelector('.me-wl'), kk = el.querySelector('.me-wk'); if (!lb || !lb.textContent) { if (kk) kk.style.opacity = inn ? '.62' : '0'; return; }
-    var f = D.getElementById('me-pti'), dm = f && f.querySelector('feDisplacementMap'), bl = f && f.querySelector('feGaussianBlur'), fs = parseFloat(getComputedStyle(lb).fontSize) || 80;
-    var s0 = now() + (delay || 0);
-    lb.style.filter = 'url(#me-pti)';
+    var lb = el.querySelector('.me-wl'), kk = el.querySelector('.me-wk'), s0 = now() + (delay || 0);
     (function k() {
-      var t = cl((now() - s0) / ms), e = inn ? 1 - Math.pow(1 - t, 3) : t * t, a = inn ? 1 - e : e;   // a: how smudged
-      if (dm) dm.setAttribute('scale', (a * fs * 0.5).toFixed(2));
-      if (bl) bl.setAttribute('stdDeviation', (a * fs * 0.06).toFixed(2));
-      lb.style.opacity = (1 - a).toFixed(3); if (kk) kk.style.opacity = ((1 - a) * 0.62).toFixed(3);
-      if (t < 1 && el.isConnected) requestAnimationFrame(k); else if (t >= 1 && !a) lb.style.filter = '';
+      var t = cl((now() - s0) / ms), a = inn ? t : 1 - t;
+      if (lb) lb.style.opacity = a.toFixed(3); if (kk) kk.style.opacity = (a * 0.62).toFixed(3);
+      if (t < 1 && el.isConnected) requestAnimationFrame(k);
     })();
   }
   function ptMake(c, fg, label, kicker, ox, oy, full) {
-    inkFilter();
+    c = '#8e6bff'; fg = '#121316';   // (Nov 25) every page change is the same violet lines, whatever the destination
+    // (Nov 25) the same measured lines as the landing: they thicken until they close into the destination's colour,
+    // spreading out from where you clicked; on the new page they thin away from the same point
     var g = strips(), vw = g.vw, vh = W.innerHeight, el = D.createElement('div'), cw = (g.xs[2] - g.xs[1]) || vw / 4;
-    var S = cw / Math.max(2, Math.round(cw / (vw < 640 ? 30 : 46)));   // whole dots per grid column, so the dots sit on the grid
+    var P = cw / Math.max(6, Math.round(cw / (vw < 640 ? 7 : 10) / 2) * 2);
     el.className = 'me-pt block'; el.setAttribute('aria-hidden', 'true');
     el.style.setProperty('--c', c); el.style.setProperty('--fg', fg);
     el.innerHTML = '<canvas></canvas><span class="me-wl" style="left:' + (g.rule + Math.max(20, Math.min(44, vw * 0.026))) + 'px"></span><span class="me-wk" style="left:' + g.pad + 'px"></span>';
@@ -136,21 +133,15 @@
     var cv = el.querySelector('canvas'), dpr = Math.min(2, W.devicePixelRatio || 1), x = cv.getContext('2d');
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + 'px'; cv.style.height = vh + 'px';
     x.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ox = (ox == null ? 0.5 : ox) * vw; oy = (oy == null ? 0.5 : oy) * vh;
-    var x0 = (g.rule % S) - S, nx = Math.ceil((vw - x0) / S) + 1, ny = Math.ceil(vh / S) + 1, y0 = (vh / 2) % S - S;
-    var md = Math.max(Math.hypot(ox, oy), Math.hypot(vw - ox, oy), Math.hypot(ox, vh - oy), Math.hypot(vw - ox, vh - oy)) || 1, C = [];
-    for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
-      var cx = x0 + (i + 0.5) * S, cy = y0 + (j + 0.5) * S;
-      C.push(cx, cy, Math.hypot(cx - ox, cy - oy) / md * 0.78 + hash(i, j) * 0.22);
-    }
-    // p 0..1; grow: dots appear (cover), else they shrink away (reveal)
+    ox = (ox == null ? 0.5 : ox) * vw;
+    var x0 = (g.rule % P) - P, C = [], md = Math.max(ox, vw - ox) || 1;
+    for (var i = 0, cx = x0; cx < vw + P; cx += P, i++) C.push(cx, Math.abs(cx - ox) / md * 0.8 + hash(i, 3) * 0.2);
     el._draw = function (p, grow) {
       x.clearRect(0, 0, vw, vh); x.fillStyle = c;
-      for (var k = 0; k < C.length; k += 3) {
-        var t = sm(cl((p - C[k + 2] * 0.6) / 0.4)), s = grow ? t : 1 - t;
-        if (s <= 0.01) continue;
-        var w = s >= 0.999 ? S + 1 : s * S;
-        x.fillRect(C[k] - w / 2, C[k + 1] - w / 2, w, w);
+      for (var k = 0; k < C.length; k += 2) {
+        var t = sm(cl((p - C[k + 1] * 0.55) / 0.45)), s = grow ? t : 1 - t;
+        var w = 1 + s * P; if (s >= 0.999) w = P + 1.5; else if (!grow && s <= 0.001) continue;
+        x.fillRect(C[k] - w / 2, 0, w, vh);
       }
     };
     if (full) { el._draw(1, true); var lb = el.querySelector('.me-wl'), kk = el.querySelector('.me-wk'); lb.style.opacity = '1'; kk.style.opacity = '.62'; }
@@ -206,9 +197,9 @@
     W.__meIntro = { p: 0, phase: 'load', t0: 0, ready: false };
   }
   if (doIntro) onBody(function () {
-    var IN = W.__meIntro, t0 = now(), MIN = 2400, MAX = 7000, ready = false, chosen = false;
+    var IN = W.__meIntro, t0 = now(), MIN = 1700, MAX = 7000, ready = false, chosen = false;
     var el = D.createElement('div'); el.className = 'mi2'; el.setAttribute('role', 'status'); el.setAttribute('aria-label', 'Loading');
-    el.innerHTML = '<span class="mi2-n" aria-hidden="true">000</span><button type="button" class="mi2-go">Scroll to enter <span aria-hidden="true">↓</span></button>';
+    el.innerHTML = '<span class="mi2-n" aria-hidden="true">000</span><button type="button" class="mi2-go">' + (FINE ? 'Click' : 'Tap') + ' anywhere to enter <span aria-hidden="true">↗</span></button>';
     D.body.appendChild(el);
     var nEl = el.querySelector('.mi2-n'), go = el.querySelector('.mi2-go');
     rendered(function () { fontsReady(function () { ready = true; }, 2500); });
@@ -232,7 +223,9 @@
     };
     ['wheel', 'touchmove', 'keydown'].forEach(function (ev) { W.addEventListener(ev, scrollIn, { passive: false }); });
     go.addEventListener('click', function () { leave(true); });
-    D.addEventListener('pointerdown', function (e) { if (el.classList.contains('ask') && !(e.target.closest && e.target.closest('.me-mu'))) leave(true); }, true);
+    // a click / tap is what lets the browser play sound, so it enters and starts the music together (a scroll still
+    // enters, silently; the music then starts on the first click)
+    D.addEventListener('click', function (e) { if (el.classList.contains('ask') && !(e.target.closest && e.target.closest('.me-mu'))) leave(true); }, true);
     var finish = function () {
       nEl.textContent = '100'; IN.p = 1;
       setTimeout(function () {
@@ -374,7 +367,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); underline(); cards(); bridge(); gridVars(); footLines();
     if (!EMB && !SHELLED) music();
   }
 
@@ -469,7 +462,7 @@
             s.cs[c].style.setProperty('--f', (f * f * (3 - 2 * f)).toFixed(3)); s.cs[c].style.setProperty('--e', (e * e * (3 - 2 * e)).toFixed(3));
           }
           if (s.lx >= 0) s.v = x - s.lx; s.lx = x;
-          if (!s.lean) { s.lean = true; (function lean() {   // the run leans with scroll speed and straightens when you stop
+          if (false) { s.lean = true; (function lean() {   // the run leans with scroll speed and straightens when you stop
             s.sk += (Math.max(-5, Math.min(5, -s.v * 0.12)) - s.sk) * 0.14; s.v *= 0.8;
             s.tr.style.transform = 'translate3d(' + (-s.lx).toFixed(1) + 'px,0,0) skewX(' + s.sk.toFixed(3) + 'deg)';
             if (Math.abs(s.sk) > 0.01 || Math.abs(s.v) > 0.05) requestAnimationFrame(lean); else { s.sk = 0; s.tr.style.transform = 'translate3d(' + (-s.lx).toFixed(1) + 'px,0,0)'; s.lean = false; }
@@ -565,7 +558,7 @@
     var saved = null; try { saved = JSON.parse(st('sessionStorage', 'me-mu') || 'null'); } catch (e) { }
     var off = st('localStorage', 'me-mu-off') === '1';
     var wrap = D.createElement('div'); wrap.className = 'me-mu';
-    if (PAGE === 'home') H.classList.add('me-mu-top');   // on Home the player takes the first box of the top bar
+    H.classList.add('me-mu-top');   // the player takes the first box of the top bar, on every page
     wrap.innerHTML = '<button type="button" class="me-mb" aria-pressed="false"><span class="me-wv" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="me-lbl"><span class="me-t1">On repeat while designing</span><small class="me-t2"></small><span class="me-t3"></span></span></button>';
     D.body.appendChild(wrap);
     var btn = wrap.querySelector('.me-mb'), t2 = wrap.querySelector('.me-t2'), t3 = wrap.querySelector('.me-t3');
@@ -1169,24 +1162,7 @@
     // cards that have faded out (the last one sinks away over the index) stop catching the pointer
     var ccs = Array.prototype.map.call(D.querySelectorAll('.cc-card'), function (c) { return [c, c.querySelector('.cc-in')]; });
     if (ccs.length) { var pe = function () { ccs.forEach(function (x) { var o = x[1] ? parseFloat(x[1].style.opacity || '1') : 1; x[0].style.pointerEvents = o < 0.15 ? 'none' : ''; }); }; var mo = new MutationObserver(pe); ccs.forEach(function (x) { if (x[1]) mo.observe(x[1], { attributes: true, attributeFilter: ['style'] }); }); pe(); }
-    if (sec) {
-      var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
-      var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
-      // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
-      if (LIVE && !RM) {
-        var zl = '';
-        var zoom = function () {
-          var vh = W.innerHeight, r = sec.getBoundingClientRect(), b = bd.getBoundingClientRect();
-          var p = cl((vh - r.top) / (vh * 0.85)), e = 1 - Math.pow(1 - p, 3);
-          var q = cl((vh * 0.3 - (r.top + bd.offsetTop + bd.offsetHeight)) / (vh * 0.6)), f = q * q;
-          var s = (0.5 + 0.5 * e) * (1 + 0.35 * f), o = Math.min(0.45 + 0.55 * e, 1 - 0.85 * f);
-          var key = s.toFixed(3) + o.toFixed(3); if (key === zl) return; zl = key;
-          bd.style.transform = 'scale(' + s.toFixed(4) + ')'; bd.style.opacity = o.toFixed(3);
-          if (ls) { ls.style.opacity = cl(p * 1.6 - 0.6).toFixed(3); ls.style.transform = 'translateY(' + ((1 - cl(p * 1.6 - 0.6)) * 40).toFixed(1) + 'px)'; }
-        };
-        W.addEventListener('scroll', zoom, { passive: true }); W.addEventListener('resize', zoom); zoom();
-      }
-    }
+    // (Nov 25) the index is a still list: no dot band
     // Home landing (Nov 24): the index's own dot field, full screen, the name standing out of it in relief, big and
     // left-aligned on the margin line; it listens to the music (see pixelField's music option)
     var hb = D.querySelector('.me-pfb');
@@ -1194,17 +1170,6 @@
       var hg = strips(), hx = W.innerWidth < 640 ? hg.pad : hg.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
       if (!/[?&]hero=dots/.test(location.search)) lineHero(hb, hx, hg.pad);
       else pixelField(hb, [], { fg: FG, dim: 'rgba(244,243,239,.24)', grid: true, idle: { w: 'MELISA ERGANI', lines: ['MELISA', 'ERGANI'], px: hx, pr: hg.pad, lh: 1.12, bottom: true, c: FG }, relief: true, music: true, origin: [hx, hb.offsetHeight * 0.55], hit: D.getElementById('top'), big: 1.5 });
-    }
-    // Home footer: the name in pixels, ink on lavender; its contact links reshape it
-    var wm = D.querySelector('footer .wmark');
-    if (wm) {
-      var ft = wm.closest('footer');
-      var its = [];
-      var mail = ft.querySelector('.fmail a'); if (mail) { mail.setAttribute('data-w', 'EMAIL'); its.push(mail); }
-      Array.prototype.forEach.call(ft.querySelectorAll('a.crow'), function (a) { var t = /linkedin/i.test(a.href) ? 'LINKEDIN' : /behance/i.test(a.href) ? 'BEHANCE' : ''; if (t) { a.setAttribute('data-w', t); its.push(a); } });
-      Array.prototype.forEach.call(ft.querySelectorAll('a'), function (a) { if (/back to top/i.test(a.textContent)) { a.setAttribute('data-w', 'BACK TO TOP'); a.setAttribute('data-arrow', 'up'); its.push(a); } });
-      wm.classList.add('pf-on');
-      pixelField(wm, its, { fg: '#121316', dim: 'rgba(18,19,22,.22)', grid: false, idle: 'MELISA ERGANI', split: true, capFill: true, fit: 1, hit: ft, pitch: 260, dot: 0.34, big: 1.55 });
     }
   }
 
@@ -1267,6 +1232,7 @@
   function topbar() {
     var nav = Array.prototype.filter.call(D.querySelectorAll('nav[aria-label="Main"]'), function (x) { return !x.closest('x-dc'); })[0]; if (!nav) return;
     // everything in the bar starts a gutter after a grid line: the page label after the margin line, the links on the last columns
+    if (nav.classList.contains('me-nav')) return navBoxes(nav);
     var row = nav.firstElementChild, left = row && row.children[0], links = nav.querySelector('.mainnav');
     var lab = left && left.children[1], btn = left && left.querySelector('button');
     var align = function () {
@@ -1281,7 +1247,7 @@
       var X = n >= 6 ? [g.xs[4], g.xs[5], g.xs[6]] : [g.xs[3], (g.xs[3] + g.xs[4]) / 2, g.xs[4]];
       Array.prototype.forEach.call(as, function (a, i) { if (X[i] != null) put(a, X[i] + gut); });
     };
-    if (PAGE === 'home') return navBoxes(nav, links);
+    return navBoxes(nav);
     align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
     var cards = D.getElementById('work'), last = W.scrollY, hid = false;
     var set = function (h) { if (h !== hid) { hid = h; H.classList.toggle('nav-hide', h); } };
@@ -1295,8 +1261,8 @@
 
   /* Home top bar (Nov 24): outlined boxes, one per grid column, floating over the line screen; each label leans
      toward the cursor as it comes near, like the type in the screen behind it */
-  function navBoxes(nav, links) {
-    var logo = nav.querySelector('.logo'), as = links ? [].slice.call(links.querySelectorAll('a')) : [], items = (logo ? [logo] : []).concat(as);
+  function navBoxes(nav) {
+    var logo = null, as = [].slice.call(nav.querySelectorAll('a.nb')), items = as;
     items.forEach(function (a) {
       if (a.querySelector('.nt')) return;
       a.classList.add('nb'); var t = D.createElement('span'); t.className = 'nt';
@@ -1312,19 +1278,23 @@
     };
     align(); W.addEventListener('resize', align); if (D.fonts && D.fonts.ready) D.fonts.ready.then(align);
     // the bar takes the colours of what is under it: a card's own type colour over a card, cream over the dark
-    var ins = [].slice.call(D.querySelectorAll('.cc-card .cc-in')), ft = D.querySelector('footer.foot'), lastC = '', craf = 0;
+    var ins = [].slice.call(D.querySelectorAll('.cc-card .cc-in')), ft = D.querySelector('footer.me-ft'), lastC = '', craf = 0;
+    var hero = D.getElementById('top');
     var tone = function () {
-      craf = 0; var c = '#f4f3ef', bg = '#121316';
+      craf = 0; var c = '#f4f3ef', bg = '#121316', fill = 1;
+      if (hero && PAGE === 'home' && hero.getBoundingClientRect().bottom > 56) fill = 0;
       for (var i = ins.length - 1; i >= 0; i--) {
         var r = ins[i].getBoundingClientRect(); if (r.top > 28 || r.bottom < 28 || parseFloat(ins[i].style.opacity || '1') < 0.5) continue;
-        var cs = getComputedStyle(ins[i]); c = cs.color; bg = cs.backgroundColor; break;
+        var cs = getComputedStyle(ins[i]); c = cs.color; bg = cs.backgroundColor; fill = 0; break;
       }
       var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
       if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
-      if (c + bg !== lastC) { lastC = c + bg; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); }
+      if (ft) H.classList.toggle('in-foot', ft.getBoundingClientRect().top < 64);   // the footer has no top bar: it is the landing again
+      H.classList.toggle('on-cards', !fill && PAGE === 'home' && !(hero && hero.getBoundingClientRect().bottom > 56));
+      if (c + bg + fill !== lastC) { lastC = c + bg + fill; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); H.classList.toggle('nav-fill', !!fill); }
     };
     W.addEventListener('scroll', function () { if (!craf) craf = requestAnimationFrame(tone); }, { passive: true }); tone();
-    if (!FINE || RM) return;
+    return;
     var mx = -1e4, my = -1e4, raf = 0, st = items.map(function () { return { x: 0, y: 0 }; });
     var tick = function () {
       raf = 0; var busy = false;
@@ -1348,6 +1318,12 @@
     var cs = [].slice.call(D.querySelectorAll('.cc-card')), sec = D.querySelector('.cc');
     if (!cs.length || !sec || !LIVE || RM) return;
     pixReveal();
+    cardHeads();
+    if (FINE) cs.forEach(function (c) {   // the lines follow the cursor
+      var inn = c.querySelector('.cc-in'); if (!inn) return;
+      inn.addEventListener('pointermove', function (e) { var r = inn.getBoundingClientRect(); inn.style.setProperty('--mx', (e.clientX - r.left).toFixed(0) + 'px'); inn.style.setProperty('--my', (e.clientY - r.top).toFixed(0) + 'px'); inn.classList.add('me-hot'); }, { passive: true });
+      inn.addEventListener('pointerleave', function () { inn.classList.remove('me-hot'); });
+    });
     cardLife(cs);
   }
 
@@ -1503,7 +1479,7 @@
         inn.classList.add('me-go');
         W.addEventListener('pageshow', function () { arw.classList.remove('go', 'pr'); });
       }
-      if (!FINE) return;
+      return;   // (Nov 25) one behaviour for every card: the reveal and a small lift on hover
       H.classList.add('me-cl');
       // headings: letters widen where the cursor is
       var h2 = card.querySelector('.cc-h'), Ls = [];
@@ -1580,6 +1556,209 @@
   }
 
   /* Home -> About bridge: the sentence lights word by word as it comes up */
+  function gridVars() {
+    var set = function () {
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || 200, P = cw / Math.max(6, Math.round(cw / (W.innerWidth < 640 ? 7 : 10) / 2) * 2);
+      H.style.setProperty('--lp', P.toFixed(3) + 'px'); H.style.setProperty('--lx', (g.rule % P).toFixed(2) + 'px');
+    };
+    set(); W.addEventListener('resize', set);
+  }
+
+  /* footer (Nov 25): the landing again, and a playground. The violet line screen fills the page down to its last row;
+     MELISA ERGANI stands on the bottom edge, as wide as the grid allows. Point at a contact and the name rebuilds into
+     it (LINKEDIN, BEHANCE, EMAIL, CALL, TOP), pixel by pixel; press and drag on the lines to draw with them (the marks
+     fade after a while); the cursor pushes pixels aside; with the music the lines keep time. */
+  function footLines() {
+    var ft = D.querySelector('footer.me-ft'); if (!ft) return;
+    var stg = ft.querySelector('.mf-stage');
+    var cv = D.createElement('canvas'); cv.className = 'mf-cv'; cv.setAttribute('aria-hidden', 'true'); ft.insertBefore(cv, ft.firstChild); ft.classList.add('mf-on');
+    var x = cv.getContext('2d'); if (!x) return;
+    var off = D.createElement('canvas'), oc = off.getContext('2d', { willReadFrequently: true }), COL = '142,107,255';
+    var dpr = Math.min(2, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 0, K = 2, G = 0, gx0 = 0, colX = [], cols = 0, gc = 0, gr = 0;
+    var ORD = null, I = null, PT = null, ph = null, masks = {}, word = 'NAME', tw = 0, x0 = 0, room = 0, yTop = 0, yBot = 0;
+    var vis = false, raf = 0, mx = -1e4, my = -1e4, down = false, tm = 0, lastT = now(), still = !LIVE || RM;
+    var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+    var mask = function (w) {
+      if (masks[w]) return masks[w];
+      var lines = w === 'NAME' ? ['MELISA', 'ERGANI'] : [w], lhk = 1.16, avail = yBot - yTop;
+      var fs = avail / (lines.length * 0.72 * lhk - (lhk - 1) * 0.72); font(fs);
+      var lw = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (lw > room) { fs *= room / lw; font(fs); }
+      var cap = fs * 0.72, lh = cap * lhk, top = yBot - (lines.length * lh - (lh - cap));
+      oc.clearRect(0, 0, off.width, off.height); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+      lines.forEach(function (l, i) { oc.fillText(l, x0, top + cap + i * lh); });
+      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height, M = new Uint8Array(gc * gr);
+      for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
+        var px0 = gx0 - G + gx * G, py0 = gy * G, hit = 0, n = 0;
+        for (var sy = 0.2; sy < 1; sy += 0.2) for (var sx = 0.2; sx < 1; sx += 0.2) { var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * G); n++; if (px >= 0 && px < ow && py < oh && d[(py * ow + px) * 4 + 3] > 120) hit++; }
+        M[gy * gc + gx] = hit / n > 0.4 ? 1 : 0;
+      }
+      return (masks[w] = M);
+    };
+    var build = function () {
+      W0 = ft.clientWidth; H0 = ft.offsetHeight; if (!W0 || !H0) return;
+      cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4, small = W.innerWidth < 640;
+      P = cw / Math.max(K * 3, Math.round(cw / (small ? 7 : 10) / K) * K); G = P * K; gx0 = g.rule % G;
+      colX = []; for (var cx = gx0 + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); cols = colX.length; gc = Math.ceil(cols / K); gr = Math.ceil(H0 / G);
+      ph = new Float32Array(cols * 3); for (var i = 0; i < cols; i++) { ph[i * 3] = hash(i, 1) * 6.283; ph[i * 3 + 1] = 0.6 + hash(i, 2) * 1.8; ph[i * 3 + 2] = hash(i, 3); }
+      off.width = Math.ceil(W0); off.height = Math.ceil(H0);
+      x0 = small ? g.pad : g.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016)); room = W0 - x0 - g.pad;
+      // the name stands on the last full grid row above the bottom bar, and rises as high as the stage allows
+      yTop = stg ? stg.offsetTop + G : H0 * 0.5; yBot = stg ? Math.floor((stg.offsetTop + stg.offsetHeight) / G) * G - G : H0 - G;   // the name stands one row above the page's end
+      masks = {}; I = new Float32Array(gc * gr); PT = new Float32Array(gc * gr); ORD = new Float32Array(gc * gr);
+      for (var k = 0; k < ORD.length; k++) { var a = k % gc, b = Math.floor(k / gc); ORD[k] = 0.55 * hash(a + 7, b + 3) + 0.45 * (0.5 + 0.5 * Math.sin(a * 0.17 + b * 0.23)); }
+      tw = now();
+    };
+    var setWord = function (w) { if (w === word) return; word = w; tw = now(); kick(); };
+    var frame = function () {
+      raf = 0; if (!W0 || !I) return;
+      var t = now(), L = LV() || { b: 0, on: 0 }, on = still ? 0 : (L.on || 0);
+      tm += Math.min(0.05, (t - lastT) / 1000) * (0.25 + on); lastT = t; var tt = tm;
+      var M = mask(word), rv = cl((t - tw) / 650);   // the new word resolves over 0.65 s, pixel by pixel
+      var r = ft.getBoundingClientRect(), vh = W.innerHeight, arrive = still ? 1 : cl((vh - r.top) / (vh * 0.7));
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W0, H0);
+      var spec = L.spec, hz = L.hz || 43;
+      for (var c = 0; c < cols; c++) {
+        var lv = 0; if (spec && on > 0.01) { var fq = 40 * Math.pow(300, (c % 97) / 97); lv = spec[Math.min(spec.length - 1, Math.round(fq / hz))] / 255; lv *= lv; }
+        var pul = 0.5 + 0.5 * Math.sin(tt * ph[c * 3 + 1] + ph[c * 3]);
+        x.fillStyle = 'rgba(' + COL + ',' + (0.28 + 0.16 * pul + on * lv * 0.4).toFixed(3) + ')'; x.fillRect(colX[c] - 0.5, 0, 1 + on * lv * 1.2, H0);
+      }
+      var R = Math.max(90, Math.min(170, W0 * 0.1)) / G, mgx = (mx - gx0 + G) / G, mgy = my / G, busy = false;
+      for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
+        var k = gy * gc + gx, sx = gx, sy = gy, push = 0;
+        if (!down && !still) {
+          var ddx = (gx + 0.5 - mgx) / R, ddy = (gy + 0.5 - mgy) / R, dd = Math.sqrt(ddx * ddx + ddy * ddy);
+          if (dd < 1) { push = 1 - dd; var st2 = push * 2.6; sx -= Math.round(ddx / (dd || 1) * st2); sy -= Math.round(ddy / (dd || 1) * st2 * 1.5); }
+        }
+        var q = (sx >= 0 && sx < gc && sy >= 0 && sy < gr) ? sy * gc + sx : -1;
+        var m = q >= 0 && M[q] && ORD[q] < Math.min(arrive * 1.3, rv * 1.15 + 0.02) ? 1 : 0;
+        var field = 1 - on * 0.3 * (0.5 + 0.5 * Math.sin(gx * 0.23 - tt * 2.5 + Math.sin(gy * 0.19 + tt * 0.5) * 1.6));
+        var tgt = Math.max(m ? Math.min(1, field + push * 0.6) : 0, PT[k]);
+        PT[k] *= 0.996;   // drawn marks fade over ~6 s
+        var dI = (tgt - I[k]) * (tgt > I[k] ? 0.32 : 0.16); I[k] += dI; if (dI > 0.003 || dI < -0.003 || PT[k] > 0.02) busy = true;
+        var v = I[k]; if (v < 0.04) continue;
+        for (var j = 0; j < K; j++) {
+          var ci = gx * K + j; if (ci >= cols) break;
+          var hv = hash(ci, gy), n = 0.62 + 0.22 * Math.sin(tt * (1.3 + ph[ci * 3 + 1] * 1.7) + ph[ci * 3] + gy * 0.9) + 0.16 * Math.sin(tt * (3.1 + hv * 4) + hv * 9);
+          var e = v * Math.max(0.35, n), wd = 1.2 + e * (P * 0.82 - 1.2); if (e < 0.08) continue;
+          x.fillStyle = 'rgba(' + COL + ',' + Math.min(1, 0.5 + e * 1.1).toFixed(3) + ')'; x.fillRect(colX[ci] - wd / 2, gy * G, wd, G + 0.5);
+        }
+      }
+      if (vis && !D.hidden && (!still || busy)) raf = requestAnimationFrame(frame);
+    };
+    var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
+    // drawing with the lines
+    var paint = function (e) {
+      var r = ft.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+      var gx = Math.floor((px - gx0 + G) / G), gy = Math.floor(py / G);
+      for (var a = -1; a <= 1; a++) for (var b = -1; b <= 1; b++) { var X = gx + a, Y = gy + b; if (X >= 0 && X < gc && Y >= 0 && Y < gr && (a === 0 || b === 0)) PT[Y * gc + X] = 1; }
+      kick();
+    };
+    var onField = function (e) { return !(e.target.closest && e.target.closest('a,button,dl,.mf-mail,.mf-row')); };
+    ft.addEventListener('pointerdown', function (e) { if (!PT || !onField(e)) return; down = true; paint(e); });
+    W.addEventListener('pointerup', function () { down = false; });
+    ft.addEventListener('pointermove', function (e) {
+      var r = ft.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top;
+      if (down && PT) paint(e); kick();
+    }, { passive: true });
+    ft.addEventListener('pointerleave', function () { mx = my = -1e4; down = false; });
+    // the contacts rebuild the name into themselves
+    var map = [['.mf-mail', 'EMAIL'], ['a[href*="linkedin"]', 'LINKEDIN'], ['a[href*="behance"]', 'BEHANCE'], ['a[href^="tel:"]', 'CALL'], ['.mf-top', 'TOP ↑']];
+    map.forEach(function (p) {
+      var el = ft.querySelector(p[0]); if (!el) return;
+      ['pointerenter', 'focus'].forEach(function (ev) { el.addEventListener(ev, function () { setWord(p[1]); }); });
+      ['pointerleave', 'blur'].forEach(function (ev) { el.addEventListener(ev, function () { setWord('NAME'); }); });
+    });
+    if ('IntersectionObserver' in W) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; lastT = now(); kick(); }).observe(ft); else vis = true;
+    W.addEventListener('scroll', function () { if (vis) kick(); }, { passive: true });
+    var start = function () { build(); kick(); };
+    try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 200); });
+  }
+
+  /* card headings (Nov 25): each category name is written by the card's own lines, on the page grid, like the name
+     on the landing and in the footer. It builds pixel by pixel as the card arrives; the cursor pushes pixels aside;
+     with the music the lines keep time. The real heading stays in the page for reading and search. */
+  function cardHeads() {
+    var hs = [].slice.call(D.querySelectorAll('.cc-card .cc-h')); if (!hs.length) return;
+    var off = D.createElement('canvas'), oc = off.getContext('2d', { willReadFrequently: true });
+    var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+    var still = !LIVE || RM, items = hs.map(function (h) {
+      var inn = h.closest('.cc-in'), cv = D.createElement('canvas'); cv.className = 'cc-hcv'; cv.setAttribute('aria-hidden', 'true'); inn.appendChild(cv); h.classList.add('cc-hl');
+      var it = { h: h, inn: inn, cv: cv, x: cv.getContext('2d'), mx: -1e4, my: -1e4, vis: false, t0: 0, raf: 0 };
+      inn.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); it.mx = e.clientX - r.left; it.my = e.clientY - r.top; go(it); }, { passive: true });
+      inn.addEventListener('pointerleave', function () { it.mx = it.my = -1e4; go(it); });
+      return it;
+    });
+    var build = function (it) {
+      // offsets, not screen rects: the cards are scaled while they recede, the layout underneath is not
+      var h = it.h, inn = it.inn, ho = 0, hl = 0, e = h; while (e && e !== inn) { ho += e.offsetTop; hl += e.offsetLeft; e = e.offsetParent; }
+      if (e !== inn) { ho = h.offsetTop; hl = h.offsetLeft; }
+      var ir = { width: inn.offsetWidth }, hr = { top: ho, bottom: ho + h.offsetHeight, left: hl, height: h.offsetHeight }; ir.top = 0; ir.left = 0;
+      if (!ir.width || !hr.height) return;
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || 200, small = W.innerWidth < 640, K = 1;
+      // one line per pixel here (the headings are smaller than the landing's name), on the same line grid
+      var P = cw / Math.max(6, Math.round(cw / (small ? 7 : 10) / 2) * 2);
+      var fs0 = parseFloat(getComputedStyle(it.h).fontSize) || 80; P = P / Math.max(1, Math.ceil(P / (fs0 * 0.72 / 10)));   // at least ~10 rows of pixels to a letter: split the line pitch evenly
+      var G = P, gx0 = g.rule % P;
+      var top = Math.floor((hr.top - ir.top) / G) * G, H0 = Math.ceil((hr.bottom - ir.top + G) / G) * G - top, W0 = ir.width;
+      var dpr = Math.min(2, W.devicePixelRatio || 1);
+      it.cv.style.top = top + 'px'; it.cv.style.width = W0 + 'px'; it.cv.style.height = H0 + 'px'; it.cv.width = Math.round(W0 * dpr); it.cv.height = Math.round(H0 * dpr);
+      it.x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var cs = getComputedStyle(h), fs = parseFloat(cs.fontSize);
+      off.width = Math.ceil(W0); off.height = Math.ceil(H0); oc.clearRect(0, 0, off.width, off.height); font(fs); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+      // the same text, the same place: its baseline sits where the heading's does
+      var base = (hr.top - ir.top - top) + fs * 0.86 * 0.86;
+      var txt = h.textContent; if (cs.textTransform === 'uppercase') txt = txt.toUpperCase();
+      oc.fillText(txt, hr.left - ir.left, base);
+      var colX = [], gc, gr = Math.ceil(H0 / G); for (var cx = gx0 + P / 2 - G; cx < W0 + G; cx += P) colX.push(cx); gc = Math.ceil(colX.length / K);
+      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height, M = new Uint8Array(gc * gr), ORD = new Float32Array(gc * gr);
+      for (var gy = 0; gy < gr; gy++) for (var gx = 0; gx < gc; gx++) {
+        var px0 = gx0 - G + gx * G, py0 = gy * G, hit = 0, n = 0;
+        for (var sy = 0.2; sy < 1; sy += 0.2) for (var sx = 0.2; sx < 1; sx += 0.2) { var px = Math.floor(px0 + sx * G), py = Math.floor(py0 + sy * G); n++; if (px >= 0 && px < ow && py < oh && d[(py * ow + px) * 4 + 3] > 120) hit++; }
+        var k = gy * gc + gx; M[k] = hit / n > 0.36 ? 1 : 0; ORD[k] = 0.55 * hash(gx + 7, gy + 3) + 0.45 * (0.5 + 0.5 * Math.sin(gx * 0.17 + gy * 0.23));
+      }
+      var col = getComputedStyle(inn).getPropertyValue('--k').trim() || '#f4f3ef';
+      it.g = { P: P, G: G, K: K, gc: gc, gr: gr, colX: colX, M: M, ORD: ORD, I: new Float32Array(gc * gr), W0: W0, H0: H0, col: col };
+      go(it);
+    };
+    var draw = function (it) {
+      it.raf = 0; var g = it.g; if (!g) return;
+      var t = now(), L = LV() || { on: 0 }, on = still ? 0 : (L.on || 0), tt = t / 1000, x = it.x;
+      var rv = still ? 2 : cl((t - it.t0) / 900) * 1.3;
+      x.clearRect(0, 0, g.W0, g.H0); x.fillStyle = g.col;
+      // a wide, soft field around the cursor: pixels part around it, and the lines it passes over swell
+      var R = Math.max(9, 150 / g.G), mgx = (it.mx - (g.colX[0] - g.P / 2)) / g.G, mgy = it.my / g.G, busy = false;
+      for (var gy = 0; gy < g.gr; gy++) for (var gx = 0; gx < g.gc; gx++) {
+        var k = gy * g.gc + gx, sx = gx, sy = gy, push = 0;
+        var ddx = (gx + 0.5 - mgx) / R, ddy = (gy + 0.5 - mgy) / R, dd = Math.sqrt(ddx * ddx + ddy * ddy);
+        if (dd < 1 && !still) { push = 1 - dd; push = push * push * (3 - 2 * push); var s2 = push * 4.5; sx -= Math.round(ddx / (dd || 1) * s2); sy -= Math.round(ddy / (dd || 1) * s2 * 0.8); }
+        var q = sx >= 0 && sx < g.gc && sy >= 0 && sy < g.gr ? sy * g.gc + sx : -1;
+        var tgt = q >= 0 && g.M[q] && g.ORD[q] < rv ? 1 : 0;
+        var dI = (tgt - g.I[k]) * (tgt > g.I[k] ? 0.3 : 0.12); g.I[k] += dI;   // pixels leave a short trail as they move
+        if (Math.abs(dI) > 0.003) busy = true;
+        var v = g.I[k]; if (v < 0.04) continue;
+        for (var j = 0; j < g.K; j++) {
+          var ci = gx * g.K + j; if (ci >= g.colX.length) break;
+          var hv = hash(ci, gy), n = 0.82 + on * (0.25 * Math.sin(tt * (2 + hv * 3) + hv * 9));
+          var wd = 1.2 + v * Math.min(1.25, n + push * 0.45) * (g.P * 0.82 - 1.2);
+          x.globalAlpha = Math.min(1, 0.5 + v * 0.6); x.fillRect(g.colX[ci] - wd / 2, gy * g.G, wd, g.G + 0.5);
+        }
+      }
+      x.globalAlpha = 1;
+      if (it.vis && (busy || on > 0.01 || rv < 1.3 || it.mx > -1e3)) it.raf = requestAnimationFrame(function () { draw(it); });
+    };
+    var go = function (it) { if (!it.raf && it.vis) it.raf = requestAnimationFrame(function () { draw(it); }); };
+    if ('IntersectionObserver' in W) {
+      var io = new IntersectionObserver(function (es) { es.forEach(function (e) { var it = items.filter(function (i) { return i.inn === e.target; })[0]; if (!it) return; it.vis = e.isIntersecting; if (it.vis && !it.t0) it.t0 = now(); go(it); }); }, { threshold: 0.2 });
+      items.forEach(function (it) { io.observe(it.inn); });
+    } else items.forEach(function (it) { it.vis = true; it.t0 = 1; });
+    var all = function () { items.forEach(build); };
+    try { D.fonts.load('800 80px Archivo').then(all, all); } catch (e) { all(); }
+    setTimeout(all, 1500);
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(all, 200); });
+  }
+
   function bridge() {
     var t = D.querySelector('.br-t'); if (!t || !LIVE || RM) return;
     H.classList.add('br-on');

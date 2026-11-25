@@ -10,7 +10,7 @@ html.intro [data-inkroot] *,html.intro .atmos-grid *{animation-play-state:paused
 .me-wipe.block{pointer-events:auto}
 .me-st{position:absolute;top:-1px;bottom:-1px;background:var(--c);will-change:transform}
 .me-ln{position:absolute;top:0;bottom:0;left:0;width:1px;background:var(--ln);transform-origin:50% 0}
-.me-wl{position:absolute;left:0;top:50%;transform:translateY(-50%);font-family:'MeMondwest','Mondwest',serif;font-weight:400;font-size:clamp(40px,7vw,120px);line-height:.9;color:var(--fg);white-space:nowrap;transition:opacity .18s linear}
+.me-wl{position:absolute;left:0;top:50%;transform:translateY(-50%);font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;text-transform:uppercase;letter-spacing:-.015em;font-size:clamp(44px,8vw,140px);line-height:.86;color:var(--fg);white-space:nowrap;transition:opacity .18s linear}
 .me-wk{position:absolute;bottom:clamp(14px,1.6vw,24px);font:300 11px/1.4 'JetBrains Mono',ui-monospace,monospace;color:var(--fg);opacity:.62;transition:opacity .18s linear}
 
 /* ---------- intro: on the grid. Column lines draw, a horizontal line runs as the page loads, pixels are stamped on the
@@ -279,16 +279,16 @@ html.me-shell .me-lf{display:none}
 @media print{.me-lf{display:none}}
 /* Home (Nov 24): the top bar is no longer a band of its own; it floats, fixed, over the line screen as a row of
    outlined boxes on the grid, drawn in difference so it reads over every colour beneath it */
-html.me-home nav[aria-label="Main"]{position:fixed !important;left:0;right:0;top:0;background:transparent !important;border-bottom:0 !important;transform:none !important;pointer-events:none}
-html.me-home nav[aria-label="Main"] a{pointer-events:auto}
-html.me-home nav[aria-label="Main"] .nb{box-sizing:border-box;display:flex !important;align-items:center !important;height:40px;border:1px solid color-mix(in srgb,var(--navc,#f4f3ef) 55%,transparent);color:var(--navc,#f4f3ef) !important;text-decoration:none !important;transition:background .25s,color .25s,border-color .25s}
-html.me-home nav[aria-label="Main"] .nb:hover,html.me-home nav[aria-label="Main"] .nb:focus-visible{background:var(--navc,#f4f3ef);color:var(--navb,#121316) !important;border-color:var(--navc,#f4f3ef);outline:none}
-html.me-home nav[aria-label="Main"] .nb[aria-current="page"] .nt{text-decoration:underline;text-underline-offset:6px}
-html.me-home nav[aria-label="Main"] .nt{display:inline-block;will-change:transform;white-space:nowrap}
-@media (max-width:639px){html.me-home nav[aria-label="Main"] .nb{height:32px;padding:0 10px}html.me-home nav[aria-label="Main"] .mainnav{gap:0 !important}html.me-home nav[aria-label="Main"] .mainnav .nb + .nb{margin-left:-1px}}
+nav.me-nav{position:fixed !important;left:0;right:0;top:0;background:transparent !important;border-bottom:0 !important;transform:none !important;pointer-events:none}
+nav.me-nav a{pointer-events:auto}
+nav.me-nav .nb{box-sizing:border-box;display:flex !important;align-items:center !important;height:40px;border:1px solid color-mix(in srgb,var(--navc,#f4f3ef) 55%,transparent);color:var(--navc,#f4f3ef) !important;text-decoration:none !important;transition:background .25s,color .25s,border-color .25s}
+nav.me-nav .nb:hover,nav.me-nav .nb:focus-visible{background:var(--navc,#f4f3ef);color:var(--navb,#121316) !important;border-color:var(--navc,#f4f3ef);outline:none}
+nav.me-nav .nb[aria-current="page"] .nt{text-decoration:underline;text-underline-offset:6px}
+nav.me-nav .nt{display:inline-block;will-change:transform;white-space:nowrap}
+@media (max-width:639px){nav.me-nav .nb{height:32px;padding:0 10px}nav.me-nav .mainnav{gap:0 !important}nav.me-nav .mainnav .nb + .nb{margin-left:-1px}}
 html.me-home .cc-in{padding-top:calc(clamp(24px,3.4vw,52px) + 52px) !important}
 /* Home (Nov 24): no ME. in the bar (Home is there); the music player takes its box, as a line box like the rest */
-html.me-home nav[aria-label="Main"] .logo{display:none !important}
+nav.me-nav .logo{display:none !important}
 html.me-mu-top .me-mu{left:clamp(16px,4vw,56px);right:auto;top:8px;bottom:auto;width:calc((100vw - 2 * clamp(16px,4vw,56px)) * .16 + 1px);z-index:960;color:var(--navc,#f4f3ef)}
 html.me-mu-top .me-mu .me-mb{box-sizing:border-box;width:100%;height:40px;padding:0 0 0 clamp(14px,1.6vw,24px);gap:10px;font-size:clamp(11px,1.1vw,12px);background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid color-mix(in srgb,var(--navc,#f4f3ef) 55%,transparent);color:var(--navc,#f4f3ef)}
 html.me-mu-top .me-mu .me-mb:hover{background:var(--navc,#f4f3ef);color:var(--navb,#121316);border-color:var(--navc,#f4f3ef)}
@@ -321,4 +321,98 @@ html.me-lock,html.me-lock body{overflow:hidden}
 /* (Nov 24) the margin rule is one steady line, not a scroll-progress bar */
 [data-inkroot] .vlit{transform:none !important}
 /* the floating bar sits over the footer's top row on Home: that row steps down below it */
-html.me-home footer.foot > :first-child{margin-top:52px}
+html.me-home footer.foot .fstate{padding-top:72px !important}
+
+/* =====================================================================================================================
+   r13 (Nov 25): Measured lines, drawn lines. One shell, four type roles, one accent, one rhythm.
+   Display: Archivo 800 at 62% width, caps  ·  Text: Archivo  ·  System: JetBrains Mono  ·  Accent: Mondwest, only for a
+   key word inside a sentence. Page #121316, surfaces #1a1b1f, lines #2c2e33, type #f4f3ef / #c9ccd1 / #9a9ea6, violet.
+   ===================================================================================================================== */
+/* shell: the same outlined boxes on every page; fixed over the landing on Home, sticky elsewhere */
+nav.me-nav{display:flex;justify-content:flex-end;align-items:center;gap:0;height:56px;padding:0 clamp(16px,4vw,56px);box-sizing:border-box;margin:0}
+nav.me-nav{z-index:950 !important}
+html:not(.me-home) nav.me-nav{position:sticky !important}
+nav.me-nav .nb + .nb{margin-left:-1px}
+html.nav-fill nav.me-nav .nb:not(:hover):not(:focus-visible),html.nav-fill.me-mu-top .me-mu .me-mb:not(:hover){background:rgba(18,19,22,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+nav.me-nav .nb[aria-current="page"] .nt{text-decoration:underline;text-underline-offset:6px}
+/* the old atmosphere: grain and the crosshair go; the grid lines stay (they are the measured lines at rest) */
+.atmos-grain,.atmos-grid .ag-ch{display:none !important}
+/* ink retires: anything that used to ink in is simply there */
+[data-ink-off],[data-ink-off] .ik{opacity:1 !important;filter:none !important;transform:none !important;visibility:visible !important}
+.vmark,.me-dot{display:none !important}
+/* Home cards (Nov 25, later): the dark page ruled with the landing's lines, each in its category's colour; the colour
+   also marks the number, the top edge and the list squares */
+.cc .cc-in{background-image:linear-gradient(180deg,rgba(14,15,18,.92) 0,rgba(14,15,18,.72) 45%,rgba(14,15,18,.45) 100%),repeating-linear-gradient(90deg,color-mix(in srgb,var(--k) 32%,transparent) 0 1px,transparent 1px var(--lp,10px));background-position:0 0,var(--lx,0px) 0;border-top:1px solid var(--k);box-shadow:0 -24px 60px rgba(0,0,0,.45)}
+.cc .cc-n{color:var(--k)}
+.cc .cc-ls a:hover b,.cc .cc-ls a:focus-visible b{color:var(--k)}
+.cc .cc-ls a > span:first-child{color:var(--k) !important;opacity:1}
+/* Home cards: the number is set like its heading; one behaviour, a small lift */
+.cc .cc-t{transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.cc .cc-t:hover{transform:translateY(-4px)}
+/* Home index: a still list after the cards, no band */
+.pf{padding-top:clamp(120px,14vw,240px)}
+.pf-ls{margin-top:clamp(20px,2.6vw,40px)}
+.pf-s{cursor:default}
+.pf-s:hover{padding-left:0;color:#9a9ea6}
+.pf-s:hover i{opacity:.35}
+/* footer, every page: the measured lines return under the address */
+.me-ft{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;min-height:100svh;box-sizing:border-box;padding:76px clamp(16px,4vw,56px) 0;background-color:#030304;background-image:repeating-linear-gradient(90deg,rgba(142,107,255,.34) 0 1px,transparent 1px var(--lp,10px));background-position:var(--lx,0px) 0;color:#f4f3ef;font:300 12px/1.5 'JetBrains Mono',ui-monospace,monospace;overflow:hidden}
+.me-ft a{color:#f4f3ef;text-decoration:none}
+.mf-row{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#9a9ea6}
+.mf-row span,.mf-row a{background:#0b0c0e;padding:2px 0}
+.mf-top{border-bottom:1px solid currentColor}
+.mf-main{flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(28px,3.4vw,52px);margin-left:16%;padding:clamp(48px,7vw,120px) 0 clamp(40px,5vw,80px) clamp(14px,1.6vw,24px)}
+.mf-mail{align-self:flex-start;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;text-transform:uppercase;letter-spacing:-.015em;font-size:clamp(22px,4.4vw,84px);line-height:.86;max-width:100%;overflow-wrap:anywhere;background:#0b0c0e;box-shadow:0 0 0 .12em #0b0c0e;transition:color .25s}
+.mf-mail:hover,.mf-mail:focus-visible{color:#8e6bff;outline:none}
+.mf-l{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px clamp(12px,1.6vw,24px);margin:0;max-width:980px}
+.mf-l > div{background:#0b0c0e;border-top:1px solid #3a3d45;padding-top:10px}
+.mf-l dt{font-size:11px;color:#9a9ea6}
+.mf-l dd{margin:4px 0 0;word-break:break-word}
+.mf-l a{border-bottom:1px solid rgba(244,243,239,.35)}
+.mf-l a:hover{border-color:#8e6bff;color:#8e6bff}
+.mf-b{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 calc(-1 * clamp(16px,4vw,56px));padding:16px clamp(16px,4vw,56px) 22px;border-top:1px solid #2c2e33;background:#0b0c0e;font-size:11px;color:#9a9ea6}
+@media (max-width:639px){.mf-main{margin-left:0;padding-left:0}.mf-l{grid-template-columns:1fr}.mf-b span:nth-child(2){display:none}}
+/* case brief aside: the title is set in the display face like every other title */
+.cb .cb-t{font-family:'Archivo',sans-serif !important;font-weight:800 !important;font-stretch:62% !important;text-transform:uppercase;letter-spacing:-.01em}
+@media (max-width:639px){.cc-n{font-size:clamp(30px,9vw,44px) !important;font-family:'Mondwest',serif}.cc-h{font-size:clamp(40px,12vw,64px) !important}}
+a.nx > span:first-child{text-transform:uppercase;letter-spacing:-.015em !important}
+/* footer = the landing again: the line screen fills it, the name rises out of the lines at its foot */
+.me-ft.mf-on{background-image:none}
+.mf-cv{position:absolute;left:0;top:0;display:block;pointer-events:none;z-index:0}
+.me-ft > *:not(.mf-cv){position:relative;z-index:1}
+.me-ft .mf-main{flex:0 0 auto;justify-content:flex-start;padding-top:clamp(32px,5vw,80px)}
+.me-ft .mf-row span,.me-ft .mf-row a,.me-ft .mf-mail,.me-ft .mf-l > div,.me-ft .mf-b{background:#030304}
+.me-ft .mf-mail{box-shadow:0 0 0 .12em #030304}
+.me-ft .mf-b{margin-top:auto}
+.mf-stage{flex:1 1 auto;min-height:clamp(260px,52vh,640px);cursor:crosshair;touch-action:pan-y}
+.me-ft .mf-main{padding-bottom:clamp(16px,2vw,32px)}
+.mf-hint{color:#9a9ea6}
+.me-ft .mf-b{margin-top:0}
+@media (max-width:639px){.mf-hint{display:none}}
+/* footer contacts sit exactly on the page grid: the block starts on the margin rule, each contact spans two columns,
+   line to line, with the text one gutter in, like every other column of the site */
+.me-ft .mf-main{padding-left:0}
+.me-ft .mf-mail{margin-left:clamp(14px,1.6vw,24px)}
+.me-ft .mf-l{grid-template-columns:repeat(6,minmax(0,1fr));gap:0;max-width:none}
+.me-ft .mf-l > div{grid-column:span 2;padding:10px clamp(14px,1.6vw,24px) 12px;border-top:1px solid #3a3d45;box-sizing:border-box}
+.me-ft .mf-l > div + div{border-left:1px solid #2c2e33}
+@media (max-width:1099px){.me-ft .mf-l{grid-template-columns:repeat(4,minmax(0,1fr))}.me-ft .mf-l > div:nth-child(3){border-left:0}}
+@media (max-width:639px){.me-ft .mf-l{grid-template-columns:1fr}.me-ft .mf-l > div{grid-column:auto;border-left:0 !important;padding-left:0}.me-ft .mf-mail{margin-left:0}}
+.me-ft .mf-row{display:grid;grid-template-columns:16% minmax(0,1fr) auto;align-items:start}.me-ft .mf-hint{justify-self:start;margin-left:clamp(14px,1.6vw,24px)}@media (max-width:639px){.me-ft .mf-row{grid-template-columns:1fr auto}}
+.me-ft .mf-row{display:flex !important;justify-content:space-between}
+/* the card's lines answer the cursor: under it they come up to full colour, in a soft circle (pointer devices) */
+.cc .cc-in::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background-image:repeating-linear-gradient(90deg,var(--k) 0 1px,transparent 1px var(--lp,10px));background-position:var(--lx,0px) 0;opacity:0;transition:opacity .35s;-webkit-mask-image:radial-gradient(circle at var(--mx,50%) var(--my,50%),#000 0,rgba(0,0,0,.35) 120px,transparent 260px);mask-image:radial-gradient(circle at var(--mx,50%) var(--my,50%),#000 0,rgba(0,0,0,.35) 120px,transparent 260px)}
+.cc .cc-in.me-hot::before{opacity:.7}
+.cc .cc-in > *{position:relative;z-index:1}
+.cc .cc-tx{text-shadow:0 0 12px #0e0f12,0 0 4px #0e0f12}
+@media (hover:none),(prefers-reduced-motion:reduce){.cc .cc-in::before{display:none}}
+/* card headings are written by the lines; the type itself stays for reading, invisible */
+.cc-h.cc-hl{color:transparent !important;text-shadow:none !important}
+.cc-hcv{position:absolute;left:0;z-index:1;pointer-events:none;display:block}
+/* over the cards the page's grid lines step back: the card's own lines are the grid there */
+.atmos-grid{transition:opacity .3s}
+html.on-cards .atmos-grid{opacity:0}
+.cc .cc-in > .cc-hcv{position:absolute;left:0;z-index:2}
+nav.me-nav,.me-mu{transition:opacity .3s ease,visibility .3s}
+html.in-foot nav.me-nav,html.in-foot .me-mu{opacity:0;visibility:hidden;pointer-events:none}
+.me-ft{padding-top:clamp(20px,2.2vw,32px) !important}
