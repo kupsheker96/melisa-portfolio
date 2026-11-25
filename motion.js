@@ -1662,7 +1662,7 @@
     };
     var onField = function (e) { return !(e.target.closest && e.target.closest('a,button,.mf-g,.mf-row')); };
     // the footer opens: its contents rise from below as the page lifts off it
-    var open = function () { var r = ft.getBoundingClientRect(), vh = W.innerHeight, p = cl((vh - r.top) / vh); ft.style.setProperty('--fo', (still ? 0 : -(1 - p) * vh * 0.45).toFixed(1) + 'px'); };
+    var open = function () { var r = ft.getBoundingClientRect(), vh = W.innerHeight, p = cl((vh - r.top) / vh); ft.style.setProperty('--fo', (still ? 0 : (1 - p) * vh * 0.55).toFixed(1) + 'px'); };
     W.addEventListener('scroll', open, { passive: true }); W.addEventListener('resize', open); open();
     // live clock and copy
     var ck = ft.querySelector('.mf-clock');
