@@ -1726,24 +1726,26 @@
       var t = now(), L = LV() || { on: 0 }, on = still ? 0 : (L.on || 0), tt = t / 1000, x = it.x;
       var rv = still ? 2 : cl((t - it.t0) / 900) * 1.3;
       x.clearRect(0, 0, g.W0, g.H0); x.fillStyle = g.col;
-      var R = 4.2, mgx = (it.mx - (g.colX[0] - g.P / 2)) / g.G, mgy = it.my / g.G, busy = false;
+      // a wide, soft field around the cursor: pixels part around it, and the lines it passes over swell
+      var R = Math.max(9, 150 / g.G), mgx = (it.mx - (g.colX[0] - g.P / 2)) / g.G, mgy = it.my / g.G, busy = false;
       for (var gy = 0; gy < g.gr; gy++) for (var gx = 0; gx < g.gc; gx++) {
         var k = gy * g.gc + gx, sx = gx, sy = gy, push = 0;
         var ddx = (gx + 0.5 - mgx) / R, ddy = (gy + 0.5 - mgy) / R, dd = Math.sqrt(ddx * ddx + ddy * ddy);
-        if (dd < 1 && !still) { push = 1 - dd; var s2 = push * 2.2; sx -= Math.round(ddx / (dd || 1) * s2); sy -= Math.round(ddy / (dd || 1) * s2); }
+        if (dd < 1 && !still) { push = 1 - dd; push = push * push * (3 - 2 * push); var s2 = push * 4.5; sx -= Math.round(ddx / (dd || 1) * s2); sy -= Math.round(ddy / (dd || 1) * s2 * 0.8); }
         var q = sx >= 0 && sx < g.gc && sy >= 0 && sy < g.gr ? sy * g.gc + sx : -1;
         var tgt = q >= 0 && g.M[q] && g.ORD[q] < rv ? 1 : 0;
-        var dI = (tgt - g.I[k]) * (tgt > g.I[k] ? 0.35 : 0.2); g.I[k] += dI; if (Math.abs(dI) > 0.003) busy = true;
+        var dI = (tgt - g.I[k]) * (tgt > g.I[k] ? 0.3 : 0.12); g.I[k] += dI;   // pixels leave a short trail as they move
+        if (Math.abs(dI) > 0.003) busy = true;
         var v = g.I[k]; if (v < 0.04) continue;
         for (var j = 0; j < g.K; j++) {
           var ci = gx * g.K + j; if (ci >= g.colX.length) break;
           var hv = hash(ci, gy), n = 0.82 + on * (0.25 * Math.sin(tt * (2 + hv * 3) + hv * 9));
-          var wd = 1.2 + v * n * (g.P * 0.82 - 1.2);
+          var wd = 1.2 + v * Math.min(1.25, n + push * 0.45) * (g.P * 0.82 - 1.2);
           x.globalAlpha = Math.min(1, 0.5 + v * 0.6); x.fillRect(g.colX[ci] - wd / 2, gy * g.G, wd, g.G + 0.5);
         }
       }
       x.globalAlpha = 1;
-      if (it.vis && (busy || on > 0.01 || rv < 1.3)) it.raf = requestAnimationFrame(function () { draw(it); });
+      if (it.vis && (busy || on > 0.01 || rv < 1.3 || it.mx > -1e3)) it.raf = requestAnimationFrame(function () { draw(it); });
     };
     var go = function (it) { if (!it.raf && it.vis) it.raf = requestAnimationFrame(function () { draw(it); }); };
     if ('IntersectionObserver' in W) {
