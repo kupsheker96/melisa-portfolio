@@ -1580,7 +1580,7 @@
     var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
     var mask = function (w) {
       if (masks[w]) return masks[w];
-      var lines = w === 'NAME' ? ['MELISA', 'ERGANI'] : [w], lhk = 1.16, avail = yBot - yTop;
+      var lines = w === 'NAME' ? (W.innerWidth < 640 ? ['MELISA', 'ERGANI'] : ['MELISA ERGANI']) : (W.innerWidth < 640 ? w.split(' ') : [w]), lhk = 1.16, avail = yBot - yTop;
       var fs = avail / (lines.length * 0.72 * lhk - (lhk - 1) * 0.72); font(fs);
       var lw = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (lw > room) { fs *= room / lw; font(fs); }
       var cap = fs * 0.72, lh = cap * lhk, top = yBot - (lines.length * lh - (lh - cap));
@@ -1606,9 +1606,9 @@
       off.width = Math.ceil(W0); off.height = Math.ceil(H0);
       // the footer's text column: the first pixel column at or after one gutter past the margin rule; the address and the
       // contacts take the same inset, so the name, the address and the labels share one left edge
-      var gut = Math.max(14, Math.min(24, W.innerWidth * 0.016)), a0 = small ? g.pad : g.rule + gut;
-      x0 = (gx0 - G) + Math.ceil((a0 - (gx0 - G)) / G) * G + 0.5; room = W0 - x0 - g.pad;
-      ft.style.setProperty('--ftx', (x0 - (small ? g.pad : g.rule)).toFixed(1) + 'px');
+      // the name runs the full width, margin to margin, like the old footer; the text column keeps its gutter
+      x0 = (gx0 - G) + Math.ceil((g.pad - (gx0 - G)) / G) * G + 0.5; room = W0 - x0 - g.pad;
+      ft.style.setProperty('--ftx', Math.round(Math.max(14, Math.min(24, W.innerWidth * 0.016))) + 'px');
       // the name stands on the last full grid row above the bottom bar, and rises as high as the stage allows
       yTop = stg ? stg.offsetTop + G : H0 * 0.5; yBot = stg ? Math.floor((stg.offsetTop + stg.offsetHeight) / G) * G - G : H0 - G;   // the name stands one row above the page's end
       masks = {}; I = new Float32Array(gc * gr); PT = new Float32Array(gc * gr); ORD = new Float32Array(gc * gr);
@@ -1660,7 +1660,18 @@
       for (var a = -1; a <= 1; a++) for (var b = -1; b <= 1; b++) { var X = gx + a, Y = gy + b; if (X >= 0 && X < gc && Y >= 0 && Y < gr && (a === 0 || b === 0)) PT[Y * gc + X] = 1; }
       kick();
     };
-    var onField = function (e) { return !(e.target.closest && e.target.closest('a,button,dl,.mf-mail,.mf-row')); };
+    var onField = function (e) { return !(e.target.closest && e.target.closest('a,button,.mf-g,.mf-row')); };
+    // the footer opens: its contents rise from below as the page lifts off it
+    var open = function () { var r = ft.getBoundingClientRect(), vh = W.innerHeight, p = cl((vh - r.top) / vh); ft.style.setProperty('--fo', (still ? 0 : -(1 - p) * vh * 0.45).toFixed(1) + 'px'); };
+    W.addEventListener('scroll', open, { passive: true }); W.addEventListener('resize', open); open();
+    // live clock and copy
+    var ck = ft.querySelector('.mf-clock');
+    if (ck) { var tick = function () { try { ck.textContent = new Date().toLocaleTimeString('en-GB', { timeZone: 'Europe/Istanbul', hour12: false }); } catch (e) { } }; tick(); setInterval(tick, 1000); }
+    var cp = ft.querySelector('.mf-copy');
+    if (cp) cp.addEventListener('click', function () {
+      var done = function () { cp.textContent = 'Copied'; setTimeout(function () { cp.textContent = 'Copy'; }, 1600); };
+      try { navigator.clipboard.writeText(cp.getAttribute('data-copy')).then(done, done); } catch (e) { done(); }
+    });
     ft.addEventListener('pointerdown', function (e) { if (!PT || !onField(e)) return; down = true; paint(e); });
     W.addEventListener('pointerup', function () { down = false; });
     ft.addEventListener('pointermove', function (e) {
@@ -1669,7 +1680,7 @@
     }, { passive: true });
     ft.addEventListener('pointerleave', function () { mx = my = -1e4; down = false; });
     // the contacts rebuild the name into themselves
-    var map = [['.mf-mail', 'EMAIL'], ['a[href*="linkedin"]', 'LINKEDIN'], ['a[href*="behance"]', 'BEHANCE'], ['a[href^="tel:"]', 'CALL'], ['.mf-top', 'TOP ↑']];
+    var map = [['.mf-mail', 'EMAIL'], ['.mf-copy', 'COPY'], ['a[href*="linkedin"]', 'LINKEDIN'], ['a[href*="behance"]', 'BEHANCE'], ['.mf-top', 'BACK TO TOP']];
     map.forEach(function (p) {
       var el = ft.querySelector(p[0]); if (!el) return;
       ['pointerenter', 'focus'].forEach(function (ev) { el.addEventListener(ev, function () { setWord(p[1]); }); });

@@ -419,3 +419,28 @@ html.in-foot nav.me-nav,html.in-foot .me-mu{opacity:0;visibility:hidden;pointer-
 .me-ft .mf-mail{margin-left:var(--ftx,clamp(14px,1.6vw,24px)) !important;box-shadow:none !important}
 .me-ft .mf-l > div{padding-left:var(--ftx,clamp(14px,1.6vw,24px)) !important}
 @media (max-width:639px){.me-ft .mf-mail{margin-left:var(--ftx,0px) !important}.me-ft .mf-l > div{padding-left:var(--ftx,0px) !important}}
+/* ---- footer, final layout (Nov 25): the old composition in the new material ---- */
+.me-ft{padding:clamp(20px,2.2vw,32px) clamp(16px,4vw,56px) 0 !important}
+.me-ft > *:not(.mf-cv){transform:translate3d(0,var(--fo,0px),0)}
+.mf-g{display:grid;grid-template-columns:16% repeat(6,minmax(0,1fr));row-gap:clamp(48px,6vw,96px);padding-top:clamp(64px,10vh,150px)}
+.mf-loc{grid-column:1;grid-row:1;align-self:center;display:flex;flex-direction:column;gap:4px;font-size:11px;color:#9a9ea6;background:transparent}
+.mf-loc > span{background:#030304;align-self:flex-start;padding:1px 0}
+.mf-loc i{display:inline-block;width:5px;height:5px;background:#8e6bff;vertical-align:middle;margin:0 4px}
+.mf-mailrow{grid-column:2 / -1;grid-row:1;display:flex;align-items:center;gap:clamp(14px,1.6vw,24px);padding-left:var(--ftx,clamp(14px,1.6vw,24px));min-width:0}
+.me-ft .mf-mail{margin-left:0 !important;padding-bottom:.08em;border-bottom:1px solid #f4f3ef;font-size:clamp(28px,5.4vw,104px) !important}
+.mf-copy{flex:none;font:400 11px/1 'JetBrains Mono',ui-monospace,monospace;color:#f4f3ef;background:#030304;border:1px solid rgba(244,243,239,.5);border-radius:999px;padding:8px 14px;cursor:pointer;transition:background .2s,color .2s}
+.mf-copy:hover,.mf-copy:focus-visible{background:#f4f3ef;color:#030304;outline:none}
+.me-ft .mf-l{grid-column:2 / -1;grid-row:2;display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:0 !important}
+.mf-ln{position:relative;display:flex;flex-direction:column;gap:10px;padding:16px 48px 18px var(--ftx,clamp(14px,1.6vw,24px));border-top:1px solid #3a3d45;border-bottom:1px solid #3a3d45;background:#030304;color:#f4f3ef !important;transition:color .2s}
+.mf-ln + .mf-ln{margin-left:clamp(14px,1.6vw,24px)}
+.mf-ln b{font-family:'Archivo',sans-serif;font-weight:800;font-stretch:62%;text-transform:uppercase;letter-spacing:-.015em;font-size:clamp(28px,3vw,52px);line-height:.9}
+.mf-ln span{font-size:11px;color:#9a9ea6}
+.mf-ln i{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-style:normal;transition:transform .3s}
+.mf-ln:hover,.mf-ln:focus-visible{color:#8e6bff !important;outline:none}
+.mf-ln:hover i{transform:translate(3px,-60%)}
+.me-ft .mf-stage{min-height:clamp(150px,13vw,300px)}
+@media (max-width:1099px){.mf-g{grid-template-columns:16% repeat(4,minmax(0,1fr))}}
+@media (max-width:639px){.mf-g{grid-template-columns:1fr;row-gap:28px;padding-top:40px}.mf-loc,.mf-mailrow,.me-ft .mf-l{grid-column:1;grid-row:auto}.mf-mailrow{padding-left:0;flex-wrap:wrap}.me-ft .mf-l{grid-template-columns:1fr !important}.mf-ln{padding-left:0}.mf-ln + .mf-ln{margin-left:0;border-top:0}.me-ft .mf-mail{font-size:clamp(22px,7vw,40px) !important}}
+.me-ft .mf-mail{white-space:nowrap;font-size:clamp(28px,4.4vw,88px) !important}
+@media (max-width:639px){.me-ft .mf-mail{font-size:clamp(20px,6.2vw,36px) !important}.me-ft .mf-stage{min-height:clamp(220px,60vw,320px)}}
+.me-ft .mf-g{margin-top:auto;padding-top:clamp(40px,6vh,90px)}.me-ft .mf-stage{flex:none !important;height:clamp(150px,13vw,300px);margin-top:clamp(24px,3vw,48px)}
