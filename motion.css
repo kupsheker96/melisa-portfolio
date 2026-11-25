@@ -401,3 +401,14 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 .br-pf{display:block;width:100%;margin-top:clamp(16px,2.5vw,40px);color:inherit;text-decoration:none;cursor:pointer}
 .br-pf:focus-visible{outline:1px solid #f4f3ef;outline-offset:8px}
 .br-pf .pf-band{width:100%}
+/* (Nov 25) the index, sliding under ABOUT / CV; pauses under the cursor so items can be picked */
+.br-mq{width:calc(100% + 2 * clamp(16px,4vw,56px));margin:clamp(12px,2vw,28px) calc(-1 * clamp(16px,4vw,56px)) 0;overflow:hidden;border-top:1px solid #2c2e33;border-bottom:1px solid #2c2e33;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.br-mq-t{display:flex;width:max-content;animation:brmq 48s linear infinite}
+.br-mq:hover .br-mq-t,.br-mq:focus-within .br-mq-t{animation-play-state:paused}
+.br-mq-g{display:flex;align-items:center;flex:none}
+.mq-c{flex:none;display:flex;align-items:center}
+.mq-h{padding:0 18px 0 40px;font:300 11px/1 'JetBrains Mono',ui-monospace,monospace;color:#9a9ea6;white-space:nowrap}
+.br-mq .pf-i{display:flex;width:auto;gap:10px;padding:14px 18px;border:0;white-space:nowrap}
+.br-mq .pf-i:hover,.br-mq .pf-i.on,.br-mq .pf-i:focus-visible{padding-left:18px}
+@keyframes brmq{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.br-mq-t{animation:none}.br-mq{overflow-x:auto}}

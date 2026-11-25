@@ -1294,7 +1294,7 @@
 
   function words() {
     cardJump();
-    var sec = D.querySelector('.pf');
+    var sec = D.querySelector('.pf') || D.getElementById('me-about');   // (Nov 25) the index lists slide under ABOUT / CV now
     // cards that have faded out (the last one sinks away over the index) stop catching the pointer
     var ccs = Array.prototype.map.call(D.querySelectorAll('.cc-card'), function (c) { return [c, c.querySelector('.cc-in')]; });
     if (ccs.length) { var pe = function () { ccs.forEach(function (x) { var o = x[1] ? parseFloat(x[1].style.opacity || '1') : 1; x[0].style.pointerEvents = o < 0.15 ? 'none' : ''; }); }; var mo = new MutationObserver(pe); ccs.forEach(function (x) { if (x[1]) mo.observe(x[1], { attributes: true, attributeFilter: ['style'] }); }); pe(); }
