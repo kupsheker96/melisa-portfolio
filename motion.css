@@ -389,3 +389,13 @@ a.nx > span:first-child{text-transform:uppercase;letter-spacing:-.015em !importa
 .mf-hint{color:#9a9ea6}
 .me-ft .mf-b{margin-top:0}
 @media (max-width:639px){.mf-hint{display:none}}
+/* footer contacts sit exactly on the page grid: the block starts on the margin rule, each contact spans two columns,
+   line to line, with the text one gutter in, like every other column of the site */
+.me-ft .mf-main{padding-left:0}
+.me-ft .mf-mail{margin-left:clamp(14px,1.6vw,24px)}
+.me-ft .mf-l{grid-template-columns:repeat(6,minmax(0,1fr));gap:0;max-width:none}
+.me-ft .mf-l > div{grid-column:span 2;padding:10px clamp(14px,1.6vw,24px) 12px;border-top:1px solid #3a3d45;box-sizing:border-box}
+.me-ft .mf-l > div + div{border-left:1px solid #2c2e33}
+@media (max-width:1099px){.me-ft .mf-l{grid-template-columns:repeat(4,minmax(0,1fr))}.me-ft .mf-l > div:nth-child(3){border-left:0}}
+@media (max-width:639px){.me-ft .mf-l{grid-template-columns:1fr}.me-ft .mf-l > div{grid-column:auto;border-left:0 !important;padding-left:0}.me-ft .mf-mail{margin-left:0}}
+.me-ft .mf-row{display:grid;grid-template-columns:16% minmax(0,1fr) auto;align-items:start}.me-ft .mf-hint{justify-self:start;margin-left:clamp(14px,1.6vw,24px)}@media (max-width:639px){.me-ft .mf-row{grid-template-columns:1fr auto}}
