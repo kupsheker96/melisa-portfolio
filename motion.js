@@ -374,7 +374,7 @@
   onBody(function () { rendered(function () { setTimeout(init, 0); }); });
 
   function init() {
-    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge();
+    clock(); rows(); hero(); hs(); about(); cursor(); play(); words(); brief(); topbar(); railDot(); underline(); cards(); bridge(); setTimeout(navScramble, 0); roles();
     if (!EMB && !SHELLED) music();
   }
 
@@ -819,9 +819,9 @@
         var w1 = oc.measureText(parts[0]).width, w2 = oc.measureText(parts[1]).width;
         if (w1 + w2 > W0 * 0.97) { fs *= W0 * 0.97 / (w1 + w2); font(fs); cap = fs * 0.72; base = (H0 + cap) / 2; w1 = oc.measureText(parts[0]).width; w2 = oc.measureText(parts[1]).width; }
         oc.fillText(parts[0], 0, base); oc.fillText(parts[1], W0 - w2, base);
-      } else oc.fillText(sp.w, 0, base);
+      } else { var cx0 = o.center ? Math.max(0, (W0 - (tw + gap + aw)) / 2) : 0; oc.fillText(sp.w, cx0, base); }
       if (ar) {
-        var ax = W0 - aw * 0.95, ay = base - cap, lw = fs * 0.11;
+        var ax = o.center ? Math.max(0, (W0 - (tw + gap + aw)) / 2) + tw + gap : W0 - aw * 0.95, ay = base - cap, lw = fs * 0.11;
         oc.strokeStyle = '#fff'; oc.lineWidth = lw; oc.lineCap = 'square'; oc.beginPath();
         if (ar === 'up') { var mx2 = ax + aw / 2; oc.moveTo(mx2, ay + cap - lw); oc.lineTo(mx2, ay + lw); oc.moveTo(ax + lw, ay + aw * 0.42); oc.lineTo(mx2, ay + lw); oc.lineTo(ax + aw - lw, ay + aw * 0.42); }
         else { oc.moveTo(ax + lw, ay + cap - lw); oc.lineTo(ax + aw - lw, ay + lw); oc.moveTo(ax + aw * 0.28, ay + lw); oc.lineTo(ax + aw - lw, ay + lw); oc.lineTo(ax + aw - lw, ay + cap * 0.72); }
@@ -921,6 +921,135 @@
      back into plain lines, pixel by pixel, while the black settles into the page colour, so the lines become the
      background of the statement. Then each keyword of the statement surfaces from the same lines (cells thicken in an
      uneven order, lit by the same light) and sinks back as the sentence moves on. (?hero=dots: the dot version.) */
+  /* landing, pressed version (Nov 25): the Index's square dots as a grey halftone surface, the name pressed into it.
+     MELISA top left, ERGANI bottom right. Inside the letters the dots sink away; the wall turned away from the light
+     keeps the black, the wall facing it is bare. The light comes from the cursor's direction (on touch, the scroll
+     turns it); with the music the surface moves in waves, each column with its own band of the spectrum, the bass
+     deepens the press and every beat nudges the light. Scrolling on, the black rises from the bottom and closes the
+     screen into the dark of the statement. The intro counts over the plain surface and the name presses in as the
+     site opens. The loop only runs while something moves it. (?hero=lines: the line screen, ?hero=dots: the dot field.) */
+  function pressedHero(hb) {
+    var host = hb.closest('.mainc') || D.body;
+    var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'me-lf'; host.insertBefore(cv, host.firstChild);
+    var x = cv.getContext('2d'); if (!x) return;
+    var off = D.createElement('canvas'), oc = off.getContext('2d');
+    var IN = W.__meIntro || null; W.__meIntroCanvas = true; H.classList.add('me-pz', 'me-pz-l');
+    var GREY = '#dfdfdb', INK = '#121316', DARK = '#121316';
+    var dpr = Math.min(1.5, W.devicePixelRatio || 1), W0 = 0, H0 = 0, P = 10, cols = 0, rows = 0, nr = 0, ox = 0, small = false;
+    var Hm = null, GX = null, GY = null, out = [];
+    var vis = true, raf = 0, mx = -1e4, my = -1e4, still = !LIVE || RM, lastMove = -1e4, lastScroll = -1e4, tm = 0, lastT = now();
+    var ang = -2.36, avg = 0, prevB = 0, lastBeat = 0, beat = 0, press = IN ? 0 : 1, pressT0 = 0;
+    var stw = D.querySelector('[data-inkroot] .stw');
+    var font = function (fs) { oc.font = '800 ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+    // a line of type fitted into a box, read back on the dot grid
+    var mask = function (M, word, bx, by, bw, bh, bottom) {
+      oc.clearRect(0, 0, off.width, off.height); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+      var fs = bh / 0.72; font(fs); var w = oc.measureText(word).width; if (w > bw) { fs *= bw / w; font(fs); }
+      var cap = fs * 0.72; oc.fillText(word, bx, bottom ? by + bh : by + cap);
+      var d = oc.getImageData(0, 0, off.width, off.height).data, ow = off.width, oh = off.height;
+      for (var r = 0; r < nr; r++) for (var c = 0; c < cols; c++) {
+        var px = Math.round(ox + c * P), py = Math.round(P / 2 + r * P); if (px < 0 || px >= ow || py >= oh) continue;
+        var a = d[(py * ow + px) * 4 + 3] / 255; if (a > M[r * cols + c]) M[r * cols + c] = a;
+      }
+    };
+    var blur = function (M, n) {
+      var a = M.slice(), b = new Float32Array(M.length), r, c, d, s, q;
+      for (var k = 0; k < n; k++) {
+        for (r = 0; r < nr; r++) for (c = 0; c < cols; c++) { s = 0; q = 0; for (d = -1; d <= 1; d++) if (c + d >= 0 && c + d < cols) { s += a[r * cols + c + d]; q++; } b[r * cols + c] = s / q; }
+        for (r = 0; r < nr; r++) for (c = 0; c < cols; c++) { s = 0; q = 0; for (d = -1; d <= 1; d++) if (r + d >= 0 && r + d < nr) { s += b[(r + d) * cols + c]; q++; } a[r * cols + c] = s / q; }
+      }
+      return a;
+    };
+    var build = function () {
+      W0 = H.clientWidth || W.innerWidth; H0 = W.innerHeight; var hbH = hb.closest('.me-hero') ? hb.closest('.me-hero').offsetHeight : hb.offsetHeight;
+      if (!W0 || !H0 || !hbH) return;
+      cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); cv.style.width = W0 + 'px'; cv.style.height = H0 + 'px';
+      var g = strips(), cw = (g.xs[2] - g.xs[1]) || W0 / 4; small = W0 < 640;
+      P = cw / Math.max(3, Math.round(cw / (small ? 6 : 10)));   // a whole number of dots per grid column: the dots sit on the site's grid
+      ox = g.rule % P; cols = Math.ceil(W0 / P) + 1; rows = Math.ceil(H0 / P) + 1; nr = Math.ceil(hbH / P) + 1;
+      off.width = Math.ceil(W0); off.height = Math.ceil(hbH);
+      var M = new Float32Array(cols * nr), pad = g.pad;
+      if (small) { mask(M, 'MELISA', pad, hbH * 0.11, W0 * 0.86 - pad, hbH * 0.27); mask(M, 'ERGANI', W0 * 0.14, hbH * 0.45, W0 * 0.86 - pad, hbH * 0.27); }
+      else { mask(M, 'MELISA', pad, hbH * 0.1, W0 * 0.56, hbH * 0.3); mask(M, 'ERGANI', W0 * 0.42, hbH * 0.5, W0 * 0.58 - pad, hbH * 0.3, true); }
+      Hm = blur(M, 1); GX = new Float32Array(Hm.length); GY = new Float32Array(Hm.length);
+      for (var r = 1; r < nr - 1; r++) for (var c = 1; c < cols - 1; c++) { var i = r * cols + c; GX[i] = Hm[i - 1] - Hm[i + 1]; GY[i] = Hm[i - cols] - Hm[i + cols]; }
+      if (IN) IN.ready = true;
+    };
+    var frame = function () {
+      raf = 0; if (!Hm) return;
+      if (W0 !== (H.clientWidth || W.innerWidth) || H0 !== W.innerHeight) build();   // never draw at a stale size
+      var t = now(), hr = hb.getBoundingClientRect(), hh = (hb.closest('.me-hero') || hb).offsetHeight;
+      var p0 = cl(-((hb.closest('.me-hero') || hb).getBoundingClientRect().top) / (hh * 0.85)), e = sm(p0);
+      var gone = stw ? stw.getBoundingClientRect().bottom < 0 : p0 >= 1;
+      cv.style.visibility = gone ? 'hidden' : '';
+      H.classList.toggle('me-pz-l', p0 < 0.6);
+      if (gone) return;
+      var L = LV() || { b: 0, m: 0, h: 0, on: 0 }, on = still ? 0 : (L.on || 0);
+      tm += Math.min(0.05, (t - lastT) / 1000) * (on + (IN ? 0.35 : 0)); lastT = t;   // the waves' clock runs with the music
+      var b = L.b || 0, flux = b - prevB; prevB = b; avg += (b - avg) * 0.04;
+      if (on > 0.3 && (flux > 0.09 || b > avg * 1.3) && b > 0.45 && t - lastBeat > 260) { lastBeat = t; beat = 1; }
+      beat *= 0.9;
+      // the intro: the name presses in as the site opens
+      if (IN) {
+        if (IN.phase === 'leave') { if (!pressT0) pressT0 = IN.t0 || t; press = sm(cl((t - pressT0) / 1600)); if (press >= 1) { IN.phase = 'done'; W.__meIntro = null; IN = null; } }
+        else press = 0;
+      }
+      // the light: toward the cursor, or turned by the scroll; the music drifts it and the beats nudge it
+      var sy = W.scrollY || 0;
+      var tgt = mx > -1e3 ? Math.atan2(my - H0 / 2, mx - W0 / 2) : -2.36 + sy * 0.0025 + tm * 0.6;
+      tgt += beat * 0.5;
+      var dA = Math.atan2(Math.sin(tgt - ang), Math.cos(tgt - ang)); ang += still ? dA : dA * 0.12;
+      var lx = Math.cos(ang) * 0.707, ly = Math.sin(ang) * 0.707, depth = (1 + on * b * 1.2) * press;
+      var ph = sy * 0.004 + tm * 1.4, spec = L.spec, hz = L.hz || 43, sh = Math.round(-hr.top * 0.4 / P);   // the name drifts up a little slower than the page
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.fillStyle = GREY; x.fillRect(0, 0, W0, H0);
+      out.length = 0;
+      var fill = P + 0.6, pmin = 0.7, n = spec ? spec.length : 0;
+      for (var c = 0; c < cols; c++) {
+        var a = 0.25;
+        if (n && on > 0.01) { var v = spec[Math.min(n - 1, Math.max(1, Math.round(40 * Math.pow(300, c / cols) / hz)))] / 255; a = 0.25 + v * v * on * 0.9; }
+        var px = ox + c * P;
+        for (var r = 0; r < rows; r++) {
+          var py = P / 2 + r * P, nrow = r + sh, i = nrow >= 0 && nrow < nr ? nrow * cols + c : -1;
+          var h = i >= 0 ? Hm[i] * press : 0;
+          var s = P * (0.4 + Math.sin(c * 0.11 + r * 0.05 - ph * 2) * Math.cos(r * 0.09 - c * 0.03 + ph) * a * 0.36 * (1 - h));
+          if (h > 0.003) {
+            s *= 1 - Math.min(1, h * 1.7);   // pressed in: the dots sink out of sight
+            var wall = (GX[i] * lx + GY[i] * ly) * depth, hr0 = Hm[i];
+            // only the rim of each letter carries the wall, so the strokes stay open
+            if (wall > 0.02 && hr0 > 0.08 && hr0 < 0.8) s = Math.max(s, P * Math.min(0.98, 0.5 + wall * 2.6)); else if (wall < -0.02) s *= Math.max(0, 1 + wall * 6);
+          }
+          if (e > 0) { var tr = sm(cl(e * 1.5 - (1 - py / H0) * 0.5)); s += (fill - s) * tr; }   // the black rises from the bottom
+          if (s < pmin) continue;
+          if (s > fill) s = fill;
+          out.push(px - s / 2, py - s / 2, s);
+        }
+      }
+      x.fillStyle = INK; x.beginPath();
+      for (var k = 0; k < out.length; k += 3) x.rect(out[k], out[k + 1], out[k + 2], out[k + 2]);
+      x.fill();
+      if (e > 0.98) { x.fillStyle = DARK; x.fillRect(0, 0, W0, H0); }
+      var busy = on > 0.01 || IN || t - lastScroll < 450 || t - lastMove < 700 || Math.abs(dA) > 0.003;
+      if (busy && vis && !D.hidden && !still) raf = requestAnimationFrame(frame);
+    };
+    var kick = function () { if (!raf && vis) raf = requestAnimationFrame(frame); };
+    W.__mePzKick = kick;
+    // the canvas sits above the footer's opening: hide it as soon as the statement has gone by, whatever the loop is doing
+    var gone = function () { return stw ? stw.getBoundingClientRect().bottom < 0 : hb.getBoundingClientRect().bottom < 0; };
+    var onScroll = function () { lastScroll = now(); var g = gone(); cv.style.visibility = g ? 'hidden' : ''; vis = !g; if (!g) kick(); };
+    W.addEventListener('scroll', onScroll, { passive: true });
+    var hit = D.getElementById('top') || hb;
+    if (FINE) {
+      hit.addEventListener('pointermove', function (e) { mx = e.clientX; my = e.clientY; lastMove = now(); kick(); }, { passive: true });
+      hit.addEventListener('pointerleave', function () { mx = my = -1e4; lastMove = now(); kick(); });
+    }
+    D.addEventListener('visibilitychange', kick);
+    // the music wakes the loop (it sleeps while nothing moves)
+    setInterval(function () { var L = LV(); if (L && L.on > 0.01 && !raf) kick(); }, 400);
+    var start = function () { build(); onScroll(); kick(); };
+    try { D.fonts.load('800 80px Archivo').then(start, start); } catch (e) { start(); }
+    var rt; W.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(start, 150); });
+  }
+
   function lineHero(hb, x0, pr) {
     var host = hb.closest('.mainc') || D.body;
     var cv = D.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.className = 'me-lf'; host.insertBefore(cv, host.firstChild);
@@ -1165,24 +1294,28 @@
 
   function words() {
     cardJump();
-    var sec = D.querySelector('.pf');
+    var sec = D.querySelector('.pf') || D.getElementById('me-about');   // (Nov 25) the index lists slide under ABOUT / CV now
     // cards that have faded out (the last one sinks away over the index) stop catching the pointer
     var ccs = Array.prototype.map.call(D.querySelectorAll('.cc-card'), function (c) { return [c, c.querySelector('.cc-in')]; });
     if (ccs.length) { var pe = function () { ccs.forEach(function (x) { var o = x[1] ? parseFloat(x[1].style.opacity || '1') : 1; x[0].style.pointerEvents = o < 0.15 ? 'none' : ''; }); }; var mo = new MutationObserver(pe); ccs.forEach(function (x) { if (x[1]) mo.observe(x[1], { attributes: true, attributeFilter: ['style'] }); }); pe(); }
     if (sec) {
-      var bd = sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
-      var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true });
+      // (Nov 25) the dot band lives in the About bridge now: it spells ABOUT / CV, dissolves into the playground under the
+      // cursor and spells it again when the cursor leaves; the index lists still reshape it
+      var bd = D.querySelector('.br-pf .pf-band') || sec.querySelector('.pf-band'), ls = sec.querySelector('.pf-ls');
+      var IDL = { w: 'ABOUT / CV', arrow: true, c: FG };
+      var api = pixelField(bd, sec.querySelectorAll('.pf-i'), { fg: FG, dim: 'rgba(244,243,239,.4)', grid: true, center: true, idle: IDL });
+      if (api && FINE) { bd.addEventListener('pointerenter', function () { api.setIdle(null); }); bd.addEventListener('pointerleave', function () { api.setIdle(IDL); }); }
       // the band zooms in as it arrives (from far away, out of the dark) and pushes past you as you leave for the footer
       if (LIVE && !RM) {
         var zl = '';
         var zoom = function () {
-          var vh = W.innerHeight, r = sec.getBoundingClientRect(), b = bd.getBoundingClientRect();
+          var vh = W.innerHeight, r = (bd.closest('.br-pf') ? bd : sec).getBoundingClientRect(), b = bd.getBoundingClientRect();
           var p = cl((vh - r.top) / (vh * 0.85)), e = 1 - Math.pow(1 - p, 3);
           var q = cl((vh * 0.3 - (r.top + bd.offsetTop + bd.offsetHeight)) / (vh * 0.6)), f = q * q;
           var s = (0.5 + 0.5 * e) * (1 + 0.35 * f), o = Math.min(0.45 + 0.55 * e, 1 - 0.85 * f);
           var key = s.toFixed(3) + o.toFixed(3); if (key === zl) return; zl = key;
           bd.style.transform = 'scale(' + s.toFixed(4) + ')'; bd.style.opacity = o.toFixed(3);
-          if (ls) { ls.style.opacity = cl(p * 1.6 - 0.6).toFixed(3); ls.style.transform = 'translateY(' + ((1 - cl(p * 1.6 - 0.6)) * 40).toFixed(1) + 'px)'; }
+          if (ls && !bd.closest('.br-pf')) { ls.style.opacity = cl(p * 1.6 - 0.6).toFixed(3); ls.style.transform = 'translateY(' + ((1 - cl(p * 1.6 - 0.6)) * 40).toFixed(1) + 'px)'; }
         };
         W.addEventListener('scroll', zoom, { passive: true }); W.addEventListener('resize', zoom); zoom();
       }
@@ -1192,7 +1325,8 @@
     var hb = D.querySelector('.me-pfb');
     if (hb) {
       var hg = strips(), hx = W.innerWidth < 640 ? hg.pad : hg.rule + Math.max(14, Math.min(24, W.innerWidth * 0.016));
-      if (!/[?&]hero=dots/.test(location.search)) lineHero(hb, hx, hg.pad);
+      if (/[?&]hero=lines/.test(location.search)) lineHero(hb, hx, hg.pad);
+      else if (!/[?&]hero=dots/.test(location.search)) pressedHero(hb);
       else pixelField(hb, [], { fg: FG, dim: 'rgba(244,243,239,.24)', grid: true, idle: { w: 'MELISA ERGANI', lines: ['MELISA', 'ERGANI'], px: hx, pr: hg.pad, lh: 1.12, bottom: true, c: FG }, relief: true, music: true, origin: [hx, hb.offsetHeight * 0.55], hit: D.getElementById('top'), big: 1.5 });
     }
     // Home footer: the name in pixels, ink on lavender; its contact links reshape it
@@ -1295,6 +1429,130 @@
 
   /* Home top bar (Nov 24): outlined boxes, one per grid column, floating over the line screen; each label leans
      toward the cursor as it comes near, like the type in the screen behind it */
+  /* Home (Nov 25): "Here is what I have been doing ... as a ___ designer." The role keeps changing in the pixel face,
+     each change scrambling through random letters like the top bar. Runs only while the line is on screen. */
+  function roles() {
+    var v = D.querySelector('.me-yrs-v'); if (!v) return;
+    var R = ['UI/UX', 'Product', 'Visual', 'Brand', 'Industrial', 'Graphic', 'Social Media'], i = 0, vis = false, tmr = 0, raf = 0;
+    var CHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#%&?';
+    var swap = function (to) {
+      if (RM) { v.textContent = to; return; }
+      var from = v.textContent, n = Math.max(from.length, to.length), t0 = now();
+      cancelAnimationFrame(raf);
+      (function f() {
+        var p = Math.min(1, (now() - t0) / 320), k = Math.floor(p * (n + 2)), len = Math.round(from.length + (to.length - from.length) * Math.min(1, p * 1.6)), out = '';
+        for (var j = 0; j < len; j++) { var c = to[j]; out += (j < k - 1 && c !== undefined) || c === ' ' || c === '/' ? (c || '') : CHS[(Math.random() * CHS.length) | 0]; }
+        v.textContent = p >= 1 ? to : out;
+        if (p < 1) raf = requestAnimationFrame(f);
+      })();
+    };
+    // each change: a violet block wipes in behind the word, the word scrambles into the next role, the block wipes off
+    var w = v.parentNode;
+    var step = function () {
+      i = (i + 1) % R.length;
+      if (RM) { v.textContent = R[i]; return; }
+      w.classList.remove('out'); w.classList.add('in');
+      setTimeout(function () { swap(R[i]); }, 160);
+      setTimeout(function () { w.classList.add('out'); w.classList.remove('in'); }, 520);
+    };
+    var loop = function () { clearTimeout(tmr); if (!vis || D.hidden) return; tmr = setTimeout(function () { step(); loop(); }, RM ? 2000 : 1100); };
+    // the violet panel rises from the bottom over the statement once its drawings are done, and holds until the
+    // UI/UX grey rises over it in turn
+    // (Nov 25) the sentence appears letter by letter in random order, like a dither, once the panel is up; the role
+    // word waits and comes in last. Plays each time the panel arrives, clears when it leaves.
+    var tp = D.querySelector('.me-yrs-t'), chs = [], shown = false;
+    if (tp && !RM) {
+      [].slice.call(tp.childNodes).forEach(function (nd) {
+        if (nd.nodeType !== 3) return;
+        var f = D.createDocumentFragment();
+        nd.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { f.appendChild(D.createTextNode(' ')); return; }
+          var w = D.createElement('span'); w.className = 'yw';
+          part.split('').forEach(function (ch) { var c = D.createElement('span'); c.className = 'yc'; c.textContent = ch; w.appendChild(c); chs.push(c); });
+          f.appendChild(w);
+        });
+        tp.replaceChild(f, nd);
+      });
+      chs.forEach(function (c) { c.style.transitionDelay = (Math.random() * 520).toFixed(0) + 'ms'; });
+    }
+    var reveal = function (on) {
+      if (!tp || RM || on === shown) return; shown = on;
+      tp.classList.toggle('on', on);
+    };
+    /* (Nov 26) the violet is a layer of square cells on the site's dots: as soon as the sentence has assembled the cells
+       grow up from the bottom of the screen, staggered, until they close into a flat violet field (fast, ~40% of a
+       screen of scroll). It holds while the roles change. Then, with the UI/UX card already in place underneath, the
+       cells shrink back to dots from the top down and the layer lifts off the whole screen, revealing the card. */
+    var pan = D.querySelector('.me-yrs-s'), stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts'), cards = D.getElementById('work'), lastK = '';
+    var pc = D.createElement('canvas'), px = pc.getContext('2d'); pc.className = 'me-yrs-cv'; pc.setAttribute('aria-hidden', 'true'); if (pan) pan.insertBefore(pc, pan.firstChild);
+    var pdpr = Math.min(1.5, W.devicePixelRatio || 1), cw = 0, chh = 0, G = 40, gc = 0, gr = 0, thIn = null, thOut = null;
+    var pbuild = function () {
+      cw = W.innerWidth; chh = W.innerHeight; pc.width = Math.round(cw * pdpr); pc.height = Math.round(chh * pdpr);
+      G = cw < 640 ? 9 : Math.max(11, Math.min(16, cw / 110)); gc = Math.ceil(cw / G) + 1; gr = Math.ceil(chh / G) + 1;   // a fine halftone grid
+      thIn = new Float32Array(gc * gr); thOut = new Float32Array(gc * gr);
+      for (var r0 = 0; r0 < gr; r0++) for (var c0 = 0; c0 < gc; c0++) {
+        var h0 = hash(c0 + 3.1, r0 + 7.7), yy = r0 / gr, dx = (c0 / gc - 0.5) * (cw / chh), dy = 1 - yy;
+        thIn[r0 * gc + c0] = Math.min(1, Math.sqrt(dx * dx * 0.5 + dy * dy) * 0.62) + h0 * 0.12;   // a halftone swell from the bottom centre
+        thOut[r0 * gc + c0] = yy * 0.62 + h0 * 0.12;                                           // lifts off from the top
+      }
+    };
+    var pdraw = function (gin, gout) {
+      if (!thIn || cw !== W.innerWidth || chh !== W.innerHeight) pbuild();
+      px.setTransform(pdpr, 0, 0, pdpr, 0, 0); px.clearRect(0, 0, cw, chh);
+      if (gin >= 1 && gout <= 0) { px.fillStyle = '#8e6bff'; px.fillRect(0, 0, cw, chh); return; }
+      px.fillStyle = '#8e6bff'; px.beginPath();
+      for (var r0 = 0; r0 < gr; r0++) for (var c0 = 0; c0 < gc; c0++) {
+        var i0 = r0 * gc + c0, a0 = cl((gin * 1.45 - thIn[i0]) / 0.45), z0 = 1 - cl((gout * 1.45 - thOut[i0]) / 0.45);   // wide bands: the dot size reads as a gradient
+        var k0 = Math.min(a0 * a0 * (3 - 2 * a0), z0 * z0 * (3 - 2 * z0)); if (k0 <= 0.02) continue;
+        var s0 = k0 >= 0.999 ? G + 1 : Math.max(1.2, G * k0); px.rect(c0 * G + (G - s0) / 2, r0 * G + (G - s0) / 2, s0, s0);
+      }
+      px.fill();
+    };
+    var place = function () {
+      if (!pan || !stw || !sts) return;
+      var vh = W.innerHeight, r = stw.getBoundingClientRect(), top = parseFloat(getComputedStyle(sts).top) || 0;
+      var span = Math.max(1, stw.offsetHeight - sts.offsetHeight), at = (top - r.top) - 0.84 * span;
+      var p = RM ? (at > 0 ? 1 : 0) : cl(at / (vh * 0.45));
+      var ct = cards ? cards.getBoundingClientRect().top : 1e9, q = RM ? (ct <= 0 ? 1 : 0) : cl(-ct / (vh * 0.9));
+      var gone = q >= 1;
+      W.__meCover = p > 0 && !gone;   // the cards wait (headings, photos) until this layer has lifted
+      var k = (p <= 0 || gone) ? 'h' : p.toFixed(4) + '|' + q.toFixed(4); if (k === lastK) return; lastK = k;
+      pan.style.visibility = k === 'h' ? 'hidden' : 'visible';
+      if (k !== 'h') pdraw(p, q);
+      reveal(p >= 0.9 && q < 0.06);
+      var nv = p >= 0.999 && q <= 0; if (nv !== vis) { vis = nv; if (!vis) { clearTimeout(tmr); var ww = v.parentNode; ww.classList.remove('in', 'out'); } loop(); }
+      if (W.__meHeadRun) W.__meHeadRun();
+    };
+    W.addEventListener('scroll', place, { passive: true }); W.addEventListener('resize', function () { lastK = ''; thIn = null; place(); }); place();
+    D.addEventListener('visibilitychange', loop);
+  }
+
+  /* top bar (Nov 25, after her reference): on hover a small square drops in before the label and the label scrambles
+     through random characters, settling left to right. Runs only for the hovered label, ~0.45s. */
+  function navScramble() {
+    if (RM) return;
+    var CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%&/=?<>{}()#$*+-';
+    var els = [].slice.call(D.querySelectorAll('nav[aria-label="Main"] a'));
+    els.forEach(function (a) {
+      var host = a.querySelector('.nt') || a, txt = null, node = null, raf = 0;
+      if (host.children.length) return;   // plain text labels only
+      a.classList.add('me-scr');
+      var run = function () {
+        if (txt === null) txt = host.textContent;
+        cancelAnimationFrame(raf); var t0 = now(), n = txt.length, D0 = 420;
+        (function f() {
+          var p = (now() - t0) / D0, k = Math.floor(p * (n + 2)), out = '';
+          for (var i = 0; i < n; i++) { var c = txt[i]; out += (i < k - 1 || c === ' ' || c === '/') ? c : CH[(Math.random() * CH.length) | 0]; }
+          host.textContent = p >= 1 ? txt : out;
+          if (p < 1) raf = requestAnimationFrame(f);
+        })();
+      };
+      var hov = a.closest('a, button') || a;
+      hov.addEventListener('mouseenter', run); hov.addEventListener('focus', run);
+    });
+  }
+
   function navBoxes(nav, links) {
     var logo = nav.querySelector('.logo'), as = links ? [].slice.call(links.querySelectorAll('a')) : [], items = (logo ? [logo] : []).concat(as);
     items.forEach(function (a) {
@@ -1321,6 +1579,10 @@
       }
       var mc = D.querySelector('[data-inkroot] .mainc') || D.querySelector('.mainc');
       if (ft && mc && mc.getBoundingClientRect().bottom <= 28) { var fr = ft.getBoundingClientRect(); if (fr.bottom > 28) { var fs = getComputedStyle(ft); c = fs.color; bg = fs.backgroundColor; } }
+      // the violet roles panel: ink on violet, like the footer
+      var yp = D.querySelector('.me-yrs-s'); if (yp && yp.style.visibility === 'visible' && yp.getBoundingClientRect().top <= 28) { c = '#121316'; bg = '#8e6bff'; }
+      // the pressed landing is grey: ink on it until the black has risen over it
+      if (H.classList.contains('me-pz')) { var tp = D.getElementById('top'); if (tp) { var trr = tp.getBoundingClientRect(); if (trr.bottom > 28 && -trr.top / (trr.height * 0.85) < 0.6) { c = '#121316'; bg = '#dfdfdb'; } } }
       if (c + bg !== lastC) { lastC = c + bg; H.style.setProperty('--navc', c); H.style.setProperty('--navb', bg); }
     };
     W.addEventListener('scroll', function () { if (!craf) craf = requestAnimationFrame(tone); }, { passive: true }); tone();
@@ -1337,7 +1599,7 @@
       });
       if (busy) raf = requestAnimationFrame(tick);
     };
-    W.addEventListener('pointermove', function (e) { if (e.clientY > 140) { if (mx < -1e3) return; mx = my = -1e4; } else { mx = e.clientX; my = e.clientY; } if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+    // (Nov 25) the labels no longer lean toward the cursor: the only hover in the bar is the square + scramble
   }
 
   /* Home: the dot on the vertical rule grows as you scroll and becomes the UI/UX blue, opening onto the first card */
@@ -1347,8 +1609,9 @@
   function cards() {
     var cs = [].slice.call(D.querySelectorAll('.cc-card')), sec = D.querySelector('.cc');
     if (!cs.length || !sec || !LIVE || RM) return;
-    pixReveal();
+    dustImgs();   // (Nov 25) replaces the pixel reveal
     cardLife(cs);
+    headIn(cs);
   }
 
   /* card images resolve from pixels (Nov 24, time-based): a tiny inline preview is shown in big blocks straight away;
@@ -1361,6 +1624,119 @@
     var k = fit === 'contain' ? Math.min(w / nw, h / nh) : Math.max(w / nw, h / nh), dw = nw * k, dh = nh * k;
     return [(w - dw) * px, (h - dh) * py, dw, dh];
   }
+  /* card photos (Nov 25, after her reference): where a photo crosses the edge of the screen it breaks into square
+     pixels, dense near the photo and scattering toward the edge, so photos rise into view out of a dither of their own
+     colours and dissolve the same way. Scroll-tied, so it runs backwards. A photo only gets the canvas while it is
+     touching an edge band; the rest of the time it is the plain image. */
+  /* discipline headings come in with their hover (Nov 25): hidden until the heading reaches the screen, then the square
+     drops in and the letters appear left to right, each scrambling before it settles. Replays if you scroll back up. */
+  function headIn(cs) {
+    if (RM) return;
+    var CHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&?';
+    var hs = cs.map(function (card) {
+      var h2 = card.querySelector('.cc-h'); if (!h2) return null;
+      if (!h2.querySelector('.cc-l')) {
+        var txt = h2.textContent; h2.setAttribute('aria-label', txt);
+        h2.innerHTML = txt.split('').map(function (ch) { return ch === ' ' ? ' ' : '<span class="cc-l" aria-hidden="true">' + ch.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join('');
+      }
+      var Ls = [].slice.call(h2.querySelectorAll('.cc-l'));
+      h2.classList.add('me-scr-h', 'me-hid');
+      return { h2: h2, Ls: Ls, orig: Ls.map(function (l) { return l.textContent; }), on: false, raf: 0 };
+    }).filter(Boolean);
+    var play = function (o) {
+      var h2 = o.h2, n = o.Ls.length, t0 = now(); cancelAnimationFrame(o.raf);
+      h2.classList.remove('me-hid'); h2.classList.add('me-hrun');
+      (function f() {
+        var p = (now() - t0) / 620, k = p * (n + 3);
+        o.Ls.forEach(function (l, i) {
+          l.style.visibility = k > i ? '' : 'hidden';
+          l.textContent = (p >= 1 || k > i + 3 || o.orig[i] === '/') ? o.orig[i] : CHS[(Math.random() * CHS.length) | 0];
+        });
+        if (p < 1) o.raf = requestAnimationFrame(f); else setTimeout(function () { h2.classList.remove('me-hrun'); }, 260);
+      })();
+    };
+    var hide = function (o) { cancelAnimationFrame(o.raf); o.Ls.forEach(function (l, i) { l.textContent = o.orig[i]; l.style.visibility = ''; }); o.h2.classList.remove('me-hrun'); o.h2.classList.add('me-hid'); };
+    var run = function () {
+      var vh = W.innerHeight;
+      hs.forEach(function (o) {
+        var r = o.h2.getBoundingClientRect(), inn = r.top < vh * 0.72 && r.bottom > 0 && !W.__meCover;
+        if (inn && !o.on) { o.on = true; play(o); } else if (!inn && r.top > vh && o.on) { o.on = false; hide(o); }
+      });
+    };
+    W.__meHeadRun = run; W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
+  }
+
+  /* card photos (Nov 26, after her reference video, finer): where a photo meets the bottom or top of the screen it
+     breaks into tiny square pixels (2-3 px, as in the reference), dense near the photo and scattering toward the edge,
+     so a photo rises into view out of a fine dither of its own colours and resolves to the sharp image. Scroll-tied, so
+     it runs backwards too, eased so it reads as a smooth reveal. Done with a per-photo mask one pixel per block (scaled
+     up without smoothing), so it costs a few thousand bytes per frame, not thousands of draw calls. */
+  function dustImgs() {
+    if (!LIVE || RM) return;
+    var ims = [].slice.call(D.querySelectorAll('.cc-vis .cc-t img')); if (!ims.length) return;
+    var dpr = Math.min(2, W.devicePixelRatio || 1), items = [], raf = 0;
+    ims.forEach(function (im, n) {
+      var t = im.closest('.cc-t'); if (!t || t.classList.contains('sl')) return;
+      var cv = D.createElement('canvas'), x = cv.getContext('2d'); cv.className = 'me-dust'; cv.setAttribute('aria-hidden', 'true'); t.appendChild(cv);
+      var it = { im: im, t: t, cv: cv, x: x, cache: null, w: 0, h: 0, B: 3, on: false, inView: false, key: '', seed: n * 7.13, sm: 0 };
+      var cs0 = getComputedStyle(im); it.fit = cs0.objectFit; it.pos = cs0.objectPosition;
+      it.size = function () {
+        var w = im.offsetWidth, h = im.offsetHeight; if (!w || !h) return false;
+        if (w === it.w && h === it.h && it.cache) return true;
+        it.w = w; it.h = h; it.B = W.innerWidth < 640 ? 2 : 3;
+        cv.style.left = im.offsetLeft + 'px'; cv.style.top = im.offsetTop + 'px'; cv.style.width = w + 'px'; cv.style.height = h + 'px';
+        cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+        if (!im.complete || !im.naturalWidth) return false;
+        var c = D.createElement('canvas'); c.width = cv.width; c.height = cv.height;
+        var r = fitRect(im.naturalWidth, im.naturalHeight, c.width, c.height, it.fit, it.pos);
+        try { c.getContext('2d').drawImage(im, r[0], r[1], r[2], r[3]); it.cache = c; } catch (e) { it.cache = null; }
+        var nx = Math.ceil(w / it.B), ny = Math.ceil(h / it.B), th = new Float32Array(nx * ny);
+        for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) th[j * nx + i] = hash(i + it.seed, j);
+        it.nx = nx; it.ny = ny; it.th = th; it.key = '';
+        it.mc = D.createElement('canvas'); it.mc.width = nx; it.mc.height = ny; it.mx = it.mc.getContext('2d'); it.md = it.mx.createImageData(nx, ny);
+        return !!it.cache;
+      };
+      if (!im.complete) im.addEventListener('load', function () { it.w = 0; kick(); }, { once: true });
+      items.push(it);
+    });
+    if (!items.length) return;
+    var io = 'IntersectionObserver' in W ? new IntersectionObserver(function (es) {
+      es.forEach(function (e) { var it = e.target._dust; if (it) it.inView = e.isIntersecting; });
+      kick();
+    }, { rootMargin: '40px 0px' }) : null;
+    items.forEach(function (it) { it.t._dust = it; if (io) io.observe(it.t); else it.inView = true; });
+    var off = function (it) { if (it.on) { it.on = false; it.t.classList.remove('me-dusting'); it.key = ''; } };
+    var frame = function () {
+      raf = 0;
+      var vh = W.innerHeight, bandB = vh * 0.3, bandT = Math.min(170, vh * 0.17), topY = 0;
+      items.forEach(function (it) {
+        if (!it.inView) return off(it);
+        var r = it.im.getBoundingClientRect();
+        if (!r.height || (r.bottom < vh - bandB && r.top > topY + bandT) || r.bottom < 0 || r.top > vh) return off(it);
+        if (!it.size()) return off(it);
+        var k = r.height / it.h, B = it.B, nx = it.nx, ny = it.ny, th = it.th, d = it.md.data;
+        var key = Math.round(r.top) + '|' + vh; if (key === it.key && it.on) return; it.key = key;
+        var any = false;
+        for (var j = 0; j < ny; j++) {
+          var sy = r.top + (j + 0.5) * B * k, f = Math.min((vh - sy) / bandB, (sy - topY) / bandT), row = j * nx;
+          if (f >= 1) { for (var i = 0; i < nx; i++) d[(row + i) * 4 + 3] = 255; continue; }
+          f = f <= 0 ? 0 : f * f * (3 - 2 * f); f = f * f;   // sparse at the edge, filling in fast near the photo
+          for (var i2 = 0; i2 < nx; i2++) { var on = th[row + i2] < f; d[(row + i2) * 4 + 3] = on ? 255 : 0; if (!on) any = true; }
+        }
+        if (!any) return off(it);
+        it.mx.putImageData(it.md, 0, 0);
+        var x = it.x; x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-over'; x.imageSmoothingEnabled = false;
+        x.clearRect(0, 0, it.cv.width, it.cv.height); x.drawImage(it.mc, 0, 0, nx * B * dpr, ny * B * dpr);
+        x.globalCompositeOperation = 'source-in'; x.drawImage(it.cache, 0, 0);
+        if (!it.on) { it.on = true; it.t.classList.add('me-dusting'); }
+      });
+    };
+    var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
+    W.addEventListener('scroll', kick, { passive: true });
+    W.addEventListener('resize', function () { items.forEach(function (it) { it.w = 0; }); kick(); });
+    kick();
+  }
+
   function pixReveal() {
     var ims = [].slice.call(D.querySelectorAll('.cc-vis .cc-t img')); if (!ims.length) return;
     var DUR = 1150, dpr = Math.min(2, W.devicePixelRatio || 1), sc = D.createElement('canvas'), sx = sc.getContext('2d');
@@ -1512,6 +1888,19 @@
         h2.innerHTML = txt.split('').map(function (ch) { return ch === ' ' ? ' ' : '<span class="cc-l" aria-hidden="true">' + ch.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join('');
         Ls = [].slice.call(h2.querySelectorAll('.cc-l'));
       }
+      // (Nov 25) the top bar's hover: a square drops in before the heading and its letters scramble and settle
+      if (h2 && Ls.length && !RM) {
+        var CHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&?', orig = Ls.map(function (l) { return l.textContent; }), sraf = 0;
+        h2.classList.add('me-scr-h');
+        h2.addEventListener('mouseenter', function () {
+          cancelAnimationFrame(sraf); var t0 = now(), n = Ls.length;
+          (function f() {
+            var p = (now() - t0) / 480, k = Math.floor(p * (n + 2));
+            Ls.forEach(function (l, i) { l.textContent = (p >= 1 || i < k - 1 || orig[i] === '/') ? orig[i] : CHS[(Math.random() * CHS.length) | 0]; });
+            if (p < 1) sraf = requestAnimationFrame(f);
+          })();
+        });
+      }
       var st0 = { x: 0, y: 0, a: 0, px: -1e4, py: -1e4 }, cur = { x: 0, y: 0, a: 0 }, box = null, lx = [], tb = [], hov = -1, run = false, lens = { x: 0.5, y: 0.5 };
       var measure = function () {
         box = inn.getBoundingClientRect();
@@ -1543,7 +1932,7 @@
           t.style.transform = tf;
         });
         // the heading's letters widen near the cursor
-        if (Ls.length) for (var i = 0; i < Ls.length; i++) {
+        if (false) for (var i = 0; i < Ls.length; i++) {   // (Nov 25) widening off: the heading has the top bar's hover instead
           var dx = (lx[i] - st0.px) / 170, w = 62 + 26 * a * Math.exp(-dx * dx);
           var pw = Ls[i]._w || 62; w = pw + (w - pw) * 0.22; Ls[i]._w = w;
           Ls[i].style.fontStretch = w.toFixed(1) + '%';
@@ -1580,16 +1969,50 @@
   }
 
   /* Home -> About bridge: the sentence lights word by word as it comes up */
+  /* About (Nov 26): its own chapter. The statement and the three facts are pinned for a screen; the page gets there
+     through the same halftone layer as the violet statement: violet dots swell up over the last card until the screen
+     is violet, then lift off from the top as dots, uncovering the dark About scene. Then the words light up one by
+     one as you scroll and the three facts settle in under them. Scroll-tied, one canvas, nothing runs at rest. */
   function bridge() {
-    var t = D.querySelector('.br-t'); if (!t || !LIVE || RM) return;
-    H.classList.add('br-on');
-    var ws = t.querySelectorAll('.bw'), lastN = -1;
-    var run = function () {
-      var r = t.getBoundingClientRect(), vh = W.innerHeight, p = cl((vh * 0.88 - r.top) / (r.height + vh * 0.32));
-      var n = Math.round(p * ws.length); if (n === lastN) return; lastN = n;
-      for (var i = 0; i < ws.length; i++) ws[i].classList.toggle('lit', i < n);
+    var t = D.querySelector('.br-t'), sc = D.querySelector('.br-scene'), st = D.querySelector('.br-stick'); if (!t || !sc) return;
+    var ws = t.querySelectorAll('.bw'), lastN = -1, lastK = '', live = LIVE && !RM;
+    if (live) H.classList.add('br-on');
+    var cv = D.createElement('canvas'), x = cv.getContext('2d'); cv.className = 'br-ht'; cv.setAttribute('aria-hidden', 'true'); D.body.appendChild(cv);
+    var dpr = Math.min(1.5, W.devicePixelRatio || 1), cw = 0, chh = 0, G = 14, gc = 0, gr = 0, tIn = null, tOut = null;
+    var build = function () {
+      cw = W.innerWidth; chh = W.innerHeight; cv.width = Math.round(cw * dpr); cv.height = Math.round(chh * dpr);
+      G = cw < 640 ? 9 : Math.max(11, Math.min(16, cw / 110)); gc = Math.ceil(cw / G) + 1; gr = Math.ceil(chh / G) + 1;
+      tIn = new Float32Array(gc * gr); tOut = new Float32Array(gc * gr);
+      for (var r = 0; r < gr; r++) for (var c = 0; c < gc; c++) {
+        var h = hash(c + 11.3, r + 2.9), yy = r / gr, dx = (c / gc - 0.5) * (cw / chh), dy = 1 - yy;
+        tIn[r * gc + c] = Math.min(1, Math.sqrt(dx * dx * 0.5 + dy * dy) * 0.62) + h * 0.12;
+        tOut[r * gc + c] = yy * 0.62 + h * 0.12;
+      }
     };
-    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
+    var draw = function (gin, gout) {
+      if (!tIn || cw !== W.innerWidth || chh !== W.innerHeight) build();
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, cw, chh); x.fillStyle = '#8e6bff';
+      if (gin >= 1 && gout <= 0) { x.fillRect(0, 0, cw, chh); return; }
+      x.beginPath();
+      for (var r = 0; r < gr; r++) for (var c = 0; c < gc; c++) {
+        var i = r * gc + c, a = cl((gin * 1.45 - tIn[i]) / 0.45), z = 1 - cl((gout * 1.45 - tOut[i]) / 0.45);
+        var k = Math.min(a * a * (3 - 2 * a), z * z * (3 - 2 * z)); if (k <= 0.02) continue;
+        var s = k >= 0.999 ? G + 1 : Math.max(1.2, G * k); x.rect(c * G + (G - s) / 2, r * G + (G - s) / 2, s, s);
+      }
+      x.fill();
+    };
+    var run = function () {
+      var vh = W.innerHeight, top = sc.getBoundingClientRect().top;
+      // in: the scene's top from 0.95 to 0.25 of the screen; out: from 0.05 to -0.6 (the scene is pinned by then)
+      var gin = live ? cl((vh * 0.95 - top) / (vh * 0.7)) : 0, gout = live ? cl((vh * 0.05 - top) / (vh * 0.65)) : 0;
+      var k = (gin <= 0 || gout >= 1) ? 'h' : gin.toFixed(4) + '|' + gout.toFixed(4);
+      if (k !== lastK) { lastK = k; cv.style.visibility = k === 'h' ? 'hidden' : 'visible'; if (k !== 'h') draw(gin, gout); }
+      // the words light up after the layer has lifted, then the facts come in
+      var p = live ? cl((-top - vh * 0.5) / (vh * 0.45)) : 1, n = Math.round(p * ws.length);
+      if (n !== lastN) { lastN = n; for (var i = 0; i < ws.length; i++) ws[i].classList.toggle('lit', i < n); }
+      if (st) st.classList.toggle('facts', !live || p >= 0.85);
+    };
+    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', function () { lastK = ''; tIn = null; run(); }); run();
   }
 
   function LV() { try { return W.__meLevels ? W.__meLevels() : (SHELLED && W.parent.__meLevels ? W.parent.__meLevels() : null); } catch (e) { return null; } }
@@ -1609,10 +2032,8 @@
       var cx = Math.max(0, Math.min(vw, r.left + r.width / 2)), cy = Math.max(0, Math.min(vh, dot === mk ? r.top + r.height / 2 : r.top + r.height * 0.74));
       var ct = cards.getBoundingClientRect().top;
       var q = cl((1.9 * vh - ct) / (0.9 * vh)), e = q * q * (3 - 2 * q);            // full exactly when the card reaches the screen
-      var r0 = dot === mk ? 3.5 : Math.max(3, r.width * 0.32), far = Math.max(cx, vw - cx, cy, vh - cy) + 2, R = r0 + (far - r0) * Math.pow(e, 1.5);
-      if (dot !== mk) dot.style.opacity = q > 0 ? '0' : '';
-      var t = cl(q / 0.18), c = A.map(function (a, i) { return Math.round(a + (B[i] - a) * t); });
-      var top = Math.max(0, cy - R), left = Math.max(0, cx - R), right = Math.max(0, vw - (cx + R)), bot = Math.max(0, vh - (cy + R));
+      // (Nov 25) no longer opens from the full stop: the card's colour rises from the bottom edge, full width
+      var c = B, top = vh * (1 - e), left = 0, right = 0, bot = 0;
       // above the rising card only, but reaching 80px into its empty top margin (same colour): scrolling moves the card
       // before this can follow, and without the overlap the page showed through the seam as a dark line
       if (ct < vh) bot = Math.max(bot, vh - ct - Math.min(80, Math.max(0, vh - ct)));
@@ -1669,7 +2090,8 @@
     var segs = [], total = 0, geo = '', marks = [], scrAt = 1;
     var build = function () {
       var sr = st.getBoundingClientRect(), pr = p.getBoundingClientRect(); if (!sr.width) return;
-      var vl = D.querySelector('[data-inkroot] .vl'), x0 = (vl ? vl.getBoundingClientRect().left : sr.left) - sr.left, R = sr.width;
+      // (Nov 25) the sentence is centred: the four drawings share its width, and the pen comes up from the bottom of the screen
+      var x0 = pr.left - sr.left, R = pr.right - sr.left;
       var below = sr.height - (pr.bottom - sr.top), slot = (R - x0) / 4, small = W.innerWidth < 640;
       var s = Math.max(40, Math.min(small ? 64 : 132, slot * 0.62, below - (small ? 70 : 96)));
       var top = (pr.bottom - sr.top) + Math.max(20, (below - s - (small ? 46 : 60)) / 2), yb = top + s;
@@ -1682,7 +2104,7 @@
         var L = el.getTotalLength(); el.style.strokeDasharray = L + ' ' + (L + 1); el.style.strokeDashoffset = L;
         segs.push({ el: el, a: total, L: L }); total += L;
       };
-      var main = [[x0, -Math.max(0, sr.top)], [x0, yb]];   // (Nov 24) the pen comes down the margin rule, so the rule and the line are one
+      var main = [[x0, W.innerHeight - (parseFloat(getComputedStyle(st).top) || 0) + 4], [x0, yb]];   // up from the bottom edge
       SKETCH.forEach(function (o, i) {
         var cx = x0 + slot * (i + 0.5), L0 = cx - s / 2;
         var P = function (q) { return [L0 + q[0] * s / 100, yb - s + q[1] * s / 100]; };
@@ -1694,7 +2116,7 @@
         add(main); main = [ex];
         o.p.slice(1).forEach(function (pl, j) { add(hand(pl, i * 3.1 + j + 1).map(P)); });
         marks.push([a0, total]);
-        caps[i].style.left = L0.toFixed(1) + 'px'; caps[i].style.top = (yb + 12).toFixed(1) + 'px'; caps[i].style.width = Math.max(40, slot - 8).toFixed(0) + 'px';
+        caps[i].style.left = (cx - slot / 2 + 4).toFixed(1) + 'px'; caps[i].style.top = (yb + 12).toFixed(1) + 'px'; caps[i].style.width = Math.max(40, slot - 8).toFixed(0) + 'px';
         if (o.screen) { var q0 = P([o.screen[0], o.screen[1]]); scr.setAttribute('x', q0[0].toFixed(1)); scr.setAttribute('y', q0[1].toFixed(1)); scr.setAttribute('width', (o.screen[2] * s / 100).toFixed(1)); scr.setAttribute('height', (o.screen[3] * s / 100).toFixed(1)); }
       });
       marks = marks.map(function (m) { return [m[0] / total, m[1] / total]; }); scrAt = marks.length ? marks[marks.length - 1][1] : 1;
@@ -1702,17 +2124,17 @@
     var run = function () {
       build(); if (!total) return;
       var r = w.getBoundingClientRect(), top = parseFloat(getComputedStyle(st).top) || 0;
-      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.52) / 0.3), at = u * total, pt = null;
+      var f = cl((top - r.top) / Math.max(1, w.offsetHeight - st.offsetHeight)), u = cl((f - 0.19) / 0.17), at = u * total, pt = null, fo = 1 - cl((f - 0.37) / 0.05);   // (Nov 25) drawn with the floating keywords, gone before the sentence
       segs.forEach(function (sg) {
         var k = cl((at - sg.a) / sg.L); sg.el.style.strokeDashoffset = (sg.L * (1 - k)).toFixed(1);
         if (k > 0 && k < 1) pt = sg.el.getPointAtLength(sg.L * k);
       });
       if (pt) { tip.setAttribute('x', (pt.x - 2.5).toFixed(1)); tip.setAttribute('y', (pt.y - 2.5).toFixed(1)); }
       tip.style.opacity = pt ? '1' : '0';
-      svg.style.opacity = u > 0 ? '1' : '0';
+      svg.style.opacity = u > 0 ? fo.toFixed(3) : '0';
       marks.forEach(function (m, i) {
-        if (kws[i]) kws[i].classList.toggle('me-on', u >= m[0] && u < m[1] + 0.04);
-        caps[i].classList.toggle('on', u >= m[1] - 0.02);
+        if (kws[i]) kws[i].classList.toggle('me-on', u >= m[0] && u < m[1] + 0.04 && fo > 0.5);
+        caps[i].classList.toggle('on', u >= m[1] - 0.02 && fo > 0.5);
       });
       scr.setAttribute('opacity', cl((u - scrAt + 0.01) / 0.04).toFixed(3));
     };

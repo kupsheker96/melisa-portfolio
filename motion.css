@@ -322,3 +322,113 @@ html.me-lock,html.me-lock body{overflow:hidden}
 [data-inkroot] .vlit{transform:none !important}
 /* the floating bar sits over the footer's top row on Home: that row steps down below it */
 html.me-home footer.foot > :first-child{margin-top:52px}
+
+/* landing, pressed version (Nov 25): grey halftone surface, the hero's type in ink */
+html.me-pz .me-hm{color:rgba(18,19,22,.66);border-top-color:rgba(18,19,22,.28);transition:opacity .3s}
+html.me-pz:not(.me-pz-l) .me-hm{opacity:0}
+html.me-pz .me-hm .me-clock{color:#121316}
+html.me-pz .mi2,html.me-pz .mi2-go{color:#121316}
+html.me-pz .mi2-go{border-bottom-color:rgba(18,19,22,.4)}
+html.me-pz.intro2 .mainc{background:#dfdfdb !important}
+html.me-pz.me-pz-l nav[aria-label="Main"] .nb:not(:hover):not(:focus-visible),html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:not(:hover){background:#dfdfdb}
+
+/* no vertical grid lines (Nov 25): the column lines and the margin rule are gone, the grid stays in the layout */
+.atmos-grid .ag-l,.atmos-grid .ag-hl{display:none !important}
+.vl,.vlit,.vmark,.fline{display:none !important}
+/* card photos dissolve into square pixels at the screen edges (Nov 25) */
+.cc-t .me-dust{position:absolute;display:none;pointer-events:none;image-rendering:pixelated}
+.cc-t.me-dusting .me-dust{display:block}
+.cc-t.me-dusting img{opacity:0}
+.cc-t.me-dusting{background:transparent !important}
+.me-kc{align-items:center;text-align:center}
+/* top bar hover (Nov 25): a square drops in before the label, the label scrambles and settles; no fill */
+nav[aria-label="Main"] a.me-scr .nt,nav[aria-label="Main"] a.me-scr:not(.nb){position:relative}
+nav[aria-label="Main"] a.me-scr{transition:padding-left .25s cubic-bezier(.2,.7,.2,1)}
+nav[aria-label="Main"] a.me-scr .nt::before,nav[aria-label="Main"] a.me-scr:not(.nb)::before{content:"";position:absolute;left:-14px;top:50%;width:7px;height:7px;margin-top:-3.5px;background:currentColor;transform:scale(0);transition:transform .2s cubic-bezier(.2,.7,.2,1)}
+nav[aria-label="Main"] a.me-scr:not(.nb){display:inline-block}
+nav[aria-label="Main"] a.me-scr .nt{display:inline-block;transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+nav[aria-label="Main"] a.me-scr:hover .nt,nav[aria-label="Main"] a.me-scr:focus-visible .nt{transform:translateX(14px)}
+nav[aria-label="Main"] a.me-scr:hover .nt::before,nav[aria-label="Main"] a.me-scr:focus-visible .nt::before,nav[aria-label="Main"] a.me-scr:not(.nb):hover::before{transform:scale(1)}
+html.me-home nav[aria-label="Main"] .nb:hover,html.me-home nav[aria-label="Main"] .nb:focus-visible{background:transparent !important;color:var(--navc,#f4f3ef) !important;border-color:color-mix(in srgb,var(--navc,#f4f3ef) 55%,transparent)}
+html.me-pz.me-pz-l nav[aria-label="Main"] .nb:hover{background:#dfdfdb !important}
+nav[aria-label="Main"] a.me-scr .nt,.me-mb .me-lbl{font-variant-numeric:tabular-nums}
+html.me-mu-top .me-mu .me-mb:hover{background:transparent;color:var(--navc,#f4f3ef);border-color:color-mix(in srgb,var(--navc,#f4f3ef) 55%,transparent)}
+html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
+/* (Nov 25) the statement sits in the middle of the screen, both ways */
+[data-inkroot] .sts{top:calc((100svh - min(76vh,740px)) / 2)}
+/* discipline headings: the top bar's hover (Nov 25) */
+.cc-h.me-scr-h{position:relative;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.cc-h.me-scr-h::before{content:"";position:absolute;left:0;top:50%;width:.16em;height:.16em;margin-top:-.08em;background:currentColor;transform:scale(0);transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+.cc-h.me-scr-h:hover{transform:translateX(.3em)}
+.cc-h.me-scr-h:hover::before{transform:translateX(-.3em) scale(1)}
+/* between the statement and the disciplines (Nov 25): one line, centred, the role changing in the pixel face */
+.me-yrs{position:relative;height:150svh}
+.me-yrs-s{position:fixed;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;padding:0 clamp(16px,4vw,56px);background:transparent;visibility:hidden}
+.me-yrs-t{margin:0;max-width:22ch;text-align:center;font-family:'Archivo',sans-serif;font-weight:380;font-size:clamp(30px,4.6vw,84px);line-height:1.12;letter-spacing:-.02em;color:#121316;text-wrap:balance}
+.me-yrs-w{position:relative;isolation:isolate;display:inline-block;white-space:nowrap;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:1.06em;letter-spacing:0;color:#121316;background:linear-gradient(#121316,#121316) 0 100%/100% 2px no-repeat;padding-bottom:.04em;transition:color .12s}
+.me-yrs-w::before{content:"";position:absolute;left:-.08em;right:-.08em;top:.02em;bottom:-.02em;background:#121316;z-index:-1;transform:scaleX(0);transform-origin:0 50%;transition:transform .22s cubic-bezier(.6,0,.2,1)}
+.me-yrs-w.in{color:#8e6bff}
+.me-yrs-w.in::before{transform:scaleX(1)}
+.me-yrs-w.out::before{transform-origin:100% 50%}
+@media (max-width:639px){.me-yrs-t{font-size:clamp(26px,8vw,40px)}}
+@media (prefers-reduced-motion:reduce){.me-yrs-s{transform:none}}
+
+.me-yrs-t .yw{display:inline-block;white-space:nowrap}
+.me-yrs-t .yc{opacity:0;transition:opacity 0s linear}
+.me-yrs-t.on .yc{opacity:1}
+.me-yrs-t:not(.on) .yc{transition-delay:0s !important}
+.me-yrs-t .me-yrs-w{opacity:0;transition:opacity .01s linear 0s}
+.me-yrs-t.on .me-yrs-w{opacity:1;transition-delay:.6s}
+@media (prefers-reduced-motion:reduce){.me-yrs-t .yc,.me-yrs-t .me-yrs-w{opacity:1}}
+.cc-h.me-hid .cc-l{visibility:hidden}
+.cc-h.me-hrun{transform:translateX(.3em)}
+.cc-h.me-hrun::before{transform:translateX(-.3em) scale(1)}
+/* (Nov 25) the UI/UX card itself rises over the violet panel; no separate grey wipe in front of it */
+.cc{z-index:7 !important}
+.me-dot{display:none !important}
+/* (Nov 25) the About bridge, centred like the statement */
+.me-br .pf-hd{text-align:center;justify-content:center}
+.br-g{display:flex !important;flex-direction:column;align-items:center;text-align:center}
+.br-g > *{padding-left:0 !important}
+.br-t{max-width:min(100%,24em);text-align:center;text-wrap:balance}
+.br-f{width:min(100%,760px);text-align:left}
+.br-f li{align-items:center;text-align:center}
+.br-a{align-self:center !important;justify-self:auto !important;margin-top:clamp(8px,1.5vw,24px)}
+/* (Nov 25) the Index band at half height */
+.pf-band{height:clamp(110px,13.5vw,250px) !important}
+@media (max-width:759px){.pf-band{height:clamp(80px,21vw,120px) !important}}
+/* (Nov 25) the Index dot band as the About / CV link */
+.br-pf{display:block;width:100%;margin-top:clamp(16px,2.5vw,40px);color:inherit;text-decoration:none;cursor:pointer}
+.br-pf:focus-visible{outline:1px solid #f4f3ef;outline-offset:8px}
+.br-pf .pf-band{width:100%}
+/* (Nov 25) the index, sliding under ABOUT / CV; pauses under the cursor so items can be picked */
+.br-mq{width:calc(100% + 2 * clamp(16px,4vw,56px));margin:clamp(12px,2vw,28px) calc(-1 * clamp(16px,4vw,56px)) 0;overflow:hidden;border-top:1px solid #2c2e33;border-bottom:1px solid #2c2e33;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.br-mq-t{display:flex;width:max-content;animation:brmq 48s linear infinite}
+.br-mq:hover .br-mq-t,.br-mq:focus-within .br-mq-t{animation-play-state:paused}
+.br-mq-g{display:flex;align-items:center;flex:none}
+.mq-c{flex:none;display:flex;align-items:center}
+.mq-h{padding:0 18px 0 40px;font:300 11px/1 'JetBrains Mono',ui-monospace,monospace;color:#9a9ea6;white-space:nowrap}
+.br-mq .pf-i{display:flex;width:auto;gap:10px;padding:14px 18px;border:0;white-space:nowrap}
+.br-mq .pf-i:hover,.br-mq .pf-i.on,.br-mq .pf-i:focus-visible{padding-left:18px}
+@keyframes brmq{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.br-mq-t{animation:none}.br-mq{overflow-x:auto}}
+/* (Nov 26) the violet layer is drawn as square cells; it sits over the cards until it lifts */
+.me-yrs-s{z-index:8 !important;transform:none !important}
+.me-yrs-cv{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-1}
+.me-yrs-t{position:relative}
+#c-uiux{margin-bottom:95vh}
+/* (Nov 26) About as its own chapter: a pinned full screen, entered through the same halftone layer as the violet */
+.me-br{padding-top:0 !important}
+.br-scene{position:relative;height:200svh}
+.br-stick{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(28px,4.5vh,56px);padding:0 clamp(16px,4vw,56px)}
+.br-stick .pf-hd{margin:0}
+.br-stick .br-t{font-size:clamp(28px,3.6vw,64px);line-height:1.12;max-width:min(100%,21em)}
+.br-stick .br-f{width:min(100%,820px);grid-row:auto}
+.br-stick .br-f li{font-size:14px;padding-top:16px}
+.br-stick .br-f li > span{opacity:0;transform:translateY(8px);transition:opacity .4s,transform .5s cubic-bezier(.2,.7,.2,1)}
+.br-stick .br-f li{opacity:0;transform:translateY(12px);transition:opacity .45s,transform .6s cubic-bezier(.2,.7,.2,1)}
+.br-stick.facts .br-f li,.br-stick.facts .br-f li > span{opacity:1;transform:none}
+.br-stick.facts .br-f li:nth-child(2){transition-delay:.08s}.br-stick.facts .br-f li:nth-child(3){transition-delay:.16s}
+.br-ht{position:fixed;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;visibility:hidden}
+@media (max-width:639px){.br-stick .br-f{grid-template-columns:1fr 1fr}.br-stick .br-f li:last-child{grid-column:1 / -1}}
+@media (prefers-reduced-motion:reduce){.br-stick .br-f li,.br-stick .br-f li > span{opacity:1;transform:none}}
