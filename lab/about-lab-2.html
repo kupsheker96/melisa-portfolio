@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>About Lab 2 · Melisa Ergani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* About lab (Nov 26): isolated explorations for the two About sections. Not linked from the site. Uses the site's
+   palette, type, grid and dots; every concept is scroll-driven with an eased progress, so movement stays fluid on a
+   wheel, a trackpad or a swipe, and nothing runs while the page rests. */
+@font-face{font-family:'Mondwest';src:url(../fonts/ppmondwest-regular.woff2) format('woff2');font-display:swap}
+:root{color-scheme:dark;--bg:#121316;--ink:#f4f3ef;--dim:#45484f;--mut:#9a9ea6;--line:#2c2e33;--vio:#8e6bff;--grey:#dfdfdb;--blue:#2b35ff;--pink:#ff4fb0;--pad:clamp(16px,4vw,56px);--rule:calc(var(--pad) + (100vw - 2 * var(--pad)) * .16);--ease:cubic-bezier(.2,.7,.2,1);--ease2:cubic-bezier(.65,0,.25,1)}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:300 13px/1.55 'JetBrains Mono',ui-monospace,monospace;overflow-x:clip;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+/* bar */
+.bar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px var(--pad);padding-top:calc(8px + env(safe-area-inset-top,0px));pointer-events:none}
+.bar > *{pointer-events:auto}
+.grp{display:flex}
+.grp > *{display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:1px solid rgba(244,243,239,.5);background:rgba(18,19,22,.9);color:var(--ink);text-decoration:none;font:400 11px/1 'JetBrains Mono',monospace;cursor:pointer;white-space:nowrap}
+.grp > * + *{margin-left:-1px}
+.grp [aria-current=true],.grp [aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.grp b{font:400 14px/1 'Mondwest',serif}
+.grp .lb{color:var(--mut);cursor:default;background:rgba(18,19,22,.9)}
+.sp{flex:1}
+.tag{color:var(--mut);font-size:10px;background:rgba(18,19,22,.9);padding:4px 8px;border:1px solid var(--line)}
+@media (max-width:760px){.grp > *{padding:0 9px;height:32px}.grp .t{display:none}.tag{display:none}}
+/* context + scene */
+.ctx{height:70svh;display:flex;align-items:flex-end;padding:var(--pad);font-size:11px;color:var(--mut)}
+.ctx.grey{background:var(--grey);color:rgba(18,19,22,.55)}
+.ctx.black{background:#000}
+.ctx h2{margin:0 0 6px;font:800 clamp(56px,9vw,150px)/.82 'Archivo',sans-serif;font-stretch:62%;text-transform:uppercase;letter-spacing:-.015em;color:var(--ink)}
+.scene{position:relative}
+.stage{position:sticky;top:0;height:100svh;overflow:hidden}
+.stage > canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ui{position:absolute;inset:0}
+#ht{position:fixed;inset:0;width:100%;height:100%;z-index:30;pointer-events:none;visibility:hidden}
+.after{height:40svh}
+/* notes */
+.notes{background:var(--bg);border-top:1px solid var(--line);padding:clamp(56px,7vw,110px) var(--pad);display:grid;grid-template-columns:16% repeat(6,minmax(0,1fr))}
+.notes > *{padding-left:clamp(14px,1.6vw,24px)}
+.notes .k{grid-column:1;padding-left:0;color:var(--mut);font-size:11px}
+.notes h3{grid-column:2 / -1;margin:0 0 10px;font:800 clamp(38px,5vw,86px)/.86 'Archivo',sans-serif;font-stretch:62%;text-transform:uppercase;letter-spacing:-.015em}
+.notes .lead{grid-column:2 / span 4;margin:0 0 34px;font:380 clamp(18px,1.6vw,24px)/1.32 'Archivo',sans-serif;color:#e6e5e0;max-width:34em}
+.notes dl{grid-column:2 / -1;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 clamp(16px,2vw,32px)}
+.notes dl div{padding:12px 0 16px;border-top:1px solid var(--line)}
+.notes dt{color:var(--mut);font-size:11px;margin-bottom:6px}
+.notes dd{margin:0;font:380 15px/1.55 'Archivo',sans-serif;color:#c9ccd1}
+.notes .nav{grid-column:2 / -1;margin-top:28px;display:flex;gap:10px;flex-wrap:wrap}
+.notes .nav a{color:var(--ink);font-size:12px;border-bottom:1px solid var(--mut);text-decoration:none;padding-bottom:2px}
+@media (max-width:760px){.notes{grid-template-columns:1fr}.notes > *,.notes h3,.notes .lead,.notes dl,.notes .nav{grid-column:1;padding-left:0}.notes dl{grid-template-columns:1fr}}
+/* shared type */
+.lab{font:300 11px/1.4 'JetBrains Mono',monospace;color:var(--mut)}
+.mw{font-family:'Mondwest',serif;font-weight:400;letter-spacing:0}
+.big{font:380 clamp(26px,3.3vw,58px)/1.1 'Archivo',sans-serif;letter-spacing:-.025em;margin:0;text-wrap:balance}
+.mid{font:380 clamp(17px,1.45vw,24px)/1.3 'Archivo',sans-serif;letter-spacing:-.01em;margin:0}
+/* word rise (time-based, staggered) */
+.w{display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .02em .12em;margin:0 -.02em -.12em}
+.wi{display:inline-block;transform:translate3d(0,108%,0);transition:transform .8s var(--ease);transition-delay:calc(var(--i,0) * 28ms)}
+.on .wi,.wi.on{transform:none}
+.rise{opacity:0;transform:translate3d(0,16px,0);transition:opacity .6s var(--ease),transform .8s var(--ease)}
+.rise.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.wi,.rise{transition:none!important;transform:none!important;opacity:1!important}}
+
+/* ===== F1 Between ===== */
+.f1 .intro{position:absolute;left:var(--pad);right:var(--pad);top:calc(70px + 7vh);text-align:center}
+.f1 .intro .big{max-width:24ch;margin:0 auto}
+.f1 .rail{position:absolute}
+.f1 .ln{position:absolute;background:var(--ink)}
+.f1 .pole{position:absolute;width:11px;height:11px;margin:-5px 0 0 -5px;background:var(--ink)}
+.f1 .pl{position:absolute;font:300 11px/1.4 'JetBrains Mono',monospace;color:var(--mut);white-space:nowrap}
+.f1 .core{position:absolute;width:15px;height:15px;margin:-7px 0 0 -7px;background:var(--bg);border:1px solid var(--ink);transition:background .4s,border-color .4s,transform .7s var(--ease)}
+.f1 .core.on{background:var(--vio);border-color:var(--vio)}
+.f1 .core.big2{transform:scale(2.4)}
+.f1 .ring{position:absolute;width:15px;height:15px;margin:-7px 0 0 -7px;border:1px solid var(--vio);opacity:0}
+.f1 .ring.go{animation:ring 1.1s var(--ease) 1}
+@keyframes ring{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(7)}}
+.f1 .stn{position:absolute;width:min(22vw,300px)}
+.f1 .stn .kw{display:block;font-size:clamp(24px,2.3vw,40px);line-height:1;margin-bottom:8px}
+.f1 .stn .cl{font:380 clamp(15px,1.15vw,19px)/1.3 'Archivo',sans-serif;color:#c9ccd1}
+.f1 .stn.vio .kw{color:var(--vio)}
+
+/* ===== F2 Index ===== */
+.f2 .pre{position:absolute;left:var(--rule);top:calc(70px + 5vh);width:min(52vw,760px)}
+.f2 .pre .lab{display:block;margin-bottom:12px}
+.f2 .rows{position:absolute;left:var(--pad);right:var(--pad);bottom:var(--pad)}
+.f2 .row{position:relative;display:grid;grid-template-columns:16% minmax(0,1fr) minmax(0,26%);align-items:end;gap:0 clamp(14px,1.6vw,24px);padding:10px 0 8px;cursor:default;transition:color .6s}
+.f2 .row::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line);transform:scaleX(0);transform-origin:0 50%;transition:transform .9s var(--ease2)}
+.f2 .row.on::before{transform:scaleX(1)}
+.f2 .row .n{font-size:clamp(20px,2vw,32px);line-height:.9;color:var(--mut);padding-left:2px}
+.f2 .row .kw{font:800 clamp(38px,min(6.6vw,10.5vh),118px)/.84 'Archivo',sans-serif;font-stretch:62%;text-transform:uppercase;letter-spacing:-.015em;white-space:nowrap;visibility:hidden;transition:color .6s}
+.f2 .row.on .kw{visibility:visible}
+.f2 .row .cl{font:380 clamp(15px,1.15vw,19px)/1.3 'Archivo',sans-serif;color:#c9ccd1;padding-bottom:6px}
+.f2 .row.past .kw{color:#5b5f67}
+.f2 .row.past .cl{color:#6b6f77}
+.f2 .row .sq{position:absolute;left:calc(16% - 4px);bottom:calc(8px + .3em);width:9px;height:9px;background:var(--vio);transform:scale(0);transition:transform .4s var(--ease)}
+.f2 .row.cur .sq{transform:scale(1)}
+@media (max-width:760px){.f2 .pre{left:var(--pad);right:var(--pad);width:auto}.f2 .row{grid-template-columns:34px minmax(0,1fr);padding:8px 0}.f2 .row .cl{grid-column:2;padding:4px 0 2px;font-size:14px}.f2 .row .sq{display:none}.f2 .row .kw{font-size:clamp(34px,11vw,54px)}}
+
+/* ===== F3 Fields ===== */
+.f3 .intro{position:absolute;left:var(--pad);right:var(--pad);top:calc(70px + 5vh);text-align:center}
+.f3 .intro .big{max-width:26ch;margin:0 auto;font-size:clamp(22px,2.6vw,44px)}
+.f3 .lbl{position:absolute;width:min(22vw,280px)}
+.f3 .lbl .kw{display:flex;align-items:center;gap:10px;font-size:clamp(22px,2vw,34px);line-height:1;margin-bottom:8px}
+.f3 .lbl .kw i{width:10px;height:10px;background:var(--ink);flex:none}
+.f3 .lbl.vio .kw i{background:var(--vio)}
+.f3 .lbl .cl{font:380 clamp(14px,1.1vw,18px)/1.3 'Archivo',sans-serif;color:#c9ccd1}
+@media (max-width:760px){.f3 .lbl{width:auto;left:var(--pad)!important;right:var(--pad);transform:none!important}.f3 .lbl .kw{font-size:20px;margin-bottom:2px}.f3 .lbl .cl{font-size:14px}}
+
+/* ===== F4 Exploded view ===== */
+.f4 .wd{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;font:380 clamp(26px,3.1vw,54px)/1.1 'Archivo',sans-serif;letter-spacing:-.025em}
+.f4 .ghost{position:absolute;left:var(--pad);right:var(--pad);top:calc(70px + 8vh);visibility:hidden;text-align:center}
+.f4 .ghost p{margin:0 auto;max-width:24ch;font:380 clamp(26px,3.1vw,54px)/1.1 'Archivo',sans-serif;letter-spacing:-.025em}
+.f4 svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.f4 svg line{stroke:#3a3d44;stroke-width:1;stroke-dasharray:3 4}
+.f4 svg path{fill:none;stroke:var(--ink);stroke-width:1}
+.f4 .ul{position:absolute;height:3px;background:var(--vio);transform:scaleX(0);transform-origin:0 50%;transition:transform .7s var(--ease2)}
+.f4 .ul.on{transform:scaleX(1)}
+.f4 .ul b{position:absolute;right:-2px;top:-22px;font-size:15px;color:var(--vio)}
+.f4 .callouts{position:absolute;left:var(--rule);right:var(--pad);bottom:var(--pad);display:grid;gap:clamp(14px,1.6vw,24px)}
+.f4 .co .n{font-size:22px;line-height:1;color:var(--vio);margin-bottom:6px;display:block}
+.f4 .co .kw{display:block;font:600 clamp(15px,1.2vw,19px)/1.2 'Archivo',sans-serif;margin-bottom:4px}
+.f4 .co .cl{font:380 clamp(14px,1.05vw,17px)/1.32 'Archivo',sans-serif;color:#c9ccd1}
+@media (max-width:760px){.f4 .callouts{left:var(--pad);grid-template-columns:1fr 1fr!important;gap:14px}.f4 .co .n{font-size:17px}}
+
+/* ===== F5 Reading light ===== */
+.f5 .txt{position:absolute;left:var(--pad);top:calc(70px + 7vh);width:min(62vw,980px)}
+.f5 .txt p{margin:0 0 .7em;font:380 clamp(22px,3vw,52px)/1.16 'Archivo',sans-serif;letter-spacing:-.02em}
+.f5 .txt .wd{color:var(--dim);transition:color .35s}
+.f5 .txt .wd.lit{color:var(--ink)}
+.f5 .txt .wd.mw{font-size:1.06em}
+.f5 .txt .wd.mw.lit{color:var(--ink)}
+.f5 .car{display:inline-block;width:.32em;height:.32em;background:var(--vio);margin-left:.08em;vertical-align:.1em;transition:opacity .3s}
+.f5 .pics{position:absolute;right:var(--pad);top:calc(70px + 7vh);width:min(26vw,380px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,1.6vw,24px)}
+.f5 .pic{position:relative;aspect-ratio:1;border-top:1px solid var(--line);padding-top:8px;transition:opacity .6s}
+.f5 .pic.dimd{opacity:.32}
+.f5 .pic svg{width:100%;height:calc(100% - 22px);overflow:visible}
+.f5 .pic svg path,.f5 .pic svg rect,.f5 .pic svg circle{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.f5 .pic .lab{position:absolute;left:0;bottom:0}
+@media (max-width:760px){.f5 .txt{left:var(--pad);right:var(--pad);width:auto;top:calc(70px + 17vh)}.f5 .txt p{font-size:clamp(19px,5.4vw,24px)}.f5 .pics{left:var(--pad);right:var(--pad);width:auto;top:calc(56px + 2vh);grid-template-columns:repeat(4,1fr);gap:10px}.f5 .pic{padding-top:4px}.f5 .pic .lab{display:none}.f5 .pic svg{height:100%}}
+
+/* ===== S1 Zoom out ===== */
+.s1 .t1,.s1 .t2{position:absolute;left:var(--pad);right:var(--pad);text-align:center;will-change:transform}
+.s1 .t1{top:30%}
+.s1 .t1 p{margin:0 auto;max-width:20ch;font:380 clamp(30px,4.4vw,80px)/1.06 'Archivo',sans-serif;letter-spacing:-.03em;transform:translateY(-50%)}
+.s1 .t1 .v{transition:color .5s}
+.s1 .t1 .v.dimv{color:var(--dim)}
+.s1 .t2{bottom:calc(var(--pad) + 4vh)}
+.s1 .t2 p{margin:0 auto;max-width:30ch;font:380 clamp(20px,2.2vw,38px)/1.18 'Archivo',sans-serif;letter-spacing:-.02em}
+.s1 .hd{position:absolute;left:var(--pad);top:calc(70px + 3vh)}
+
+/* ===== S2 Full stop ===== */
+.s2 .txt{position:absolute;left:var(--rule);right:var(--pad);top:50%;transform:translateY(-58%)}
+.s2 .txt p{margin:0;max-width:21ch;font:380 clamp(30px,4.3vw,78px)/1.06 'Archivo',sans-serif;letter-spacing:-.03em}
+.s2 .txt p + p{margin-top:.5em;color:#c9ccd1}
+.s2 .stop{display:inline-block;width:.2em;height:.2em;background:var(--vio);margin-left:.04em;transform:scale(0);transition:transform .5s var(--ease)}
+.s2 .stop.on{transform:none}
+.s2 .trail{position:absolute;height:0;right:0;overflow:hidden}
+.s2 .trail i{position:absolute;left:0;top:0;height:100%;width:100%;background-image:linear-gradient(90deg,var(--vio) 0 var(--sz),transparent var(--sz) 100%);background-size:var(--gap) 100%;transform-origin:0 50%}
+.s2 .trail.go i{animation:drift 2.4s linear infinite}
+@keyframes drift{to{background-position:var(--gap) 0}}
+.s2 .hd{position:absolute;left:var(--pad);top:calc(70px + 3vh)}
+@media (max-width:760px){.s2 .txt{left:var(--pad)}.s2 .txt p{font-size:clamp(28px,8.4vw,40px)}}
+@media (prefers-reduced-motion:reduce){.s2 .trail.go i{animation:none}}
+
+/* ===== S3 Pressed ===== */
+.s3 .top{position:absolute;left:var(--pad);right:var(--pad);top:calc(70px + 5vh);text-align:center;color:#121316}
+.s3 .top p{margin:0 auto;max-width:30ch;font:380 clamp(19px,1.9vw,32px)/1.2 'Archivo',sans-serif;letter-spacing:-.02em}
+.s3 .top .v{transition:color .4s,background .4s;padding:0 .08em}
+.s3 .top .v.cur{background:#121316;color:var(--grey)}
+.s3 .top .p2{margin-top:.6em}
+.s3 .ticks{position:absolute;left:50%;bottom:var(--pad);transform:translateX(-50%);display:flex;gap:5px}
+.s3 .ticks i{width:26px;height:3px;background:rgba(18,19,22,.22)}
+.s3 .ticks i.on{background:#121316}
+
+/* ===== lab 2 ===== */
+.g1 .intro{position:absolute;left:var(--pad);right:var(--pad);top:calc(70px + 5vh);text-align:center;z-index:1}
+.g1 .intro .big{max-width:26ch;margin:0 auto;font-size:clamp(22px,2.6vw,44px)}
+.g1 .foot{position:absolute;left:var(--rule);right:var(--pad);bottom:var(--pad);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(14px,1.6vw,24px)}
+.g1 .lbl .kw{display:flex;align-items:center;gap:10px;font-size:clamp(20px,1.8vw,30px);line-height:1;margin-bottom:8px}
+.g1 .lbl .kw i{width:10px;height:10px;background:currentColor;flex:none}
+.g1 .lbl.vio .kw{color:var(--vio)}
+.g1 .lbl .cl{font:380 clamp(14px,1.05vw,17px)/1.32 'Archivo',sans-serif;color:#c9ccd1;display:block}
+.ink{color:#121316}
+.ink .lbl .cl{color:rgba(18,19,22,.72)}
+.ink .lab{color:rgba(18,19,22,.6)}
+.g1.ink .lbl.vio .kw{color:#5b3fd6}
+@media (max-width:760px){.g1 .foot{left:var(--pad);grid-template-columns:1fr 1fr;gap:10px 14px}.g1 .lbl .kw{font-size:18px;margin-bottom:3px}.g1 .lbl .cl{font-size:13px}}
+.z1 .t1,.z2 .t1{position:absolute;left:var(--pad);right:var(--pad);top:calc(70px + 6vh);text-align:center;will-change:transform;transform-origin:50% 0}
+.z1 .t1 p,.z2 .t1 p{margin:0 auto;max-width:22ch;font:380 clamp(26px,3.6vw,64px)/1.06 'Archivo',sans-serif;letter-spacing:-.03em}
+.z1 .v{color:rgba(18,19,22,.38);transition:color .5s}.z1 .v.on{color:#121316}
+.z2 .v{color:var(--dim);transition:color .5s}.z2 .v.on{color:var(--ink)}
+.z1 .t2,.z2 .t2{position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad) + 2vh);text-align:center}
+.z1 .t2 p,.z2 .t2 p{margin:0 auto 10px;max-width:30ch;font:380 clamp(19px,2vw,34px)/1.18 'Archivo',sans-serif;letter-spacing:-.02em}
+.z1 .t2 p{background:#8e6bff}
+.z1 .hd,.z2 .hd{position:absolute;left:var(--pad);top:calc(70px + 2vh)}
+.p1 .t2{position:absolute;left:var(--pad);right:var(--pad);bottom:var(--pad)}
+.p1 .t2 p{margin:0;display:inline;background:#dfdfdb;box-decoration-break:clone;-webkit-box-decoration-break:clone;padding:2px 6px;font:380 clamp(20px,2.2vw,38px)/1.3 'Archivo',sans-serif;letter-spacing:-.02em}
+.pv .top{position:absolute;left:var(--pad);right:var(--pad);top:calc(70px + 5vh);text-align:center}
+.pv .top p{margin:0 auto;max-width:30ch;font:380 clamp(19px,1.9vw,32px)/1.2 'Archivo',sans-serif;letter-spacing:-.02em}
+.pv .top .v{transition:color .4s,background .4s;padding:0 .08em}
+.pv .top .v.cur{background:#121316;color:var(--grey)}
+.pv .top .p2{margin-top:.6em}
+.pv .ticks{position:absolute;left:50%;bottom:var(--pad);transform:translateX(-50%);display:flex;gap:5px}
+.pv .ticks i{width:26px;height:3px;background:rgba(18,19,22,.22)}
+.pv .ticks i.on{background:#121316}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="grp" id="gsec"><span class="lb">About</span><button type="button" data-sec="f"><b>1</b><span class="t">How I think</span></button><button type="button" data-sec="s"><b>2</b><span class="t">Who I am</span></button></div>
+  <div class="grp" id="gtxt"><span class="lb">Text</span><button type="button" data-txt="a">A</button><button type="button" data-txt="b">B</button></div>
+  <div class="grp" id="gcon"></div>
+  <span class="sp"></span><span class="tag">Lab 2 · not linked from the site</span>
+</div>
+<section class="ctx" id="ctx"></section>
+<section class="scene" id="scene"><div class="stage" id="stage"><canvas id="cv" aria-hidden="true"></canvas><div class="ui" id="ui"></div></div></section>
+<div class="after"></div>
+<section class="notes" id="notes" aria-live="polite"></section>
+<canvas id="ht" aria-hidden="true"></canvas>
+
+<script>
+(function () {
+var D = document, W = window, RM = matchMedia('(prefers-reduced-motion: reduce)').matches, FINE = matchMedia('(pointer: fine)').matches;
+var cl = function (v) { return v < 0 ? 0 : v > 1 ? 1 : v; }, sm = function (t) { return t * t * (3 - 2 * t); }, eo = function (t) { return 1 - Math.pow(1 - t, 3); };
+var hash = function (x, y) { var h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return h - Math.floor(h); };
+var esc = function (s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+
+/* ---------- the texts, exactly as given ---------- */
+var TX = {
+  a: { intro: 'Somewhere between how things are made and how people experience them, I find my way into design.',
+       poles: ['how things are made', 'how people experience them'],
+       items: [{ k: 'Industrial design', r: 'gives me an understanding of objects and systems.', a: ['how things are made'] },
+               { k: 'Psychology', r: 'adds a human perspective.', a: ['how people experience them'] },
+               { k: 'Research', r: 'is where I begin connecting the two.', a: ['how things are made', 'how people experience them'] }] },
+  b: { intro: 'I look at how things are made, how people experience them, and how they could work better.',
+       poles: ['how things are made', 'how people experience them'],
+       items: [{ k: 'Industrial design', r: 'gives me a perspective on making.', a: ['how things are made'] },
+               { k: 'Psychology', r: 'makes me curious about people.', a: ['how people experience them'] },
+               { k: 'Research', r: 'helps me connect the two,', a: ['how things are made', 'how people experience them'] },
+               { k: 'design', r: 'brings the ideas to life.', pre: 'and ', a: ['how they could work better'] }] } };
+var S1 = 'Five years of making things, learning things, and figuring things out.';
+var S2 = 'And somehow, the more I learn, the more I realise how much I haven’t tried yet.';
+var itemSentence = function (it) { return (it.pre || '') + it.k + ' ' + it.r; };
+
+/* split a string into rising words; returns html */
+var rise = function (s, i0) { var i = i0 || 0; return s.split(' ').map(function (w) { return '<span class="w"><span class="wi" style="--i:' + (i++) + '">' + esc(w) + '</span></span>'; }).join(' '); };
+var setOn = function (el, v) { if (el) el.classList.toggle('on', !!v); };
+
+/* ---------- shared: scramble (the top bar's effect) ---------- */
+var CHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#%&?';
+function scramble(el, txt, ms) {
+  if (RM) { el.textContent = txt; return; }
+  cancelAnimationFrame(el._sr); var t0 = performance.now(), n = txt.length;
+  (function f() {
+    var p = Math.min(1, (performance.now() - t0) / (ms || 560)), k = p * (n + 4), o = '';
+    for (var i = 0; i < n; i++) { var c = txt[i]; o += (k > i + 4 || c === ' ' || c === '/') ? c : (k > i ? CHS[(Math.random() * CHS.length) | 0] : ' '); }
+    el.textContent = p >= 1 ? txt : o; if (p < 1) el._sr = requestAnimationFrame(f);
+  })();
+}
+
+/* ---------- shared: the violet halftone layer (the site's transition into the second About) ---------- */
+var ht = D.getElementById('ht'), hx = ht.getContext('2d'), hdpr = Math.min(1.5, W.devicePixelRatio || 1), hw = 0, hh = 0, HG = 14, hc = 0, hr = 0, tIn = null, tOut = null, hk = '';
+function hBuild() {
+  hw = innerWidth; hh = innerHeight; ht.width = Math.round(hw * hdpr); ht.height = Math.round(hh * hdpr);
+  HG = hw < 640 ? 9 : Math.max(11, Math.min(16, hw / 110)); hc = Math.ceil(hw / HG) + 1; hr = Math.ceil(hh / HG) + 1;
+  tIn = new Float32Array(hc * hr); tOut = new Float32Array(hc * hr);
+  for (var r = 0; r < hr; r++) for (var c = 0; c < hc; c++) { var h = hash(c + 11.3, r + 2.9), yy = r / hr, dx = (c / hc - 0.5) * (hw / hh), dy = 1 - yy; tIn[r * hc + c] = Math.min(1, Math.sqrt(dx * dx * 0.5 + dy * dy) * 0.62) + h * 0.12; tOut[r * hc + c] = yy * 0.62 + h * 0.12; }
+}
+function hDraw(gin, gout) {
+  var k = (gin <= 0 || gout >= 1) ? 'h' : gin.toFixed(3) + gout.toFixed(3); if (k === hk) return; hk = k;
+  ht.style.visibility = k === 'h' ? 'hidden' : 'visible'; if (k === 'h') return;
+  if (!tIn || hw !== innerWidth || hh !== innerHeight) hBuild();
+  hx.setTransform(hdpr, 0, 0, hdpr, 0, 0); hx.clearRect(0, 0, hw, hh); hx.fillStyle = '#8e6bff';
+  if (gin >= 1 && gout <= 0) { hx.fillRect(0, 0, hw, hh); return; }
+  hx.beginPath();
+  for (var r = 0; r < hr; r++) for (var c = 0; c < hc; c++) { var i = r * hc + c, a = cl((gin * 1.45 - tIn[i]) / 0.45), z = 1 - cl((gout * 1.45 - tOut[i]) / 0.45), kk = Math.min(sm(a), sm(z)); if (kk <= 0.02) continue; var s = kk >= 0.999 ? HG + 1 : Math.max(1.2, HG * kk); hx.rect(c * HG + (HG - s) / 2, r * HG + (HG - s) / 2, s, s); }
+  hx.fill();
+}
+
+/* ---------- stage ---------- */
+var cv = D.getElementById('cv'), x = cv.getContext('2d'), ui = D.getElementById('ui'), stage = D.getElementById('stage'), scene = D.getElementById('scene');
+var off = D.createElement('canvas'), oc = off.getContext('2d', { willReadFrequently: true });
+var Wd = 0, Ht = 0, small = false, dpr = 1, R = null, sec = 'f', txt = 'a', con = 1, cur = null;
+var font = function (fs, w) { oc.font = (w || 800) + ' ' + fs + 'px Archivo, sans-serif'; try { oc.fontStretch = 'extra-condensed'; } catch (e) { } };
+function rects(a, col) { if (!a.length) return; x.fillStyle = col; x.beginPath(); for (var i = 0; i < a.length; i += 3) x.rect(a[i], a[i + 1], a[i + 2], a[i + 2]); x.fill(); }
+
+/* ---------- shared for this lab: masks, relief, pressed rendering ---------- */
+// lines of condensed caps drawn into the offscreen canvas; returns coverage per cell of a grid (pitch P, origin ox/oy)
+function textMask(lines, box, P, cols, rows, ox, oy, align) {
+  off.width = Wd; off.height = Ht; oc.clearRect(0, 0, Wd, Ht); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
+  var lh = 1.06, fs = box.h / (lines.length * 0.72 * lh - (lh - 1) * 0.72); font(fs);
+  var wmax = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (wmax > box.w) { fs *= box.w / wmax; font(fs); }
+  var cap = fs * 0.72, L = cap * lh, total = lines.length * L - (L - cap), top = box.y + (box.h - total) / 2;
+  lines.forEach(function (l, i) { var w = oc.measureText(l).width, lx = align === 'left' ? box.x : box.x + (box.w - w) / 2; oc.fillText(l, lx, top + cap + i * L); });
+  var d = oc.getImageData(0, 0, Wd, Ht).data, M = new Float32Array(cols * rows), lineOf = new Int8Array(cols * rows).fill(-1);
+  for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+    var px = Math.round(ox + c * P), py = Math.round(oy + r * P); if (px < 0 || py < 0 || px >= Wd || py >= Ht) continue;
+    var a = d[(py * Wd + px) * 4 + 3] / 255; M[r * cols + c] = a; lineOf[r * cols + c] = Math.max(-1, Math.min(lines.length - 1, Math.floor((py - top + (L - cap) / 2) / L)));
+  }
+  return { M: M, line: lineOf, top: top, L: L, cap: cap };
+}
+function relief(M, cols, rows, n) {
+  var a = M.slice(), b = new Float32Array(M.length), r, c, d, s, k2;
+  for (var k = 0; k < n; k++) {
+    for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) { s = 0; k2 = 0; for (d = -1; d <= 1; d++) if (c + d >= 0 && c + d < cols) { s += a[r * cols + c + d]; k2++; } b[r * cols + c] = s / k2; }
+    for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) { s = 0; k2 = 0; for (d = -1; d <= 1; d++) if (r + d >= 0 && r + d < rows) { s += b[(r + d) * cols + c]; k2++; } a[r * cols + c] = s / k2; }
+  }
+  var GX = new Float32Array(a.length), GY = new Float32Array(a.length);
+  for (r = 1; r < rows - 1; r++) for (c = 1; c < cols - 1; c++) { var i = r * cols + c; GX[i] = a[i - 1] - a[i + 1]; GY[i] = a[i - cols] - a[i + cols]; }
+  return { Hm: a, GX: GX, GY: GY };
+}
+// one dot of the hero's pressed surface: dep > 0 presses in (deboss), dep < 0 stands out (emboss)
+function pressDot(Lr, i, dep, lx, ly, P, base) {
+  var s = P * base, h0 = Lr.Hm[i]; if (h0 <= 0.003 || dep === 0) return s;
+  var wall = (Lr.GX[i] * lx + Lr.GY[i] * ly) * 0.707;
+  if (dep > 0) {
+    var h = h0 * dep; s *= 1 - Math.min(1, h * 1.7); var w = -wall * dep;
+    if (w > 0.02 && h0 > 0.08 && h0 < 0.8) s = Math.max(s, P * Math.min(0.98, 0.5 + w * 2.6)); else if (w < -0.02) s *= Math.max(0, 1 + w * 6);
+  } else {
+    var e = -dep, hh = h0 * e; s = s + (P * 0.56 - s) * Math.min(1, hh * 1.6); var w2 = wall * e;     // raised: the letter darkens,
+    if (w2 > 0.02) s = Math.max(s, P * Math.min(0.98, 0.6 + w2 * 2.4)); else if (w2 < -0.02 && h0 < 0.85) s *= Math.max(0.15, 1 + w2 * 5);   // its shadow side darker still, its lit edge bare
+  }
+  return s;
+}
+var LX = -0.707, LY = -0.707;
+
+/* =============================== FIRST ABOUT · Fields, continued =============================== */
+var F = {};
+function introHTML(T, cls) { return '<div class="intro ' + (cls || '') + '"><p class="big">' + rise(T.intro) + '</p></div>'; }
+function labelsHTML(T, cls) { return T.items.map(function (it, i) { return '<div class="lbl rise ' + (cls || '') + (i >= 2 ? ' vio' : '') + '"><span class="kw mw"><i></i>' + esc((it.pre || '') + it.k) + '</span><span class="cl">' + esc(it.r) + '</span></div>'; }).join(''); }
+// labels as a row along the foot of the grid (used by several variants; stacks on phones)
+function footRow(lb) { lb.forEach(function (l, i) { l.classList.add('fr'); l.style.setProperty('--n', lb.length); l.style.setProperty('--i', i); }); }
+
+/* 1 · Pressed fields: the two fields pressed into the hero's grey surface */
+F[1] = { name: 'Pressed fields', h: 420,
+  lead: 'Fields, moved onto the hero’s surface. Making and people are two shallow dishes pressed into the grey halftone, lit from the top left like the name in the opening. As you scroll they slide together; where they overlap the dots turn violet: research.',
+  pts: [['Core idea', 'The same Venn idea you liked, told with the one material the site already owns, the pressed grey dots, so the first About reads as a direct continuation of the hero.'],
+        ['Text', 'Intro in ink at the top. Each field gets its keyword (square + Mondwest) along the foot of the grid; research is labelled in violet once the dishes meet; in text B, design appears when the overlap fills in solid.'],
+        ['Motion', 'Eased scroll moves the two dishes; their shadows turn with them because the light stays fixed. The overlap blooms violet from the middle outward.'],
+        ['Connection', 'The hero’s grey, ink dots, pressed relief and light direction; violet as the one accent, as on the roles screen.'],
+        ['Mobile', 'The dishes stack vertically and meet in the middle; labels run under them as a list.']],
+  bg: 'grey',
+  build: function () {
+    var T = TX[txt], P = small ? 8 : 11;
+    ui.innerHTML = '<div class="g1 ink">' + introHTML(T) + '<div class="foot">' + labelsHTML(T) + '</div></div>';
+    var lb = [].slice.call(ui.querySelectorAll('.lbl'));
+    return { P: P, cols: Math.ceil(Wd / P) + 1, rows: Math.ceil(Ht / P) + 1, Rr: small ? Math.min(Wd * 0.36, Ht * 0.14) : Math.min(Wd * 0.17, Ht * 0.25), cy: small ? Ht * 0.48 : Ht * 0.52, lb: lb, intro: ui.querySelector('.intro'), n: T.items.length };
+  },
+  draw: function (q) {
+    var P = R.P, Rr = R.Rr, e = sm(cl((q - 0.06) / 0.5)), dep = sm(cl((q - 0.02) / 0.16)), ov = sm(cl((q - 0.5) / 0.14)), fill = R.n > 3 ? sm(cl((q - 0.74) / 0.14)) : 0;
+    setOn(R.intro, q > 0.03);
+    var sep = small ? Rr * (1.5 - 0.88 * e) : Rr * (2.4 - 1.76 * e), A = small ? [Wd / 2, R.cy - sep] : [Wd / 2 - sep, R.cy], B = small ? [Wd / 2, R.cy + sep] : [Wd / 2 + sep, R.cy];
+    x.fillStyle = '#dfdfdb'; x.fillRect(0, 0, Wd, Ht);
+    var ink = [], vio = [];
+    for (var r = 0; r < R.rows; r++) for (var c = 0; c < R.cols; c++) {
+      var px = c * P + P / 2, py = r * P + P / 2, s = P * 0.36, both = 0, h = 0, gx = 0, gy = 0;
+      [A, B].forEach(function (o) { var dx = px - o[0], dy = py - o[1], d = Math.sqrt(dx * dx + dy * dy) / Rr; if (d < 1) { var t = 1 - d; h = Math.max(h, sm(t)); var sl = 6 * t * (1 - t) / Rr; gx += -dx / (d * Rr + 1e-6) * sl; gy += -dy / (d * Rr + 1e-6) * sl; both++; } });
+      if (h > 0) {
+        var hh = h * dep; s *= 1 - Math.min(1, hh * 1.4);
+        var w = -(gx * LX + gy * LY) * dep * Rr * 0.18;   // the rim facing away from the light catches the shadow
+        if (w > 0.05) s = Math.max(s, P * Math.min(0.95, 0.3 + w * 0.9)); else if (w < -0.05) s *= Math.max(0, 1 + w * 2.2);
+        if (both > 1 && ov > 0) { var sv = Math.max(s, P * 0.5 * ov); sv = sv + (P + 0.5 - sv) * fill; vio.push(px - sv / 2, py - sv / 2, sv); continue; }
+      }
+      if (s < 0.7) continue; ink.push(px - s / 2, py - s / 2, s);
+    }
+    rects(ink, '#121316'); rects(vio, '#8e6bff');
+    R.lb.forEach(function (l, i) { setOn(l, i === 0 ? q > 0.2 : i === 1 ? q > 0.3 : i === 2 ? q > 0.6 : q > 0.82); });
+  } };
+
+/* 2 · Interference: two sources of rings; research is where the waves meet */
+F[2] = { name: 'Interference', h: 440,
+  lead: 'The fields become two sources sending out rings of square dots, the way the Index dots respond to sound. Where the two sets of rings cross they reinforce each other, and that interference pattern in the middle is research.',
+  pts: [['Core idea', 'Connection as something that happens, not a shape: two disciplines meeting produce a new pattern neither has alone. It also echoes the sound-reactive dots, so the section feels related to the music.'],
+        ['Text', 'Intro at the top; Industrial design labelled at the left source, Psychology at the right; research labelled in violet along the line where the rings meet; design (text B) when the pattern settles.'],
+        ['Motion', 'The rings move only with scroll (their phase is tied to it), the sources drift closer, and the strongest dots of the overlap turn violet. Stop scrolling and everything holds still.'],
+        ['Connection', 'Index-style square dots on the dark page with the dim grid underneath, violet for the meeting points, Mondwest labels.'],
+        ['Mobile', 'Sources above and below, larger dots, labels in a list at the foot.']],
+  build: function () {
+    var T = TX[txt], P = small ? 9 : 11;
+    ui.innerHTML = '<div class="g1">' + introHTML(T) + '<div class="foot">' + labelsHTML(T) + '</div></div>';
+    return { P: P, cols: Math.ceil(Wd / P) + 1, rows: Math.ceil(Ht / P) + 1, cy: small ? Ht * 0.47 : Ht * 0.52, lb: [].slice.call(ui.querySelectorAll('.lbl')), intro: ui.querySelector('.intro'), n: T.items.length, Rr: small ? Ht * 0.2 : Math.min(Wd * 0.3, Ht * 0.36) };
+  },
+  draw: function (q) {
+    var P = R.P, e = sm(cl((q - 0.06) / 0.55)), amp = sm(cl((q - 0.02) / 0.2)), lock = R.n > 3 ? sm(cl((q - 0.76) / 0.14)) : 0;
+    setOn(R.intro, q > 0.03);
+    var sep = (small ? Ht * 0.17 : Wd * 0.24) * (1 - 0.5 * e), A = small ? [Wd / 2, R.cy - sep] : [Wd / 2 - sep, R.cy], B = small ? [Wd / 2, R.cy + sep] : [Wd / 2 + sep, R.cy];
+    var k = 2 * Math.PI / (P * 3.2), ph = q * 26, Rr = R.Rr;
+    x.clearRect(0, 0, Wd, Ht);
+    var dim = [], ink = [], vio = [], ds = Math.max(1.1, P * 0.13);
+    for (var r = 0; r < R.rows; r++) for (var c = 0; c < R.cols; c++) {
+      var px = c * P + P / 2, py = r * P + P / 2, d1 = Math.hypot(px - A[0], py - A[1]), d2 = Math.hypot(px - B[0], py - B[1]);
+      var e1 = cl(1 - d1 / Rr), e2 = cl(1 - d2 / Rr);
+      if (e1 <= 0 && e2 <= 0) { dim.push(px - ds / 2, py - ds / 2, ds); continue; }
+      var w1 = Math.cos(k * d1 - ph) * e1, w2 = Math.cos(k * d2 - ph) * e2, v = (w1 + w2) * amp;
+      var mid = e1 > 0.05 && e2 > 0.05, s = P * 0.9 * Math.min(1, Math.abs(v));
+      if (lock > 0 && mid) s = s + (P * 0.7 - s) * lock;
+      if (s < 1) { dim.push(px - ds / 2, py - ds / 2, ds); continue; }
+      (mid && v > 0.55 * (1 - lock) ? vio : ink).push(px - s / 2, py - s / 2, s);
+    }
+    rects(dim, 'rgba(244,243,239,.28)'); rects(ink, '#f4f3ef'); rects(vio, '#8e6bff');
+    R.lb.forEach(function (l, i) { setOn(l, i === 0 ? q > 0.2 : i === 1 ? q > 0.3 : i === 2 ? q > 0.56 : q > 0.8); });
+  } };
+
+/* 3 · Type fields: the fields are words made of halftone dots */
+var TW = { a: ['OBJECTS', 'PEOPLE'], b: ['MAKING', 'PEOPLE'] };
+F[3] = { name: 'Type fields', h: 440,
+  lead: 'The fields are words. Two very large words in halftone dots (objects and people in text A, making and people in text B) enter from the two sides, each fading toward the other. Where they overlap the dots turn violet: the type itself does the connecting.',
+  pts: [['Core idea', 'Typography as the animation. The words come from your own sentences, set like the hero and footer names (Archivo condensed, made of dots), and their overlap is the meaning.'],
+        ['Text', 'Intro at the top in Archivo; the two halftone words fill the middle; the keyword sentences sit as a row along the foot, appearing as the words reach them.'],
+        ['Motion', 'Each word slides in from its edge with eased scroll, its dots fading in a gradient toward the other word; the overlap turns violet once they cross, then the words settle.'],
+        ['Connection', 'Square dots spelling words is the footer’s and hero’s language; violet for the overlap; flat halftone only.'],
+        ['Mobile', 'The words stack, one sliding down from the top and one up from the bottom; the overlap band sits between them.']],
+  build: function () {
+    var T = TX[txt], P = small ? 6 : 9, cols = Math.ceil(Wd / P) + 1, rows = Math.ceil(Ht / P) + 1, w = TW[txt];
+    ui.innerHTML = '<div class="g1">' + introHTML(T) + '<div class="foot">' + labelsHTML(T) + '</div></div>';
+    var box = small ? { x: Wd * 0.05, w: Wd * 0.9, h: Ht * 0.2 } : { x: Wd * 0.02, w: Wd * 0.52, h: Ht * 0.34 };
+    var yA = small ? Ht * 0.34 : Ht * 0.36, yB = small ? Ht * 0.5 : Ht * 0.36;
+    var mA = textMask([w[0]], { x: box.x, y: yA, w: box.w, h: box.h }, P, cols, rows, P / 2, P / 2, 'left').M;
+    var mB = textMask([w[1]], { x: small ? box.x : Wd - box.x - box.w, y: yB, w: box.w, h: box.h }, P, cols, rows, P / 2, P / 2, small ? 'left' : 'right').M;
+    return { P: P, cols: cols, rows: rows, mA: mA, mB: mB, box: box, lb: [].slice.call(ui.querySelectorAll('.lbl')), intro: ui.querySelector('.intro'), n: T.items.length };
+  },
+  draw: function (q) {
+    var P = R.P, e = sm(cl((q - 0.04) / 0.5)), ov = sm(cl((q - 0.5) / 0.12)), cols = R.cols;
+    setOn(R.intro, q > 0.03);
+    var sh = small ? Math.round((1 - e) * Ht * 0.3 / P) : Math.round((1 - e) * Wd * 0.5 / P), shF = small ? Math.round(Ht * 0.04 / P) : 0;
+    x.clearRect(0, 0, Wd, Ht);
+    var ink = [], vio = [];
+    for (var r = 0; r < R.rows; r++) for (var c = 0; c < cols; c++) {
+      var a = 0, b = 0, ca, cb;
+      if (small) { var ra = r - shF + sh, rb = r + shF - sh; if (ra >= 0 && ra < R.rows) a = R.mA[ra * cols + c] * (1 - 0.75 * (r / R.rows)); if (rb >= 0 && rb < R.rows) b = R.mB[rb * cols + c] * (0.25 + 0.75 * (r / R.rows)); }
+      else { ca = c + sh - shF; cb = c - sh + shF; if (ca >= 0 && ca < cols) a = R.mA[r * cols + ca] * (1 - 0.85 * cl((ca * P) / (Wd * 0.58))); if (cb >= 0 && cb < cols) b = R.mB[r * cols + cb] * (1 - 0.85 * cl((Wd - cb * P) / (Wd * 0.58))); }
+      if (a < 0.05 && b < 0.05) continue;
+      var both = a > 0.12 && b > 0.12, v = Math.max(a, b), s = P * 0.95 * Math.sqrt(v);
+      if (both && ov > 0) { var sv = Math.max(s, P * 0.6); vio.push(c * P + P / 2 - sv / 2, r * P + P / 2 - sv / 2, sv * (0.3 + 0.7 * ov)); continue; }
+      if (s < 0.9) continue; ink.push(c * P + P / 2 - s / 2, r * P + P / 2 - s / 2, s);
+    }
+    rects(ink, '#f4f3ef'); rects(vio, '#8e6bff');
+    R.lb.forEach(function (l, i) { setOn(l, q > 0.3 + i * (0.5 / R.n)); });
+  } };
+
+/* 4 · Playground fields: the Index's own dot grid, pulled into two fields */
+F[4] = { name: 'Playground fields', h: 420,
+  lead: 'The Index playground, used as the diagram. Its whole grid of dots is visible; two fields pull dots toward themselves and light them up, and as they approach, the dots caught between them are pulled both ways and turn violet. A tap or the cursor pushes dots aside, exactly like the playground.',
+  pts: [['Core idea', 'Your favourite element of the site carries the philosophy: making and people as two forces acting on the same material, research as the dots they share.'],
+        ['Text', 'Intro at the top; labels along the foot; the dots themselves have no text, so the composition stays calm.'],
+        ['Motion', 'Fields move with eased scroll; dots shift toward them (no physics running in the background, the positions are calculated per frame only while something moves). The pointer push lasts a moment and settles.'],
+        ['Connection', 'The Index’s pitch, dim grid and bright dots, the same push as the playground, violet for the shared dots.'],
+        ['Mobile', 'Fields stack vertically; a tap sends one push instead of hover.']],
+  build: function () {
+    var T = TX[txt], P = small ? 8 : 9;
+    ui.innerHTML = '<div class="g1">' + introHTML(T) + '<div class="foot">' + labelsHTML(T) + '</div></div>';
+    var R0 = { P: P, cols: Math.ceil(Wd / P) + 1, rows: Math.ceil(Ht / P) + 1, cy: small ? Ht * 0.48 : Ht * 0.53, Rr: small ? Math.min(Wd * 0.34, Ht * 0.14) : Math.min(Wd * 0.18, Ht * 0.26), lb: [].slice.call(ui.querySelectorAll('.lbl')), intro: ui.querySelector('.intro'), n: T.items.length, mx: -1e4, my: -1e4, pt: 0 };
+    var sr = function (ev) { var b = stage.getBoundingClientRect(); R0.mx = ev.clientX - b.left; R0.my = ev.clientY - b.top; R0.pt = performance.now(); kick(); };
+    stage.onpointermove = function (ev) { if (ev.pointerType === 'mouse') sr(ev); }; stage.onpointerdown = sr; stage.onpointerleave = function () { R0.mx = -1e4; kick(); };
+    return R0;
+  },
+  draw: function (q, t) {
+    var P = R.P, Rr = R.Rr, e = sm(cl((q - 0.06) / 0.5)), pull = sm(cl((q - 0.02) / 0.2)), fill = R.n > 3 ? sm(cl((q - 0.76) / 0.14)) : 0;
+    setOn(R.intro, q > 0.03);
+    var sep = small ? Rr * (1.5 - 0.9 * e) : Rr * (2.5 - 1.85 * e), A = small ? [Wd / 2, R.cy - sep] : [Wd / 2 - sep, R.cy], B = small ? [Wd / 2, R.cy + sep] : [Wd / 2 + sep, R.cy];
+    var push = R.mx > -1e3 ? Math.max(0, 1 - (t - R.pt) / 900) : 0; if (R.mx > -1e3 && !small) push = Math.max(push, 0.7);
+    x.clearRect(0, 0, Wd, Ht);
+    var dim = [], br = [], vio = [], ds = 1.5;
+    for (var r = 0; r < R.rows; r++) for (var c = 0; c < R.cols; c++) {
+      var px = c * P + P / 2, py = r * P + P / 2, ox = 0, oy = 0, bA = 0, bB = 0;
+      var dx = A[0] - px, dy = A[1] - py, d = Math.sqrt(dx * dx + dy * dy), R2 = Rr * 1.5;
+      if (d < R2) { var f = Math.pow(1 - d / R2, 2) * pull; ox += dx * f * 0.35; oy += dy * f * 0.35; bA = sm(cl(1 - d / Rr)); }
+      dx = B[0] - px; dy = B[1] - py; d = Math.sqrt(dx * dx + dy * dy);
+      if (d < R2) { var f2 = Math.pow(1 - d / R2, 2) * pull; ox += dx * f2 * 0.35; oy += dy * f2 * 0.35; bB = sm(cl(1 - d / Rr)); }
+      if (push > 0) { var mx = px - R.mx, my = py - R.my, md = Math.sqrt(mx * mx + my * my), MR = small ? 70 : 110; if (md < MR) { var pf = (1 - md / MR) * push * 22; ox += mx / (md + 1e-6) * pf; oy += my / (md + 1e-6) * pf; } }
+      var xx = px + ox, yy = py + oy, b = Math.max(bA, bB) * pull;
+      if (b < 0.05) { dim.push(xx - ds / 2, yy - ds / 2, ds); continue; }
+      var s = ds + (P * 0.62 - ds) * b;
+      if (bA > 0.1 && bB > 0.1) { s = Math.max(s, P * 0.5 * pull); s = s + (P * 0.9 - s) * fill; vio.push(xx - s / 2, yy - s / 2, s); } else br.push(xx - s / 2, yy - s / 2, s);
+    }
+    rects(dim, 'rgba(244,243,239,.42)'); rects(br, '#f4f3ef'); rects(vio, '#8e6bff');
+    R.lb.forEach(function (l, i) { setOn(l, i === 0 ? q > 0.2 : i === 1 ? q > 0.3 : i === 2 ? q > 0.58 : q > 0.82); });
+    return push > 0 && push < 1;
+  } };
+
+/* =============================== SECOND ABOUT =============================== */
+var S = {};
+var V3 = ['making things', 'learning things', 'figuring things out'];
+function s1HTML(cls) { return '<p class="' + (cls || '') + '">Five years of <span class="v">' + V3[0] + '</span>, <span class="v">' + V3[1] + '</span>, and <span class="v">' + V3[2] + '</span>.</p>'; }
+// grid cells (relative to a centre) that fall inside a glyph drawn at pitch P0; used by the zoom variants
+function glyphCells(ch, P0, hgt) {
+  var cols = Math.ceil(Wd / P0) + 1, rows = Math.ceil(Ht / P0) + 1, cx = Wd / 2, cy = Ht / 2;
+  var m = textMask([ch], { x: cx - hgt, y: cy - hgt / 2, w: hgt * 2, h: hgt }, P0, cols, rows, cx - Math.floor(cx / P0) * P0, cy - Math.floor(cy / P0) * P0).M, out = [];
+  var c0 = Math.floor(cx / P0), r0 = Math.floor(cy / P0);
+  for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) if (m[r * cols + c] > 0.5) out.push([c - c0, r - r0, hash(c, r)]);
+  return out;
+}
+
+/* Z1 · Five, zoomed out: the footer's violet and dark dots */
+S[1] = { name: 'Five, zoomed out', fam: 'Zoom', h: 440,
+  lead: 'The zoom-out, rebuilt in the footer’s language: violet ground, dark square dots, the dim dot grid. A large “5” is built from dots in three steps, one for each thing you’ve been doing; then the view pulls back until the five is small in an endless violet field of dots still to fill.',
+  pts: [['Core idea', 'Five years becomes a number made of dots, then a small part of something much bigger. It is the same idea as before, now told with the footer’s colours and dots so the end of the page and this section feel like one surface.'],
+        ['Text', 'The first sentence in dark ink above the five, its three verbs darkening as their third of the five fills in. During the zoom it steps back and the second sentence arrives at the foot.'],
+        ['Motion', 'The five fills in three eased waves of dots; the zoom is continuous with scroll, the dot pitch shrinking smoothly so new dots appear at the edges.'],
+        ['Connection', 'The footer’s violet, ink dots and dim grid exactly; the number in Archivo condensed like the footer name.'],
+        ['Mobile', 'Bigger starting pitch, a shorter zoom so the dots stay crisp, the same sequence.']],
+  bg: 'vio',
+  build: function () {
+    var P0 = small ? 22 : 30;
+    ui.innerHTML = '<div class="z1 ink"><span class="hd lab">[ About ]</span><div class="t1">' + s1HTML() + '</div><div class="t2 rise"><p>' + esc(S2) + '</p></div></div>';
+    var cells = glyphCells('5', P0, small ? Ht * 0.3 : Ht * 0.44);
+    cells.sort(function (a, b) { return (b[1] - a[1]) + (a[2] - b[2]) * 0.8; });   // fill from the bottom, a little scattered
+    return { P0: P0, cells: cells, t1: ui.querySelector('.t1'), t2: ui.querySelector('.t2'), v: [].slice.call(ui.querySelectorAll('.v')) };
+  },
+  draw: function (q) {
+    var steps = [0.1, 0.2, 0.3], N = R.cells.length, lit = 0;
+    steps.forEach(function (s, i) { lit += sm(cl((q - s) / 0.1)) * N / 3; R.v[i].classList.toggle('on', q > s); });
+    var z = 1 + (small ? 3 : 4.2) * sm(cl((q - 0.44) / 0.4)), P = R.P0 / z, cx = Wd / 2, cy = Ht / 2 + (small ? Ht * 0.06 : Ht * 0.08);
+    var up = sm(cl((q - 0.44) / 0.3)); R.t1.style.transform = 'translate3d(0,' + (-up * Ht * 0.04).toFixed(1) + 'px,0) scale(' + (1 - up * 0.3).toFixed(3) + ')';
+    setOn(R.t2, q > 0.7);
+    x.fillStyle = '#8e6bff'; x.fillRect(0, 0, Wd, Ht);
+    var c0 = Math.ceil(cx / P) + 1, r0 = Math.ceil(cy / P) + 1, dim = [], ds = Math.max(1.2, P * 0.2);
+    for (var j = -r0; j <= r0; j++) for (var i = -c0; i <= c0; i++) dim.push(cx + i * P - ds / 2, cy + j * P - ds / 2, ds);
+    rects(dim, 'rgba(18,19,22,.22)');
+    var on = [], n = Math.floor(lit), ls = P * 0.82;
+    for (var k = 0; k < n; k++) { var c = R.cells[k]; on.push(cx + c[0] * P - ls / 2, cy + c[1] * P - ls / 2, ls); }
+    rects(on, '#121316');
+  } };
+
+/* Z2 · Try one: the Index playground zoomed out; untried dots can be lit */
+S[2] = { name: 'Try one', fam: 'Zoom', h: 420,
+  lead: 'The zoom-out in the Index playground’s language, and a small invitation: once the view has pulled back, the dots you haven’t lit are there to try. Hovering, or tapping on a phone, lights them violet. Nothing to win, just the idea made touchable.',
+  pts: [['Core idea', '“How much I haven’t tried yet” turned into something the visitor can do, quietly. The lit cluster is your five years; every dot you light is one more try.'],
+        ['Text', 'First sentence large in the middle while three clusters light, one per verb; it moves up for the zoom; the second sentence closes the scene, with a small mono hint.'],
+        ['Motion', 'Clusters light in three eased steps, the zoom follows scroll, the tried dots pop in with a short scale. Only touched dots redraw.'],
+        ['Connection', 'The Index’s dim grid, bright dots and violet; the hint in the site’s mono labels.'],
+        ['Mobile', 'Tap to light dots; the hint says “tap”.']],
+  build: function () {
+    var P0 = small ? 24 : 32;
+    ui.innerHTML = '<div class="z2"><span class="hd lab">[ About ]</span><div class="t1">' + s1HTML() + '</div><div class="t2 rise"><p>' + esc(S2) + '</p><span class="lab">' + (FINE ? 'hover the dots to try some' : 'tap the dots to try some') + '</span></div></div>';
+    var cl3 = [[-5, 0], [0, -1], [5, 0]].map(function (o, k) { var a = []; for (var j = -3; j <= 3; j++) for (var i = -3; i <= 3; i++) { var d = Math.hypot(i, j) + hash(i + k * 9, j) * 1.2; if (d < 2.9) a.push([o[0] + i, o[1] + j, d]); } a.sort(function (p, q2) { return p[2] - q2[2]; }); return a; });
+    var R0 = { P0: P0, cl3: cl3, tried: {}, t1: ui.querySelector('.t1'), t2: ui.querySelector('.t2'), v: [].slice.call(ui.querySelectorAll('.v')), P: P0, cx: 0, cy: 0, act: false };
+    var hit = function (ev) { if (!R0.act) return; var b = stage.getBoundingClientRect(), mx = ev.clientX - b.left, my = ev.clientY - b.top; var i = Math.round((mx - R0.cx) / R0.P), j = Math.round((my - R0.cy) / R0.P); for (var dj = -1; dj <= 1; dj++) for (var di = -1; di <= 1; di++) if (!ev.pointerType || ev.pointerType !== 'mouse' || (di === 0 && dj === 0)) R0.tried[(i + di) + ',' + (j + dj)] = performance.now(); kick(); };
+    stage.onpointermove = function (ev) { if (ev.pointerType === 'mouse') hit(ev); }; stage.onpointerdown = hit; stage.onpointerleave = null;
+    return R0;
+  },
+  draw: function (q, t) {
+    R.v.forEach(function (v, i) { v.classList.toggle('on', q > 0.1 + i * 0.1); });
+    var z = 1 + (small ? 3 : 4) * sm(cl((q - 0.42) / 0.4)), P = R.P0 / z, cx = Wd / 2, cy = Ht * 0.6; R.P = P; R.cx = cx; R.cy = cy; R.act = q > 0.8;
+    var up = sm(cl((q - 0.42) / 0.3)); R.t1.style.transform = 'translate3d(0,' + (-up * Ht * 0.1).toFixed(1) + 'px,0) scale(' + (1 - up * 0.38).toFixed(3) + ')';
+    setOn(R.t2, q > 0.72);
+    x.clearRect(0, 0, Wd, Ht);
+    var c0 = Math.ceil(cx / P) + 1, r0 = Math.ceil(cy / P) + 1, dim = [], ds = Math.max(1.3, P * 0.16);
+    for (var j = -r0; j <= r0; j++) for (var i = -c0; i <= c0; i++) dim.push(cx + i * P - ds / 2, cy + j * P - ds / 2, ds);
+    rects(dim, 'rgba(244,243,239,.42)');
+    var on = [], ls = P * 0.74;
+    R.cl3.forEach(function (cs, k) { var n = Math.floor(sm(cl((q - (0.1 + k * 0.1)) / 0.1)) * cs.length); for (var m = 0; m < n; m++) on.push(cx + cs[m][0] * P - ls / 2, cy + cs[m][1] * P - ls / 2, ls); });
+    rects(on, '#f4f3ef');
+    var tv = [], anim = false;
+    Object.keys(R.tried).forEach(function (key) { var ij = key.split(','), age = (t - R.tried[key]) / 260, sc = RM ? 1 : eo(cl(age)); if (sc < 1) anim = true; var s = Math.max(ds, P * 0.74 * sc); tv.push(cx + ij[0] * P - s / 2, cy + ij[1] * P - s / 2, s); });
+    rects(tv, '#8e6bff');
+    return anim;
+  } };
+
+/* P1 · Stamped sentence: the first sentence pressed line by line; the turn flips the relief */
+S[3] = { name: 'Stamped sentence', fam: 'Pressed', h: 480,
+  lead: 'The first sentence itself is pressed into the hero’s surface, one line at a time, like type being set. At “And somehow…” the relief turns over: the pressed letters rise out of the surface instead, as the second sentence turns the first around.',
+  pts: [['Core idea', 'Pressing as typesetting, and the turn of the story as a physical turn of the material: in, then out. No new element, only the hero technique used to carry a sentence.'],
+        ['Text', 'Four pressed lines (FIVE YEARS OF / MAKING THINGS, / LEARNING THINGS, / AND FIGURING THINGS OUT.) fill the screen; the second sentence arrives in ink on a grey band at the foot when the relief flips.'],
+        ['Motion', 'Each line sinks in with the scroll, left to right, slightly after the one above. The flip is one continuous, eased change from pressed to raised, the shadows sliding to the other side of each stroke.'],
+        ['Connection', 'Exactly the hero: grey #dfdfdb, ink dots, light from the top left, Archivo condensed caps.'],
+        ['Mobile', 'Finer dot pitch and the sentence re-broken into seven short lines; the second sentence wraps under them.']],
+  bg: 'grey',
+  build: function () {
+    var P = small ? 5 : 8, cols = Math.ceil(Wd / P) + 1, rows = Math.ceil(Ht / P) + 1;
+    var lines = small ? ['FIVE YEARS', 'OF MAKING', 'THINGS,', 'LEARNING', 'THINGS, AND', 'FIGURING', 'THINGS OUT.'] : ['FIVE YEARS OF', 'MAKING THINGS,', 'LEARNING THINGS,', 'AND FIGURING THINGS OUT.'];
+    var m = textMask(lines, { x: Wd * 0.05, y: Ht * (small ? 0.1 : 0.12), w: Wd * 0.9, h: Ht * (small ? 0.66 : 0.62) }, P, cols, rows, P / 2, P / 2, 'left');
+    var Lr = relief(m.M, cols, rows, small ? 1 : 2);
+    ui.innerHTML = '<div class="p1 ink"><div class="t2 rise"><p>' + esc(S2) + '</p></div></div>';
+    return { P: P, cols: cols, rows: rows, Lr: Lr, line: m.line, n: lines.length, t2: ui.querySelector('.t2') };
+  },
+  draw: function (q) {
+    var P = R.P, cols = R.cols, flip = sm(cl((q - 0.62) / 0.2)), deps = [];
+    for (var l = 0; l < R.n; l++) deps.push(sm(cl((q - 0.04 - l * (0.48 / R.n)) / 0.14)));
+    setOn(R.t2, q > 0.74);
+    x.fillStyle = '#dfdfdb'; x.fillRect(0, 0, Wd, Ht);
+    var out = [];
+    for (var r = 0; r < R.rows; r++) for (var c = 0; c < cols; c++) {
+      var i = r * cols + c, ln = R.line[i], dep = 0;
+      if (R.Lr.Hm[i] > 0.003) { var dl = ln >= 0 ? deps[ln] : 0; var sweep = cl(dl * 1.6 - (c / cols) * 0.6); dep = sweep * (1 - 2 * flip); }
+      var s = pressDot(R.Lr, i, dep, LX, LY, P, 0.36); if (s < 0.7) continue; out.push(P / 2 + c * P - s / 2, P / 2 + r * P - s / 2, s);
+    }
+    rects(out, '#121316');
+  } };
+
+/* P2 · Raking wave: the verbs replace each other in a wave, under a moving light */
+S[4] = { name: 'Raking wave', fam: 'Pressed', h: 480,
+  lead: 'The pressed verbs, more fluid: instead of lifting and sinking in place, each new word rolls in from left to right as a wave through the dots while the old one rolls out, and the light rakes slowly around the letters as you scroll, so the shadows keep shifting.',
+  pts: [['Core idea', 'The same four words (MAKING, LEARNING, FIGURING, YET), with motion that feels like one continuous material rather than separate slides.'],
+        ['Text', 'The sentence on top in ink, the current verb shown as an ink block; the second sentence joins it when YET rolls in.'],
+        ['Motion', 'A 0.9 s wave per change (the edge of the wave travels across the columns with easing), and the light direction turns with the scroll. At rest nothing moves.'],
+        ['Connection', 'The hero’s pressed surface and its moving light (the cursor light from the opening, driven by scroll here).'],
+        ['Mobile', 'Finer pitch, same sequence; scroll turns the light just as on the hero.']],
+  bg: 'grey',
+  build: function () {
+    var P = small ? 5 : 9, cols = Math.ceil(Wd / P) + 1, rows = Math.ceil(Ht / P) + 1, words = ['MAKING', 'LEARNING', 'FIGURING', 'YET'];
+    var L = words.map(function (w) { return relief(textMask([w], { x: Wd * 0.06, y: Ht * 0.38, w: Wd * 0.88, h: small ? Ht * 0.17 : Ht * 0.34 }, P, cols, rows, P / 2, P / 2).M, cols, rows, small ? 1 : 2); });
+    ui.innerHTML = '<div class="pv ink"><div class="top">' + s1HTML() + '<p class="p2 rise">' + esc(S2) + '</p></div><div class="ticks"><i></i><i></i><i></i><i></i></div></div>';
+    return { P: P, cols: cols, rows: rows, L: L, cur: 0, prev: 0, t0: -1e4, v: [].slice.call(ui.querySelectorAll('.v')), p2: ui.querySelector('.p2'), ticks: [].slice.call(ui.querySelectorAll('.ticks i')) };
+  },
+  draw: function (q, t) {
+    var want = q < 0.24 ? 0 : q < 0.46 ? 1 : q < 0.68 ? 2 : 3;
+    if (want !== R.cur) { R.prev = R.cur; R.cur = want; R.t0 = t; }
+    var k = RM ? 1 : cl((t - R.t0) / 900), ang = -2.36 + q * 2.6, lx = Math.cos(ang), ly = Math.sin(ang), intro = sm(cl(q / 0.05));
+    R.v.forEach(function (v, i) { v.classList.toggle('cur', i === R.cur); }); setOn(R.p2, R.cur === 3); R.ticks.forEach(function (tk, i) { tk.classList.toggle('on', i <= R.cur); });
+    x.fillStyle = '#dfdfdb'; x.fillRect(0, 0, Wd, Ht);
+    var out = [], cols = R.cols, P = R.P, A = R.L[R.prev], B = R.L[R.cur];
+    for (var c = 0; c < cols; c++) {
+      var f = cl(k * 1.5 - (c / cols) * 0.5), outA = 1 - sm(cl(f * 2)), inB = sm(cl(f * 2 - 1));   // the old word leaves the column, then the new one arrives
+      for (var r = 0; r < R.rows; r++) {
+        var i = r * cols + c, s;
+        if (R.prev !== R.cur && outA > 0 && A.Hm[i] > 0.003) s = pressDot(A, i, outA * intro, lx, ly, P, 0.36);
+        else s = pressDot(B, i, (R.prev === R.cur ? 1 : inB) * intro, lx, ly, P, 0.36);
+        if (s < 0.7) continue; out.push(P / 2 + c * P - s / 2, P / 2 + r * P - s / 2, s);
+      }
+    }
+    rects(out, '#121316');
+    return k < 1;
+  } };
+
+/* P3 · Pressed, then zoomed out: both ideas together */
+S[5] = { name: 'Small, then YET', fam: 'Pressed + Zoom', h: 520,
+  lead: 'The two directions you liked, combined. The three verbs are pressed in a small column in the centre of the grey surface. Then the surface zooms out until they are tiny marks in a large field of untouched dots, and “YET” is pressed across the whole of it.',
+  pts: [['Core idea', 'What you’ve done (three pressed words in a column) against what you haven’t tried (the rest of the surface, and one huge word). The scale change does the storytelling.'],
+        ['Text', 'The first sentence on top while the verbs are pressed; the second sentence takes its place when YET appears.'],
+        ['Motion', 'Three short presses, a continuous eased zoom that shrinks the dot pitch, then one slow press of YET across the full width.'],
+        ['Connection', 'The hero’s surface throughout; the zoom uses the same square dots as the Index.'],
+        ['Mobile', 'The same column of verbs at phone width; YET fills the width.']],
+  bg: 'grey',
+  build: function () {
+    var P0 = small ? 6 : 10, cols = Math.ceil(Wd / P0) + 1, rows = Math.ceil(Ht / P0) + 1, words = ['MAKING', 'LEARNING', 'FIGURING'];
+    var bw = small ? Wd * 0.8 : Wd * 0.36, bh = small ? Ht * 0.1 : Ht * 0.13;
+    var lay = words.map(function (w, i) { var bx = (Wd - bw) / 2, by = Ht * 0.47 + (i - 1) * (bh + (small ? 14 : 22)) - bh / 2; return relief(textMask([w], { x: bx, y: by, w: bw, h: bh }, P0, cols, rows, P0 / 2, P0 / 2).M, cols, rows, 1); });
+    var P1 = Math.max(small ? 3.5 : 5, P0 / 2.4), c1 = Math.ceil(Wd / P1) + 1, r1 = Math.ceil(Ht / P1) + 1;
+    var yet = relief(textMask(['YET'], { x: Wd * 0.05, y: Ht * 0.3, w: Wd * 0.9, h: Ht * (small ? 0.24 : 0.46) }, P1, c1, r1, P1 / 2, P1 / 2).M, c1, r1, small ? 1 : 2);
+    ui.innerHTML = '<div class="pv ink"><div class="top">' + s1HTML('s1') + '<p class="p2 rise">' + esc(S2) + '</p></div></div>';
+    return { P0: P0, cols: cols, rows: rows, lay: lay, P1: P1, c1: c1, r1: r1, yet: yet, v: [].slice.call(ui.querySelectorAll('.v')), s1: ui.querySelector('.s1'), p2: ui.querySelector('.p2') };
+  },
+  draw: function (q) {
+    var deps = [0.04, 0.14, 0.24].map(function (s) { return sm(cl((q - s) / 0.1)); }), z = sm(cl((q - 0.4) / 0.28)), yd = sm(cl((q - 0.7) / 0.16));
+    R.v.forEach(function (v, i) { v.classList.toggle('cur', deps[i] > 0.5 && z < 0.5); });
+    R.s1.style.opacity = (1 - yd).toFixed(2); setOn(R.p2, q > 0.74);
+    x.fillStyle = '#dfdfdb'; x.fillRect(0, 0, Wd, Ht);
+    var P = R.P0 + (R.P1 - R.P0) * z, cols = Math.ceil(Wd / P) + 1, rows = Math.ceil(Ht / P) + 1, cx = Wd / 2, cy = Ht / 2, out = [], k0 = R.P0 / P;
+    var B0c = Math.floor(R.cols / 2), B0r = Math.floor(R.rows / 2), Pc = Math.floor(cols / 2), Pr = Math.floor(rows / 2);
+    for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+      // the verbs live on the original grid: find this dot's place on it (scaled about the centre)
+      var bc = B0c + (c - Pc), brr = B0r + (r - Pr), s = P * 0.36;   // same cells, smaller pitch: the words shrink with the zoom
+      if (bc >= 0 && bc < R.cols && brr >= 0 && brr < R.rows) { var bi = brr * R.cols + bc; for (var w = 0; w < 3; w++) if (R.lay[w].Hm[bi] > 0.003 && deps[w] > 0) { s = pressDot(R.lay[w], bi, deps[w] * (1 - yd), LX, LY, P, 0.36); break; } }
+      if (yd > 0 && z >= 0.999 && r < R.r1 && c < R.c1) { var yi = r * R.c1 + c; if (R.yet.Hm[yi] > 0.003) s = pressDot(R.yet, yi, yd, LX, LY, P, 0.36); }
+      if (s < 0.6) continue; out.push(c * P + P / 2 - s / 2, r * P + P / 2 - s / 2, s);
+    }
+    rects(out, '#121316');
+  } };
+
+/* =============================== engine =============================== */
+var tq = 0, q = 0, raf = 0, keep = false;
+function target() { var vh = innerHeight, top = scene.getBoundingClientRect().top; return cl(-top / Math.max(1, scene.offsetHeight - vh)); }
+function frame(t) {
+  raf = 0; if (!R) return;
+  var vh = innerHeight, top = scene.getBoundingClientRect().top;
+  if (sec === 's') hDraw(RM ? 0 : cl((vh * 1.3 - top) / (vh * 0.7)), RM ? 1 : cl((vh * 0.35 - top) / (vh * 0.6))); else hDraw(0, 1);
+  tq = target(); var d = tq - q; q = RM ? tq : (Math.abs(d) < 0.0006 ? tq : q + d * 0.14);   // eased progress: fluid on any input
+  x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  keep = !!cur.draw(q, t);
+  if (keep || q !== tq) raf = requestAnimationFrame(frame);
+}
+function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+addEventListener('scroll', kick, { passive: true });
+
+function layout() {
+  dpr = Math.min(1.5, devicePixelRatio || 1); Wd = stage.clientWidth; Ht = stage.clientHeight; small = Wd < 760;
+  cv.width = Math.round(Wd * dpr); cv.height = Math.round(Ht * dpr); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, Wd, Ht);
+  stage.onpointermove = stage.onpointerdown = stage.onpointerleave = null;
+  R = cur.build(); tIn = null; hk = ''; q = target(); kick();
+}
+var rt, lw = innerWidth; addEventListener('resize', function () { if (innerWidth === lw && small) return; lw = innerWidth; clearTimeout(rt); rt = setTimeout(layout, 160); });
+
+function go() {
+  var m = /^#(f|s)(?:-(a|b))?-(\d)$/.exec(location.hash) || [0, 'f', 'a', '1'];
+  sec = m[1]; txt = m[2] || txt || 'a'; con = +m[3]; var set = sec === 'f' ? F : S; if (!set[con]) con = 1; cur = set[con];
+  D.querySelectorAll('#gsec button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.sec === sec); });
+  D.getElementById('gtxt').style.display = sec === 'f' ? '' : 'none';
+  D.querySelectorAll('#gtxt button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.txt === txt); });
+  var g = D.getElementById('gcon'), keys = Object.keys(set);
+  g.innerHTML = '<span class="lb">Concept</span>' + keys.map(function (k) { return '<button type="button" data-c="' + k + '" aria-pressed="' + (+k === con) + '"><b>' + k + '</b><span class="t">' + set[k].name + '</span></button>'; }).join('');
+  g.querySelectorAll('button').forEach(function (b) { b.onclick = function () { location.hash = hashFor(sec, txt, +b.dataset.c); }; });
+  var ctx = D.getElementById('ctx');
+  if (sec === 'f') { ctx.className = 'ctx grey'; ctx.innerHTML = '<span>End of the pressed hero, for context · scroll ↓</span>'; }
+  else { ctx.className = 'ctx black'; ctx.innerHTML = '<div><h2>Social Media</h2><span>End of the last discipline card, for context · scroll ↓</span></div>'; }
+  scene.style.height = cur.h + 'svh';
+  var n = D.getElementById('notes'), title = sec === 'f' ? 'About 1 · How I think · Text ' + txt.toUpperCase() : 'About 2 · Who I am';
+  var nav = keys.map(function (k) { return '<a href="#' + hashFor(sec, txt, +k) + '">' + k + ' ' + set[k].name + '</a>'; }).join('');
+  n.innerHTML = '<div class="k">[ ' + title + ' ]</div><h3>' + con + ' · ' + cur.name + '</h3><p class="lead">' + cur.lead + '</p><dl>' + cur.pts.map(function (p, i) { return '<div><dt>0' + (i + 1) + ' ' + p[0] + '</dt><dd>' + p[1] + '</dd></div>'; }).join('') + '</dl><div class="nav">' + nav + '</div>';
+  scrollTo(0, 0); q = 0;
+  var fl = D.fonts && D.fonts.load ? Promise.all([D.fonts.load('800 80px Archivo'), D.fonts.load('380 40px Archivo'), D.fonts.load('20px Mondwest')]) : Promise.resolve();
+  fl.then(layout, layout);
+}
+function hashFor(s, t, c) { return s === 'f' ? 'f-' + t + '-' + c : 's-' + c; }
+D.querySelectorAll('#gsec button').forEach(function (b) { b.onclick = function () { location.hash = hashFor(b.dataset.sec, txt, 1); }; });
+D.querySelectorAll('#gtxt button').forEach(function (b) { b.onclick = function () { location.hash = hashFor('f', b.dataset.txt, con); }; });
+addEventListener('hashchange', go);
+go();
+})();
+</script>
+</body>
+</html>
