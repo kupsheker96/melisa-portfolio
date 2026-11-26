@@ -1480,20 +1480,51 @@
       if (!tp || RM || on === shown) return; shown = on;
       tp.classList.toggle('on', on);
     };
+    /* (Nov 26) the violet is a layer of square cells on the site's dots: as soon as the sentence has assembled the cells
+       grow up from the bottom of the screen, staggered, until they close into a flat violet field (fast, ~40% of a
+       screen of scroll). It holds while the roles change. Then, with the UI/UX card already in place underneath, the
+       cells shrink back to dots from the top down and the layer lifts off the whole screen, revealing the card. */
     var pan = D.querySelector('.me-yrs-s'), stw = D.querySelector('[data-inkroot] .stw'), sts = stw && stw.querySelector('.sts'), cards = D.getElementById('work'), lastK = '';
+    var pc = D.createElement('canvas'), px = pc.getContext('2d'); pc.className = 'me-yrs-cv'; pc.setAttribute('aria-hidden', 'true'); if (pan) pan.insertBefore(pc, pan.firstChild);
+    var pdpr = Math.min(1.5, W.devicePixelRatio || 1), cw = 0, chh = 0, G = 40, gc = 0, gr = 0, thIn = null, thOut = null;
+    var pbuild = function () {
+      cw = W.innerWidth; chh = W.innerHeight; pc.width = Math.round(cw * pdpr); pc.height = Math.round(chh * pdpr);
+      G = cw < 640 ? 9 : Math.max(11, Math.min(16, cw / 110)); gc = Math.ceil(cw / G) + 1; gr = Math.ceil(chh / G) + 1;   // a fine halftone grid
+      thIn = new Float32Array(gc * gr); thOut = new Float32Array(gc * gr);
+      for (var r0 = 0; r0 < gr; r0++) for (var c0 = 0; c0 < gc; c0++) {
+        var h0 = hash(c0 + 3.1, r0 + 7.7), yy = r0 / gr, dx = (c0 / gc - 0.5) * (cw / chh), dy = 1 - yy;
+        thIn[r0 * gc + c0] = Math.min(1, Math.sqrt(dx * dx * 0.5 + dy * dy) * 0.62) + h0 * 0.12;   // a halftone swell from the bottom centre
+        thOut[r0 * gc + c0] = yy * 0.62 + h0 * 0.12;                                           // lifts off from the top
+      }
+    };
+    var pdraw = function (gin, gout) {
+      if (!thIn || cw !== W.innerWidth || chh !== W.innerHeight) pbuild();
+      px.setTransform(pdpr, 0, 0, pdpr, 0, 0); px.clearRect(0, 0, cw, chh);
+      if (gin >= 1 && gout <= 0) { px.fillStyle = '#8e6bff'; px.fillRect(0, 0, cw, chh); return; }
+      px.fillStyle = '#8e6bff'; px.beginPath();
+      for (var r0 = 0; r0 < gr; r0++) for (var c0 = 0; c0 < gc; c0++) {
+        var i0 = r0 * gc + c0, a0 = cl((gin * 1.45 - thIn[i0]) / 0.45), z0 = 1 - cl((gout * 1.45 - thOut[i0]) / 0.45);   // wide bands: the dot size reads as a gradient
+        var k0 = Math.min(a0 * a0 * (3 - 2 * a0), z0 * z0 * (3 - 2 * z0)); if (k0 <= 0.02) continue;
+        var s0 = k0 >= 0.999 ? G + 1 : Math.max(1.2, G * k0); px.rect(c0 * G + (G - s0) / 2, r0 * G + (G - s0) / 2, s0, s0);
+      }
+      px.fill();
+    };
     var place = function () {
       if (!pan || !stw || !sts) return;
       var vh = W.innerHeight, r = stw.getBoundingClientRect(), top = parseFloat(getComputedStyle(sts).top) || 0;
-      var span = Math.max(1, stw.offsetHeight - sts.offsetHeight), at = (top - r.top) - 0.86 * span;
-      var p = RM ? (at > 0 ? 1 : 0) : cl(at / (vh * 0.85)), e = p * p * (3 - 2 * p);
-      var gone = cards && cards.getBoundingClientRect().top <= 0;   // the card has covered the panel
-      var k = (p <= 0 || gone) ? 'h' : e.toFixed(4); if (k === lastK) return; lastK = k;
+      var span = Math.max(1, stw.offsetHeight - sts.offsetHeight), at = (top - r.top) - 0.84 * span;
+      var p = RM ? (at > 0 ? 1 : 0) : cl(at / (vh * 0.45));
+      var ct = cards ? cards.getBoundingClientRect().top : 1e9, q = RM ? (ct <= 0 ? 1 : 0) : cl(-ct / (vh * 0.9));
+      var gone = q >= 1;
+      W.__meCover = p > 0 && !gone;   // the cards wait (headings, photos) until this layer has lifted
+      var k = (p <= 0 || gone) ? 'h' : p.toFixed(4) + '|' + q.toFixed(4); if (k === lastK) return; lastK = k;
       pan.style.visibility = k === 'h' ? 'hidden' : 'visible';
-      pan.style.transform = 'translate3d(0,' + ((1 - e) * 100).toFixed(3) + '%,0)';
-      reveal(p >= 0.92 && !gone);
-      var nv = p >= 0.999 && !gone; if (nv !== vis) { vis = nv; if (!vis) { clearTimeout(tmr); var ww = v.parentNode; ww.classList.remove('in', 'out'); } loop(); }
+      if (k !== 'h') pdraw(p, q);
+      reveal(p >= 0.9 && q < 0.06);
+      var nv = p >= 0.999 && q <= 0; if (nv !== vis) { vis = nv; if (!vis) { clearTimeout(tmr); var ww = v.parentNode; ww.classList.remove('in', 'out'); } loop(); }
+      if (W.__meHeadRun) W.__meHeadRun();
     };
-    W.addEventListener('scroll', place, { passive: true }); W.addEventListener('resize', function () { lastK = ''; place(); }); place();
+    W.addEventListener('scroll', place, { passive: true }); W.addEventListener('resize', function () { lastK = ''; thIn = null; place(); }); place();
     D.addEventListener('visibilitychange', loop);
   }
 
@@ -1628,13 +1659,18 @@
     var run = function () {
       var vh = W.innerHeight;
       hs.forEach(function (o) {
-        var r = o.h2.getBoundingClientRect(), inn = r.top < vh * 0.72 && r.bottom > 0;
+        var r = o.h2.getBoundingClientRect(), inn = r.top < vh * 0.72 && r.bottom > 0 && !W.__meCover;
         if (inn && !o.on) { o.on = true; play(o); } else if (!inn && r.top > vh && o.on) { o.on = false; hide(o); }
       });
     };
-    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
+    W.__meHeadRun = run; W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
   }
 
+  /* card photos (Nov 26, after her reference video, finer): where a photo meets the bottom or top of the screen it
+     breaks into tiny square pixels (2-3 px, as in the reference), dense near the photo and scattering toward the edge,
+     so a photo rises into view out of a fine dither of its own colours and resolves to the sharp image. Scroll-tied, so
+     it runs backwards too, eased so it reads as a smooth reveal. Done with a per-photo mask one pixel per block (scaled
+     up without smoothing), so it costs a few thousand bytes per frame, not thousands of draw calls. */
   function dustImgs() {
     if (!LIVE || RM) return;
     var ims = [].slice.call(D.querySelectorAll('.cc-vis .cc-t img')); if (!ims.length) return;
@@ -1642,22 +1678,22 @@
     ims.forEach(function (im, n) {
       var t = im.closest('.cc-t'); if (!t || t.classList.contains('sl')) return;
       var cv = D.createElement('canvas'), x = cv.getContext('2d'); cv.className = 'me-dust'; cv.setAttribute('aria-hidden', 'true'); t.appendChild(cv);
-      var it = { im: im, t: t, cv: cv, x: x, cache: null, w: 0, h: 0, B: 5, on: false, inView: false, key: '', seed: n * 7.13 };
+      var it = { im: im, t: t, cv: cv, x: x, cache: null, w: 0, h: 0, B: 3, on: false, inView: false, key: '', seed: n * 7.13, sm: 0 };
       var cs0 = getComputedStyle(im); it.fit = cs0.objectFit; it.pos = cs0.objectPosition;
       it.size = function () {
         var w = im.offsetWidth, h = im.offsetHeight; if (!w || !h) return false;
         if (w === it.w && h === it.h && it.cache) return true;
-        it.w = w; it.h = h; it.B = W.innerWidth < 640 ? 4 : 5;
+        it.w = w; it.h = h; it.B = W.innerWidth < 640 ? 2 : 3;
         cv.style.left = im.offsetLeft + 'px'; cv.style.top = im.offsetTop + 'px'; cv.style.width = w + 'px'; cv.style.height = h + 'px';
         cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
         if (!im.complete || !im.naturalWidth) return false;
         var c = D.createElement('canvas'); c.width = cv.width; c.height = cv.height;
         var r = fitRect(im.naturalWidth, im.naturalHeight, c.width, c.height, it.fit, it.pos);
         try { c.getContext('2d').drawImage(im, r[0], r[1], r[2], r[3]); it.cache = c; } catch (e) { it.cache = null; }
-        // one random threshold per pixel block, fixed, so the dither holds still while it moves
         var nx = Math.ceil(w / it.B), ny = Math.ceil(h / it.B), th = new Float32Array(nx * ny);
         for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) th[j * nx + i] = hash(i + it.seed, j);
         it.nx = nx; it.ny = ny; it.th = th; it.key = '';
+        it.mc = D.createElement('canvas'); it.mc.width = nx; it.mc.height = ny; it.mx = it.mc.getContext('2d'); it.md = it.mx.createImageData(nx, ny);
         return !!it.cache;
       };
       if (!im.complete) im.addEventListener('load', function () { it.w = 0; kick(); }, { once: true });
@@ -1672,29 +1708,27 @@
     var off = function (it) { if (it.on) { it.on = false; it.t.classList.remove('me-dusting'); it.key = ''; } };
     var frame = function () {
       raf = 0;
-      var vh = W.innerHeight, bandB = vh * 0.28, bandT = Math.min(160, vh * 0.16), topY = 56;   // the top band starts under the bar
+      var vh = W.innerHeight, bandB = vh * 0.3, bandT = Math.min(170, vh * 0.17), topY = 0;
       items.forEach(function (it) {
         if (!it.inView) return off(it);
         var r = it.im.getBoundingClientRect();
         if (!r.height || (r.bottom < vh - bandB && r.top > topY + bandT) || r.bottom < 0 || r.top > vh) return off(it);
         if (!it.size()) return off(it);
-        var k = r.height / it.h, B = it.B, nx = it.nx, ny = it.ny, th = it.th;
+        var k = r.height / it.h, B = it.B, nx = it.nx, ny = it.ny, th = it.th, d = it.md.data;
         var key = Math.round(r.top) + '|' + vh; if (key === it.key && it.on) return; it.key = key;
-        var x = it.x; x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-over';
-        x.clearRect(0, 0, it.cv.width, it.cv.height); x.drawImage(it.cache, 0, 0);
-        // erase the blocks whose threshold is above how far in from the edge they are
-        x.setTransform(dpr, 0, 0, dpr, 0, 0); x.globalCompositeOperation = 'destination-out'; x.beginPath();
         var any = false;
         for (var j = 0; j < ny; j++) {
-          var sy = r.top + (j + 0.5) * B * k;
-          var f = Math.min((vh - sy) / bandB, (sy - topY) / bandT);
-          if (f >= 1) continue;
-          f = f <= 0 ? 0 : f * f * (3 - 2 * f);
-          for (var i = 0; i < nx; i++) if (th[j * nx + i] >= f) { x.rect(i * B, j * B, B, B); any = true; }
+          var sy = r.top + (j + 0.5) * B * k, f = Math.min((vh - sy) / bandB, (sy - topY) / bandT), row = j * nx;
+          if (f >= 1) { for (var i = 0; i < nx; i++) d[(row + i) * 4 + 3] = 255; continue; }
+          f = f <= 0 ? 0 : f * f * (3 - 2 * f); f = f * f;   // sparse at the edge, filling in fast near the photo
+          for (var i2 = 0; i2 < nx; i2++) { var on = th[row + i2] < f; d[(row + i2) * 4 + 3] = on ? 255 : 0; if (!on) any = true; }
         }
-        x.fill();
+        if (!any) return off(it);
+        it.mx.putImageData(it.md, 0, 0);
+        var x = it.x; x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-over'; x.imageSmoothingEnabled = false;
+        x.clearRect(0, 0, it.cv.width, it.cv.height); x.drawImage(it.mc, 0, 0, nx * B * dpr, ny * B * dpr);
+        x.globalCompositeOperation = 'source-in'; x.drawImage(it.cache, 0, 0);
         if (!it.on) { it.on = true; it.t.classList.add('me-dusting'); }
-        if (!any) off(it);
       });
     };
     var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };

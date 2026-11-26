@@ -362,8 +362,8 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 .cc-h.me-scr-h:hover{transform:translateX(.3em)}
 .cc-h.me-scr-h:hover::before{transform:translateX(-.3em) scale(1)}
 /* between the statement and the disciplines (Nov 25): one line, centred, the role changing in the pixel face */
-.me-yrs{position:relative;height:40svh}
-.me-yrs-s{position:fixed;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;padding:0 clamp(16px,4vw,56px);background:#8e6bff;transform:translate3d(0,100%,0);visibility:hidden;will-change:transform}
+.me-yrs{position:relative;height:150svh}
+.me-yrs-s{position:fixed;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;padding:0 clamp(16px,4vw,56px);background:transparent;visibility:hidden}
 .me-yrs-t{margin:0;max-width:22ch;text-align:center;font-family:'Archivo',sans-serif;font-weight:380;font-size:clamp(30px,4.6vw,84px);line-height:1.12;letter-spacing:-.02em;color:#121316;text-wrap:balance}
 .me-yrs-w{position:relative;isolation:isolate;display:inline-block;white-space:nowrap;font-family:'Mondwest',serif;font-weight:400;font-synthesis:none;font-size:1.06em;letter-spacing:0;color:#121316;background:linear-gradient(#121316,#121316) 0 100%/100% 2px no-repeat;padding-bottom:.04em;transition:color .12s}
 .me-yrs-w::before{content:"";position:absolute;left:-.08em;right:-.08em;top:.02em;bottom:-.02em;background:#121316;z-index:-1;transform:scaleX(0);transform-origin:0 50%;transition:transform .22s cubic-bezier(.6,0,.2,1)}
@@ -412,3 +412,8 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 .br-mq .pf-i:hover,.br-mq .pf-i.on,.br-mq .pf-i:focus-visible{padding-left:18px}
 @keyframes brmq{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.br-mq-t{animation:none}.br-mq{overflow-x:auto}}
+/* (Nov 26) the violet layer is drawn as square cells; it sits over the cards until it lifts */
+.me-yrs-s{z-index:8 !important;transform:none !important}
+.me-yrs-cv{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-1}
+.me-yrs-t{position:relative}
+#c-uiux{margin-bottom:95vh}
