@@ -417,3 +417,18 @@ html.me-pz.me-pz-l.me-mu-top .me-mu .me-mb:hover{background:#dfdfdb}
 .me-yrs-cv{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-1}
 .me-yrs-t{position:relative}
 #c-uiux{margin-bottom:95vh}
+/* (Nov 26) About as its own chapter: a pinned full screen, entered through the same halftone layer as the violet */
+.me-br{padding-top:0 !important}
+.br-scene{position:relative;height:200svh}
+.br-stick{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(28px,4.5vh,56px);padding:0 clamp(16px,4vw,56px)}
+.br-stick .pf-hd{margin:0}
+.br-stick .br-t{font-size:clamp(28px,3.6vw,64px);line-height:1.12;max-width:min(100%,21em)}
+.br-stick .br-f{width:min(100%,820px);grid-row:auto}
+.br-stick .br-f li{font-size:14px;padding-top:16px}
+.br-stick .br-f li > span{opacity:0;transform:translateY(8px);transition:opacity .4s,transform .5s cubic-bezier(.2,.7,.2,1)}
+.br-stick .br-f li{opacity:0;transform:translateY(12px);transition:opacity .45s,transform .6s cubic-bezier(.2,.7,.2,1)}
+.br-stick.facts .br-f li,.br-stick.facts .br-f li > span{opacity:1;transform:none}
+.br-stick.facts .br-f li:nth-child(2){transition-delay:.08s}.br-stick.facts .br-f li:nth-child(3){transition-delay:.16s}
+.br-ht{position:fixed;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;visibility:hidden}
+@media (max-width:639px){.br-stick .br-f{grid-template-columns:1fr 1fr}.br-stick .br-f li:last-child{grid-column:1 / -1}}
+@media (prefers-reduced-motion:reduce){.br-stick .br-f li,.br-stick .br-f li > span{opacity:1;transform:none}}

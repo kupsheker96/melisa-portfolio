@@ -1969,16 +1969,50 @@
   }
 
   /* Home -> About bridge: the sentence lights word by word as it comes up */
+  /* About (Nov 26): its own chapter. The statement and the three facts are pinned for a screen; the page gets there
+     through the same halftone layer as the violet statement: violet dots swell up over the last card until the screen
+     is violet, then lift off from the top as dots, uncovering the dark About scene. Then the words light up one by
+     one as you scroll and the three facts settle in under them. Scroll-tied, one canvas, nothing runs at rest. */
   function bridge() {
-    var t = D.querySelector('.br-t'); if (!t || !LIVE || RM) return;
-    H.classList.add('br-on');
-    var ws = t.querySelectorAll('.bw'), lastN = -1;
-    var run = function () {
-      var r = t.getBoundingClientRect(), vh = W.innerHeight, p = cl((vh * 0.88 - r.top) / (r.height + vh * 0.32));
-      var n = Math.round(p * ws.length); if (n === lastN) return; lastN = n;
-      for (var i = 0; i < ws.length; i++) ws[i].classList.toggle('lit', i < n);
+    var t = D.querySelector('.br-t'), sc = D.querySelector('.br-scene'), st = D.querySelector('.br-stick'); if (!t || !sc) return;
+    var ws = t.querySelectorAll('.bw'), lastN = -1, lastK = '', live = LIVE && !RM;
+    if (live) H.classList.add('br-on');
+    var cv = D.createElement('canvas'), x = cv.getContext('2d'); cv.className = 'br-ht'; cv.setAttribute('aria-hidden', 'true'); D.body.appendChild(cv);
+    var dpr = Math.min(1.5, W.devicePixelRatio || 1), cw = 0, chh = 0, G = 14, gc = 0, gr = 0, tIn = null, tOut = null;
+    var build = function () {
+      cw = W.innerWidth; chh = W.innerHeight; cv.width = Math.round(cw * dpr); cv.height = Math.round(chh * dpr);
+      G = cw < 640 ? 9 : Math.max(11, Math.min(16, cw / 110)); gc = Math.ceil(cw / G) + 1; gr = Math.ceil(chh / G) + 1;
+      tIn = new Float32Array(gc * gr); tOut = new Float32Array(gc * gr);
+      for (var r = 0; r < gr; r++) for (var c = 0; c < gc; c++) {
+        var h = hash(c + 11.3, r + 2.9), yy = r / gr, dx = (c / gc - 0.5) * (cw / chh), dy = 1 - yy;
+        tIn[r * gc + c] = Math.min(1, Math.sqrt(dx * dx * 0.5 + dy * dy) * 0.62) + h * 0.12;
+        tOut[r * gc + c] = yy * 0.62 + h * 0.12;
+      }
     };
-    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', run); run();
+    var draw = function (gin, gout) {
+      if (!tIn || cw !== W.innerWidth || chh !== W.innerHeight) build();
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, cw, chh); x.fillStyle = '#8e6bff';
+      if (gin >= 1 && gout <= 0) { x.fillRect(0, 0, cw, chh); return; }
+      x.beginPath();
+      for (var r = 0; r < gr; r++) for (var c = 0; c < gc; c++) {
+        var i = r * gc + c, a = cl((gin * 1.45 - tIn[i]) / 0.45), z = 1 - cl((gout * 1.45 - tOut[i]) / 0.45);
+        var k = Math.min(a * a * (3 - 2 * a), z * z * (3 - 2 * z)); if (k <= 0.02) continue;
+        var s = k >= 0.999 ? G + 1 : Math.max(1.2, G * k); x.rect(c * G + (G - s) / 2, r * G + (G - s) / 2, s, s);
+      }
+      x.fill();
+    };
+    var run = function () {
+      var vh = W.innerHeight, top = sc.getBoundingClientRect().top;
+      // in: the scene's top from 0.95 to 0.25 of the screen; out: from 0.05 to -0.6 (the scene is pinned by then)
+      var gin = live ? cl((vh * 0.95 - top) / (vh * 0.7)) : 0, gout = live ? cl((vh * 0.05 - top) / (vh * 0.65)) : 0;
+      var k = (gin <= 0 || gout >= 1) ? 'h' : gin.toFixed(4) + '|' + gout.toFixed(4);
+      if (k !== lastK) { lastK = k; cv.style.visibility = k === 'h' ? 'hidden' : 'visible'; if (k !== 'h') draw(gin, gout); }
+      // the words light up after the layer has lifted, then the facts come in
+      var p = live ? cl((-top - vh * 0.5) / (vh * 0.45)) : 1, n = Math.round(p * ws.length);
+      if (n !== lastN) { lastN = n; for (var i = 0; i < ws.length; i++) ws[i].classList.toggle('lit', i < n); }
+      if (st) st.classList.toggle('facts', !live || p >= 0.85);
+    };
+    W.addEventListener('scroll', run, { passive: true }); W.addEventListener('resize', function () { lastK = ''; tIn = null; run(); }); run();
   }
 
   function LV() { try { return W.__meLevels ? W.__meLevels() : (SHELLED && W.parent.__meLevels ? W.parent.__meLevels() : null); } catch (e) { return null; } }
