@@ -291,9 +291,9 @@ function rects(a, col) { if (!a.length) return; x.fillStyle = col; x.beginPath()
 
 /* ---------- shared for this lab: masks, relief, pressed rendering ---------- */
 // lines of condensed caps drawn into the offscreen canvas; returns coverage per cell of a grid (pitch P, origin ox/oy)
-function textMask(lines, box, P, cols, rows, ox, oy, align) {
+function textMask(lines, box, P, cols, rows, ox, oy, align, lhIn) {
   off.width = Wd; off.height = Ht; oc.clearRect(0, 0, Wd, Ht); oc.fillStyle = '#fff'; oc.textBaseline = 'alphabetic';
-  var lh = 1.06, fs = box.h / (lines.length * 0.72 * lh - (lh - 1) * 0.72); font(fs);
+  var lh = lhIn || 1.06, fs = box.h / (lines.length * 0.72 * lh - (lh - 1) * 0.72); font(fs);
   var wmax = Math.max.apply(null, lines.map(function (l) { return oc.measureText(l).width; })); if (wmax > box.w) { fs *= box.w / wmax; font(fs); }
   var cap = fs * 0.72, L = cap * lh, total = lines.length * L - (L - cap), top = box.y + (box.h - total) / 2;
   lines.forEach(function (l, i) { var w = oc.measureText(l).width, lx = align === 'left' ? box.x : box.x + (box.w - w) / 2; oc.fillText(l, lx, top + cap + i * L); });
@@ -572,23 +572,30 @@ S[3] = { name: 'Stamped sentence', fam: 'Pressed', h: 480,
         ['Mobile', 'Finer dot pitch and the sentence re-broken into seven short lines; the second sentence wraps under them.']],
   bg: 'grey',
   build: function () {
-    var P = small ? 5 : 8, cols = Math.ceil(Wd / P) + 1, rows = Math.ceil(Ht / P) + 1;
+    // (Nov 27) crisper: a hard letter mask, more space between lines, and the relief drawn as an offset shadow,
+    // so the words stay readable both pressed in and standing out
+    var P = small ? 4 : 6, cols = Math.ceil(Wd / P) + 1, rows = Math.ceil(Ht / P) + 1;
     var lines = small ? ['FIVE YEARS', 'OF MAKING', 'THINGS,', 'LEARNING', 'THINGS, AND', 'FIGURING', 'THINGS OUT.'] : ['FIVE YEARS OF', 'MAKING THINGS,', 'LEARNING THINGS,', 'AND FIGURING THINGS OUT.'];
-    var m = textMask(lines, { x: Wd * 0.05, y: Ht * (small ? 0.1 : 0.12), w: Wd * 0.9, h: Ht * (small ? 0.66 : 0.62) }, P, cols, rows, P / 2, P / 2, 'left');
-    var Lr = relief(m.M, cols, rows, small ? 1 : 2);
+    var m = textMask(lines, { x: Wd * 0.06, y: Ht * (small ? 0.11 : 0.14), w: Wd * (small ? 0.88 : 0.8), h: Ht * (small ? 0.62 : 0.56) }, P, cols, rows, P / 2, P / 2, 'left', 1.34);
+    var M = new Uint8Array(m.M.length); for (var i = 0; i < M.length; i++) M[i] = m.M[i] > 0.5 ? 1 : 0;
     ui.innerHTML = '<div class="p1 ink"><div class="t2 rise"><p>' + esc(S2) + '</p></div></div>';
-    return { P: P, cols: cols, rows: rows, Lr: Lr, line: m.line, n: lines.length, t2: ui.querySelector('.t2') };
+    return { P: P, cols: cols, rows: rows, M: M, line: m.line, n: lines.length, o: small ? 1 : 2, t2: ui.querySelector('.t2') };
   },
   draw: function (q) {
-    var P = R.P, cols = R.cols, flip = sm(cl((q - 0.62) / 0.2)), deps = [];
+    var P = R.P, cols = R.cols, o = R.o, flip = sm(cl((q - 0.62) / 0.2)), deps = [], base = P * 0.36;
     for (var l = 0; l < R.n; l++) deps.push(sm(cl((q - 0.04 - l * (0.48 / R.n)) / 0.14)));
     setOn(R.t2, q > 0.74);
     x.fillStyle = '#dfdfdb'; x.fillRect(0, 0, Wd, Ht);
     var out = [];
     for (var r = 0; r < R.rows; r++) for (var c = 0; c < cols; c++) {
-      var i = r * cols + c, ln = R.line[i], dep = 0;
-      if (R.Lr.Hm[i] > 0.003) { var dl = ln >= 0 ? deps[ln] : 0; var sweep = cl(dl * 1.6 - (c / cols) * 0.6); dep = sweep * (1 - 2 * flip); }
-      var s = pressDot(R.Lr, i, dep, LX, LY, P, 0.36); if (s < 0.7) continue; out.push(P / 2 + c * P - s / 2, P / 2 + r * P - s / 2, s);
+      var i = r * cols + c, j = r >= o && c >= o ? (r - o) * cols + (c - o) : -1, m = R.M[i], ms = j >= 0 ? R.M[j] : 0, s = base;
+      if (m || ms) {
+        var ln = m ? R.line[i] : R.line[j], dl = ln >= 0 ? cl(deps[ln] * 1.6 - (c / cols) * 0.6) : 0, d = dl * (1 - flip), e = dl * flip;
+        if (m) s = base * (1 - 0.85 * d - 0.55 * e);                 // the letter's face: sunken in shade, or raised and lit
+        if (m && !ms) s = Math.max(s, P * 0.8 * d);                  // pressed in: the wall under the light's edge
+        if (!m && ms) s = Math.max(s, base + (P * 0.8 - base) * e);   // standing out: its shadow falls to the lower right
+      }
+      if (s < 0.6) continue; out.push(P / 2 + c * P - s / 2, P / 2 + r * P - s / 2, s);
     }
     rects(out, '#121316');
   } };
